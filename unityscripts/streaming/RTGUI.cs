@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -31,7 +32,13 @@ namespace QTM2Unity.Unity
 
         public void OnEnable()
         {
-            RTClient.getInstance().getServers(out popuplist);
+            String[] servers;
+            RTClient.getInstance().getServers(out servers);
+            popuplist = new GUIContent[servers.Length];
+            for (int i = 0; i < servers.Length; i++)
+            {
+                popuplist[i] = new GUIContent(servers[i]);
+            }
         }
 
         /// This makes sure we only can connect when in playing mode

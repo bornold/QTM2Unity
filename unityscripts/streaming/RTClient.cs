@@ -1,5 +1,5 @@
 using Debug = UnityEngine.Debug;
-using GUIContent = UnityEngine.GUIContent;
+//using GUIContent = UnityEngine.GUIContent;
 using System;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -176,7 +176,7 @@ namespace QTM2Unity.Unity
 		/// </summary>
 		/// <returns><c>true</c>, if discovery packet was sent, <c>false</c> otherwise.</returns>
 		/// <param name="list">List of discovered servers</param>
-		public bool getServers(out GUIContent[] list)
+		/*public bool getServers(out GUIContent[] list)
 		{
 			//Send discovery packet
 			if( mProtocol.discoverRTServers(1337))
@@ -196,7 +196,34 @@ namespace QTM2Unity.Unity
 			}
 			list = null;
 			return false;
-		}
+		}*/
+
+        /// <summary>
+        /// Get list of servers available on network
+        /// </summary>
+        /// <returns><c>true</c>, if discovery packet was sent, <c>false</c> otherwise.</returns>
+        /// <param name="list">List of discovered servers</param>
+        public bool getServers(out String[] list)
+        {
+            //Send discovery packet
+            if (mProtocol.discoverRTServers(1337))
+            {
+                if (mProtocol.DiscoveryResponses.Count > 0)
+                {
+                    //Get list of all servers from protocol
+                    list = new String[mProtocol.DiscoveryResponses.Count];
+                    for (int i = 0; i < mProtocol.DiscoveryResponses.Count; i++)
+                    {
+                        //add them to our list for user to pick from
+                        list[i] = mProtocol.DiscoveryResponses[i].hostname + " (" + mProtocol.DiscoveryResponses[i].ipAddress + ")";
+                    }
+                    return true;
+                }
+
+            }
+            list = null;
+            return false;
+        }
 
 		/// <summary>
 		/// Connect the specified pickedServer.
@@ -376,7 +403,6 @@ namespace QTM2Unity.Unity
 		public LabeledMarker() { }
 		public string label;
 		public Vector3 position;
-		//public Color color;
 	}
 
     // Class for bones
