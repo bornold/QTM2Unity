@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
 using QTMRealTimeSDK;
+using OpenTK;
 
 namespace QTM2Unity.Unity
 {
@@ -64,7 +64,7 @@ namespace QTM2Unity.Unity
 
         public static Quaternion GetAxesOrderRotation(ECoordinateAxes eNewX, ECoordinateAxes eNewY, ECoordinateAxes eNewZ)
         {
-            Quaternion oRotation = Quaternion.identity;
+            Quaternion oRotation = Quaternion.Identity;
 
             switch (eNewY)
             {

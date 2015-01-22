@@ -2,16 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using UnityEngine;
+using OpenTK;
 
 namespace QTM2Unity.Unity
 {
+    public static class Mathf
+    {
+        public static Func<float, float> Cos = angleR => (float)Math.Cos(angleR);
+        public static Func<float, float> Sin = angleR => (float)Math.Sin(angleR);
+        public static Func<float, float> Sqrt = angleR => (float)Math.Sqrt(angleR);
+        public static float PI = (float)Math.PI;
+    }   
     public static class QuaternionHelper
     {
         /// <summary>
         /// Rotation around X axis
         /// </summary>
-        /// <param name="radians">rotation amount</param>
+        /// <param name="radians">rotation amount</param>   
         /// <returns>Quaternion with rotation</returns>
         public static Quaternion RotationX(float radians)
         {
@@ -50,12 +57,13 @@ namespace QTM2Unity.Unity
             return new Quaternion(0.0f, 0.0f, s, c);
         }
 
+        //TODO find a Matrix4 that is not Unity
         /// <summary>
         /// Quaternion from matrix
         /// </summary>
         /// <param name="matrix">matrix</param>
         /// <returns></returns>
-        public static Quaternion FromMatrix(Matrix4x4 matrix)
+       /* public static Quaternion FromMatrix(Matrix4x4 matrix)
         {
             float[] matrixArray = new float[9];
             matrixArray[0] = matrix.m00;
@@ -70,7 +78,7 @@ namespace QTM2Unity.Unity
 
             return FromMatrix(matrixArray);
         }
-
+        */
         public static Quaternion FromMatrix(float[] matrix)
         {
             float trace, radicand, scale, xx, yx, zx, xy, yy, zy, xz, yz, zz, tmpx, tmpy, tmpz, tmpw, qx, qy, qz, qw;
@@ -148,25 +156,25 @@ namespace QTM2Unity.Unity
         public static Vector3 Rotate(this Quaternion quaternion, Vector3 vec)
         {
             float tmpX, tmpY, tmpZ, tmpW;
-            tmpX = (((quaternion.w * vec.x) + (quaternion.y * vec.z)) - (quaternion.z * vec.y));
-            tmpY = (((quaternion.w * vec.y) + (quaternion.z * vec.x)) - (quaternion.x * vec.z));
-            tmpZ = (((quaternion.w * vec.z) + (quaternion.x * vec.y)) - (quaternion.y * vec.x));
-            tmpW = (((quaternion.x * vec.x) + (quaternion.y * vec.y)) + (quaternion.z * vec.z));
+            tmpX = (((quaternion.W * vec.X) + (quaternion.Y * vec.Z)) - (quaternion.Z * vec.Y));
+            tmpY = (((quaternion.W * vec.Y) + (quaternion.Z * vec.X)) - (quaternion.X * vec.Z));
+            tmpZ = (((quaternion.W * vec.Z) + (quaternion.X * vec.Y)) - (quaternion.Y * vec.X));
+            tmpW = (((quaternion.X * vec.X) + (quaternion.Y * vec.Y)) + (quaternion.Z * vec.Z));
             return new Vector3(
-                ((((tmpW * quaternion.x) + (tmpX * quaternion.w)) - (tmpY * quaternion.z)) + (tmpZ * quaternion.y)),
-                ((((tmpW * quaternion.y) + (tmpY * quaternion.w)) - (tmpZ * quaternion.x)) + (tmpX * quaternion.z)),
-                ((((tmpW * quaternion.z) + (tmpZ * quaternion.w)) - (tmpX * quaternion.y)) + (tmpY * quaternion.x))
+                ((((tmpW * quaternion.X) + (tmpX * quaternion.W)) - (tmpY * quaternion.Z)) + (tmpZ * quaternion.Y)),
+                ((((tmpW * quaternion.Y) + (tmpY * quaternion.W)) - (tmpZ * quaternion.X)) + (tmpX * quaternion.Z)),
+                ((((tmpW * quaternion.Z) + (tmpZ * quaternion.W)) - (tmpX * quaternion.Y)) + (tmpY * quaternion.X))
            );
         }
 
         private static float norm(this Quaternion quaternion )
         {
-            float result;
-            result = (quaternion.x * quaternion.x);
-            result = (result + (quaternion.y * quaternion.y));
-            result = (result + (quaternion.z * quaternion.z));
-            result = (result + (quaternion.w * quaternion.w));
-            return result;
+            double result;
+            result = (quaternion.X * quaternion.X);
+            result = (result + (quaternion.Y * quaternion.Y));
+            result = (result + (quaternion.Z * quaternion.Z));
+            result = (result + (quaternion.W * quaternion.W));
+            return (float)result;
         }
 
         public static Quaternion Normalize(this Quaternion quaternion)
@@ -174,10 +182,10 @@ namespace QTM2Unity.Unity
             float lenSqr = quaternion.norm();
             float lenInv = (1.0f / Mathf.Sqrt(lenSqr));
             return new Quaternion(
-                        (quaternion.x * lenInv),
-                        (quaternion.y * lenInv),
-                        (quaternion.z * lenInv),
-                        (quaternion.w * lenInv)
+                        (quaternion.X * lenInv),
+                        (quaternion.Y * lenInv),
+                        (quaternion.Z * lenInv),
+                        (quaternion.W * lenInv)
                         );
         }
     

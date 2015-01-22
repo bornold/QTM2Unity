@@ -1,4 +1,5 @@
-using UnityEngine;
+using Debug = UnityEngine.Debug;
+using GUIContent = UnityEngine.GUIContent;
 using System;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,6 +12,7 @@ using System.Net.Sockets;
 using System.Threading;
 using QTMRealTimeSDK;
 using QTMRealTimeSDK.Settings;
+using OpenTK;
 
 namespace QTM2Unity.Unity
 {
@@ -55,11 +57,11 @@ namespace QTM2Unity.Unity
                     position /= 1000;
 
 					mBodies[i].position = QuaternionHelper.Rotate(mCoordinateSystemChange, position );
-                    mBodies[i].position.z *= -1;
+                    mBodies[i].position.Z *= -1;
 					
                     mBodies[i].rotation = mCoordinateSystemChange * QuaternionHelper.FromMatrix(bodyData[i].matrix);
-                    mBodies[i].rotation.z *= -1;
-                    mBodies[i].rotation.w *= -1;
+                    mBodies[i].rotation.Z *= -1;
+                    mBodies[i].rotation.W *= -1;
 
                     mBodies[i].rotation *= QuaternionHelper.RotationZ(Mathf.PI * .5f);
                     mBodies[i].rotation *= QuaternionHelper.RotationX(-Mathf.PI * .5f);
@@ -80,7 +82,7 @@ namespace QTM2Unity.Unity
 					position /= 1000;
 
 					mMarkers[i].position = QuaternionHelper.Rotate(mCoordinateSystemChange, position );
-					mMarkers[i].position.z *= -1;
+					mMarkers[i].position.Z *= -1;
 
 				}
 			}
@@ -245,8 +247,8 @@ namespace QTM2Unity.Unity
                 {
                     sixDOFBody newbody = new sixDOFBody();
                     newbody.name = body.name;
-                    newbody.position = Vector3.zero;
-                    newbody.rotation = Quaternion.identity;
+                    newbody.position = Vector3.Zero;
+                    newbody.rotation = Quaternion.Identity;
                     mBodies.Add(newbody);
 
                 }
@@ -275,12 +277,14 @@ namespace QTM2Unity.Unity
                 {
                     LabeledMarker newMarker = new LabeledMarker();
                     newMarker.label = marker.name;
-                    newMarker.position = Vector3.zero;
+                    newMarker.position = Vector3.Zero;
+                   /* 
                     newMarker.color.r = (marker.colorRGB) & 0xFF;
                     newMarker.color.g = (marker.colorRGB >> 8) & 0xFF;
                     newMarker.color.b = (marker.colorRGB >> 16) & 0xFF;
 
                     newMarker.color /= 255;
+                    */
                     Markers.Add(newMarker);
                 }
 
@@ -372,7 +376,7 @@ namespace QTM2Unity.Unity
 		public LabeledMarker() { }
 		public string label;
 		public Vector3 position;
-		public Color color;
+		//public Color color;
 	}
 
     // Class for bones

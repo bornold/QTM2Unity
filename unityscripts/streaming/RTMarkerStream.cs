@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using QTMRealTimeSDK;
-
+using OTK = OpenTK;
 namespace QTM2Unity.Unity
 {
 	public class RTMarkerStream : MonoBehaviour
@@ -64,11 +63,11 @@ namespace QTM2Unity.Unity
 
 			for (int i = 0; i < markerData.Count; i++)
 			{
-				if(markerData[i].position.magnitude > 0)
+				if(markerData[i].position.Length > 0)
 				{
 					markers[i].name = markerData[i].label;
-					markers[i].renderer.material.color = markerData[i].color;
-					markers[i].transform.localPosition = markerData[i].position;
+					//markers[i].renderer.material.color = markerData[i].color;
+                    markers[i].transform.localPosition = convertFromSlimDXVector(markerData[i].position);
 					markers[i].SetActive(true);
 					markers[i].renderer.enabled = visibleMarkers;
                     markers[i].transform.localScale = Vector3.one * markerScale;
@@ -80,5 +79,10 @@ namespace QTM2Unity.Unity
                 }
 			}
 		}
+        // TODO write a converter https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx
+        private Vector3 convertFromSlimDXVector(OTK.Vector3 v)
+        {
+            return new Vector3(v.X, v.Y, v.Z);
+        }
 	}
 }

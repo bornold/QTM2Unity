@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using QTMRealTimeSDK;
-
+using OTK = OpenTK;
 namespace QTM2Unity.Unity
 {
 	public class RTBones : MonoBehaviour
@@ -22,7 +22,10 @@ namespace QTM2Unity.Unity
         {
             if (!Application.isPlaying)
                 return;
-
+            if (rtClient == null)
+            {
+                rtClient = RTClient.getInstance();
+            }
 			if (rtClient.Bones != null)
 			{
 				var boneData = rtClient.Bones;
@@ -31,10 +34,16 @@ namespace QTM2Unity.Unity
 	            {
 	                if (visibleBones)
 					{
-						Gizmos.DrawLine(boneData[i].fromMarker.position, boneData[i].toMarker.position);
+						Gizmos.DrawLine(convertFromSlimDXVector(boneData[i].fromMarker.position), 
+                                        convertFromSlimDXVector(boneData[i].toMarker.position));
 					}
 	            }
 			}
+        }
+        // TODO write a converter https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx
+        private Vector3 convertFromSlimDXVector(OTK.Vector3 v)
+        {
+            return new Vector3(v.X, v.Y, v.Z);
         }
 	}
 }
