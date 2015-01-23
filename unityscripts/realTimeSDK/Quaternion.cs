@@ -57,28 +57,27 @@ namespace QTM2Unity.Unity
             return new Quaternion(0.0f, 0.0f, s, c);
         }
 
-        //TODO find a Matrix4 that is not Unity
         /// <summary>
         /// Quaternion from matrix
         /// </summary>
         /// <param name="matrix">matrix</param>
         /// <returns></returns>
-       /* public static Quaternion FromMatrix(Matrix4x4 matrix)
+        public static Quaternion FromMatrix(Matrix4 matrix)
         {
             float[] matrixArray = new float[9];
-            matrixArray[0] = matrix.m00;
-            matrixArray[1] = matrix.m10;
-            matrixArray[2] = matrix.m20;
-            matrixArray[3] = matrix.m01;
-            matrixArray[4] = matrix.m11;
-            matrixArray[5] = matrix.m21;
-            matrixArray[6] = matrix.m02;
-            matrixArray[7] = matrix.m12;
-            matrixArray[8] = matrix.m22;
+            matrixArray[0] = matrix.M11; //m00;
+            matrixArray[1] = matrix.M21; //m10;
+            matrixArray[2] = matrix.M31; //m20;
+            matrixArray[3] = matrix.M12; //m01;
+            matrixArray[4] = matrix.M22; //m11;
+            matrixArray[5] = matrix.M32; //m21;
+            matrixArray[6] = matrix.M13; //m02;
+            matrixArray[7] = matrix.M23; //m12;
+            matrixArray[8] = matrix.M33; //m22;
 
             return FromMatrix(matrixArray);
         }
-        */
+        
         public static Quaternion FromMatrix(float[] matrix)
         {
             float trace, radicand, scale, xx, yx, zx, xy, yy, zy, xz, yz, zz, tmpx, tmpy, tmpz, tmpw, qx, qy, qz, qw;
@@ -187,6 +186,10 @@ namespace QTM2Unity.Unity
                         (quaternion.Z * lenInv),
                         (quaternion.W * lenInv)
                         );
+        }
+        public static Quaternion LookAt(Vector3 root, Vector3 target, Vector3 up)
+        {
+            return FromMatrix(Matrix4Helper.LookAt(root, target, up));
         }
     
     }

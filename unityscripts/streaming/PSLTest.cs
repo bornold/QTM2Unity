@@ -9,7 +9,7 @@ namespace QTM2Unity.Unity
     {
         private List<LabeledMarker> markerData;
         private RTClient rtClient;
-        private Dictionary<string, Vector3> joints = new Dictionary<string, Vector3>();
+        private Dictionary<string, Vector3> joints;
 
         public bool debug = false;
         public float markerScale = 0.015f;
@@ -26,8 +26,7 @@ namespace QTM2Unity.Unity
         {
             if ( rtClient == null)
             {
-                Start();
-                //rtClient = RTClient.getInstance();
+                rtClient = RTClient.getInstance();
                 streaming = false;
             }
             if (rtClient.getStreamingStatus() && !streaming)
@@ -39,7 +38,8 @@ namespace QTM2Unity.Unity
 
             if (markerData == null && markerData.Count == 0) return;
 
-            joints = new PseudoJointLocalization(markerData).joints.ToDictionary(x => x.Key, x => convertFromSlimDXVector(x.Value));
+            var joints2 = new PseudoJointLocalization(markerData).Joints;
+            joints = joints2.ToDictionary(x => x.Key, x => OpenTKV2UEV(x.Value));
             
         }
         void OnDrawGizmos()
@@ -128,7 +128,7 @@ namespace QTM2Unity.Unity
 
         }
         // TODO write a converter https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx
-        private Vector3 convertFromSlimDXVector(OTK.Vector3 v) {
+        private Vector3 OpenTKV2UEV(OTK.Vector3 v) {
             return new Vector3(v.X, v.Y, v.Z);
         }
     }

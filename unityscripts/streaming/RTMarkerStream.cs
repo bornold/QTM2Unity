@@ -45,9 +45,20 @@ namespace QTM2Unity.Unity
 		// Update is called once per frame
 		void Update ()
 		{
+
+            if (rtClient == null)
+            {
+                rtClient = RTClient.getInstance();
+            }
             if(rtClient.getStreamingStatus() && !streaming)
             {
                 initiateMarkers();
+                streaming = true;
+            }
+
+
+            if (rtClient.getStreamingStatus() && !streaming)
+            {
                 streaming = true;
             }
 

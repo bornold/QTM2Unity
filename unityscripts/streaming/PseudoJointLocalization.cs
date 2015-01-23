@@ -7,8 +7,12 @@ namespace QTM2Unity.Unity
     class PseudoJointLocalization
     {
         private Dictionary<string, Vector3> markers;
-        public Dictionary<string, Vector3> joints;
-        List<MarkersForJoints> markersForJoints = new List<MarkersForJoints>
+        private readonly Dictionary<string, Vector3> joints;
+        public Dictionary<string, Vector3> Joints
+        {
+            get { return joints; }
+        }
+        private List<MarkersForJoints> markersForJoints = new List<MarkersForJoints>
             ()
                 {
                     new MarkersForJoints("Hip", "L_IAS",  "R_IAS", "SACR"),
@@ -58,7 +62,7 @@ namespace QTM2Unity.Unity
                     if (markers.ContainsKey(group.Left) ) {
                         if (markers.ContainsKey(group.Right))
                         {
-                            value = getMid(
+                            value = Vector3Helper.MidPoint(
                             markers[group.Left],
                             markers[group.Right]);
                         }
@@ -73,15 +77,15 @@ namespace QTM2Unity.Unity
                         markers.ContainsKey(group.Left) &&
                         markers.ContainsKey(group.Right))
                     {
-                        value = getMid(
-                                    markers[group.Forward],
+                        value = Vector3Helper.MidPoint(
                                     markers[group.Left],
-                                    markers[group.Right]);
+                                    markers[group.Right],
+                                    markers[group.Forward]);
                     }
                     else if (markers.ContainsKey(group.Left) &&
                              markers.ContainsKey(group.Right))
                     {
-                        value = getMid(
+                        value = Vector3Helper.MidPoint(
                             markers[group.Left],
                             markers[group.Right]);
                     }
@@ -90,16 +94,6 @@ namespace QTM2Unity.Unity
             }
             return value;
         }
-        protected Vector3 getMid(Vector3 leftVect, Vector3 rightVect)
-        {
-            return (leftVect - rightVect) * 0.5f + rightVect;
-        }
-
-        protected Vector3 getMid(Vector3 forwardVect, Vector3 leftVect, Vector3 rightVect) {
-            Vector3 backMid = getMid(leftVect, rightVect);
-            return forwardVect + (backMid - forwardVect) * 2 / 3;
-        }
-
     }
 
     public class MarkersForJoints 
