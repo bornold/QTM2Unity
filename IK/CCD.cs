@@ -5,55 +5,15 @@ using System.Text;
 using OpenTK;
 using QTM2Unity.Unity;
 
-namespace Assets.QTM2Unity.IK
+namespace QTM2Unity.IK
 {
     class CCD
     {
         // TODO what about constraints?
         float threshold = 0.1f; // TODO define a good default threshold value 
 
-        
-        /// <summary>
-        /// Solves a biped character. 
-        /// </summary>
-        /// <param name="joints">a dictionary with joint name and position</param>
-        /// <param name="targets">a Dictionary with target position for the end effector with the 
-        /// given name</param>
-        /// <returns>new positions for each joint of the character</returns>
-        public Dictionary<string, Vector3> solveBiped(Dictionary<string, Vector3> joints, 
-            Dictionary<string, Vector3> targets)
-        {
-            // TODO: Not sure how to treat the chains here. Are the root (hip?)
-            // fixed?
-            // Right now assuming that all joints exist
-            // (Hip, RightHip, RightKnee, RightAnkle, RightToes, 
-            // LeftHip, LeftKnee, LeftAnkle, LeftToes, 
-            // Spine, Neck, Head, RightShoulder, RightElbow, RightWrist, RightHand,
-            // LeftShoulder, LeftElbow, LeftWrist, LeftHand
-            // And that the end effectors Head, RightHand, LeftHand, RightToes, LeftToes has 
-            // corresponding targets. I'm guessing that this is not always the case...
-            // And what happens when we don't have a position for some joint?
+       // And what happens when we don't have a position for some joint?
 
-            // Treating the hip as root
-            // TODO
-            // This is just an outline (it's not correct and it won't actually do anything right now):
-            solveChain(new Vector3[]{joints["Hip"], joints["RightHip"], joints["RightKnee"], 
-                joints["RightAnkle"], joints["RightToes"]}, targets["RightToes"]);
-            solveChain(new Vector3[]{joints["Hip"], joints["LeftHip"], joints["LeftKnee"], 
-                joints["LeftAnkle"], joints["LeftToes"]}, targets["LeftToes"]);
-            solveChain(new Vector3[]{joints["Hip"], joints["Spine"], joints["Neck"], 
-                joints["RightShoulder"], joints["RightElbow"], joints["RightWrist"], 
-                joints["RightHand"]}, targets["RightHand"]);
-            solveChain(new Vector3[]{joints["Hip"], joints["Spine"], joints["Neck"], 
-                joints["LeftShoulder"], joints["LeftElbow"], joints["LeftWrist"], 
-                joints["LeftHand"]}, targets["LeftHand"]);
-            solveChain(new Vector3[]{joints["Hip"], joints["Spine"], joints["Neck"], 
-                joints["Head"]}, targets["Head"]);
-
-            // Not sure how to solve for multiple end effectors
-
-            return null;
-        }
 
         // Note: The end effector is assumed to be the last element in jointPositions
         // TODO maximum number of iterations?
@@ -77,11 +37,17 @@ namespace Assets.QTM2Unity.IK
                     {
                         jointPositions[j] = Vector3.Transform(jointPositions[j], rotation);
                     }
+                    // I think we need to do this check here <-- TODO check som I'm right
+                    if ((target - jointPositions[jointPositions.Length - 1]).Length > threshold)
+                    {
+                        return jointPositions;
+                    }
                 }
             }
                 return jointPositions; 
         }
 
+        // TODO move to quaternion helper or something
         // Returns a quaternion representing the rotation from vector a to b
         private Quaternion getRotation(Vector3 a, Vector3 b)
         {
