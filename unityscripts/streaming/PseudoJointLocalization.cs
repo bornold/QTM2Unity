@@ -12,8 +12,8 @@ namespace QTM2Unity.Unity
         {
             get { return joints; }
         }
-        private List<MarkersForJoints> markersForJoints = new List<MarkersForJoints>
-            ()
+
+        private List<MarkersForJoints> markersForJoints = new List<MarkersForJoints>()
                 {
                     new MarkersForJoints("Hip", "L_IAS",  "R_IAS", "SACR"),
                    // new MarkersForJoints("Spine", "TV12"),
@@ -23,11 +23,13 @@ namespace QTM2Unity.Unity
                     new MarkersForJoints("LeftHip", "L_IAS"),
                     new MarkersForJoints("LeftKnee", "L_PAS", "L_TTC"),
                     new MarkersForJoints("LeftAnkle", "L_FAL", "L_FCC"),
+                    new MarkersForJoints("LeftHeal", "L_FCC"),
                     new MarkersForJoints("LeftToes", "L_FM2"),
 
                     new MarkersForJoints("RightHip", "R_IAS"),
                     new MarkersForJoints("RightKnee", "R_PAS", "R_TTC"),
                     new MarkersForJoints("RightAnkle", "R_FAL", "R_FCC"),
+                    new MarkersForJoints("RightHeal", "R_FCC"),
                     new MarkersForJoints("RightToes", "R_FM2"),
 
                     new MarkersForJoints("LeftShoulder", "L_SAE"),
@@ -47,7 +49,7 @@ namespace QTM2Unity.Unity
             joints = markersForJoints.ToDictionary(k => k.Name, v => getPoint(v));
         }
 
-        protected Vector3 getPoint(MarkersForJoints group)
+        private Vector3 getPoint(MarkersForJoints group)
         {
             Vector3 value = Vector3.Zero;
             switch (group.Count)
@@ -62,9 +64,7 @@ namespace QTM2Unity.Unity
                     if (markers.ContainsKey(group.Left) ) {
                         if (markers.ContainsKey(group.Right))
                         {
-                            value = Vector3Helper.MidPoint(
-                            markers[group.Left],
-                            markers[group.Right]);
+                            value = markers[group.Left].MidPoint(markers[group.Right]);
                         }
                         else
                         {
@@ -80,14 +80,12 @@ namespace QTM2Unity.Unity
                         value = Vector3Helper.MidPoint(
                                     markers[group.Left],
                                     markers[group.Right],
-                                    markers[group.Forward]);
+                                    markers[group.Forward]);   
                     }
                     else if (markers.ContainsKey(group.Left) &&
                              markers.ContainsKey(group.Right))
                     {
-                        value = Vector3Helper.MidPoint(
-                            markers[group.Left],
-                            markers[group.Right]);
+                        value = markers[group.Left].MidPoint(markers[group.Right]);
                     }
                     break;
                 default: break;
@@ -98,6 +96,7 @@ namespace QTM2Unity.Unity
 
     public class MarkersForJoints 
     {
+
         private readonly string jointName;
         private readonly string forwardMarker;
         private readonly string leftMarker;
@@ -113,7 +112,6 @@ namespace QTM2Unity.Unity
             this.leftMarker = left;
             this.rightMarker = right;
             this.numberOfVectors = 2;
-
         }
         public MarkersForJoints(string name, string left, string right, string forward) {
             this.numberOfVectors = 3;
@@ -121,7 +119,6 @@ namespace QTM2Unity.Unity
             this.rightMarker = right;
             this.forwardMarker = forward;
             this.jointName = name;
-
         }
         public int Count {
             get { return numberOfVectors;}

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using OTK = OpenTK;
 
 namespace QTM2Unity.Unity
 {
@@ -10,7 +9,6 @@ namespace QTM2Unity.Unity
         private List<LabeledMarker> markerData;
         private RTClient rtClient;
         private Dictionary<string, Vector3> joints;
-
         public bool debug = false;
         public float markerScale = 0.015f;
         private bool streaming = false;
@@ -33,20 +31,21 @@ namespace QTM2Unity.Unity
             {
                 streaming = true;
             }
-
             markerData = rtClient.Markers;
-
             if (markerData == null && markerData.Count == 0) return;
-
-            var joints2 = new PseudoJointLocalization(markerData).Joints;
-            joints = joints2.ToDictionary(x => x.Key, x => OpenTKV2UEV(x.Value));
-            
+            var joints3 = new PseudoJointLocalization(markerData);
+            joints = joints3.Joints.ToDictionary(x => x.Key, x => OpenTKV2UEV(x.Value));
         }
         void OnDrawGizmos()
         {
             if (!Application.isPlaying)
                 return;
             Gizmos.color = Color.cyan;
+
+            foreach (KeyValuePair<string, Vector3> kvp in joints)
+            {
+                Gizmos.DrawSphere(kvp.Value, markerScale);
+            }
 
             // Hip to Left toes
             if (joints.ContainsKey("Hip") && joints.ContainsKey("LeftHip"))
@@ -58,8 +57,14 @@ namespace QTM2Unity.Unity
             if (joints.ContainsKey("LeftKnee") && joints.ContainsKey("LeftAnkle"))
                 Gizmos.DrawLine(joints["LeftKnee"], joints["LeftAnkle"]);
 
-            if (joints.ContainsKey("LeftAnkle") && joints.ContainsKey("LeftToes"))
-                Gizmos.DrawLine(joints["LeftAnkle"], joints["LeftToes"]);
+            if (joints.ContainsKey("LeftAnkle"))
+            {
+                if (joints.ContainsKey("RightToes"))
+                    Gizmos.DrawLine(joints["LeftAnkle"], joints["LeftToes"]);
+                if (joints.ContainsKey("LeftHeal"))
+                    Gizmos.DrawLine(joints["LeftAnkle"], joints["LeftHeal"]);
+            }
+  
 
             // Hip to Right toes
             if (joints.ContainsKey("Hip") && joints.ContainsKey("RightHip"))
@@ -71,9 +76,14 @@ namespace QTM2Unity.Unity
             if (joints.ContainsKey("RightKnee") && joints.ContainsKey("RightAnkle"))
                 Gizmos.DrawLine(joints["RightKnee"], joints["RightAnkle"]);
 
-            if (joints.ContainsKey("RightAnkle") && joints.ContainsKey("RightToes"))
-                Gizmos.DrawLine(joints["RightAnkle"], joints["RightToes"]);
-
+            if (joints.ContainsKey("RightAnkle") )
+            {
+                if (joints.ContainsKey("RightToes"))
+                    Gizmos.DrawLine(joints["RightAnkle"], joints["RightToes"]);
+                if (joints.ContainsKey("RightHeal"))
+                    Gizmos.DrawLine(joints["RightAnkle"], joints["RightHeal"]);
+            }
+           
 
             // Hip to head
             if (joints.ContainsKey("Hip") ) {
@@ -121,15 +131,15 @@ namespace QTM2Unity.Unity
                 Gizmos.DrawLine(joints["LeftWrist"], joints["LeftHand"]);
 
     
-            foreach (KeyValuePair<string,Vector3> kvp in joints)
-            {
-                Gizmos.DrawSphere(kvp.Value, markerScale);   
-            }
+
 
         }
         // TODO write a converter https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx
-        private Vector3 OpenTKV2UEV(OTK.Vector3 v) {
+        private Vector3 OpenTKV2UEV(OpenTK.Vector3 v)
+        {
             return new Vector3(v.X, v.Y, v.Z);
         }
+
+
     }
 }

@@ -10,7 +10,7 @@ namespace QTM2Unity.Unity
     {
         public static Func<float, float> Cos = angleR => (float)Math.Cos(angleR);
         public static Func<float, float> Sin = angleR => (float)Math.Sin(angleR);
-        public static Func<float, float> Sqrt = angleR => (float)Math.Sqrt(angleR);
+        public static Func<float, float> Sqrt = power => (float)Math.Sqrt(power);
         public static float PI = (float)Math.PI;
     }   
     public static class QuaternionHelper
@@ -77,7 +77,7 @@ namespace QTM2Unity.Unity
 
             return FromMatrix(matrixArray);
         }
-        
+
         public static Quaternion FromMatrix(float[] matrix)
         {
             float trace, radicand, scale, xx, yx, zx, xy, yy, zy, xz, yz, zz, tmpx, tmpy, tmpz, tmpw, qx, qy, qz, qw;
