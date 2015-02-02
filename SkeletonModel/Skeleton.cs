@@ -65,18 +65,25 @@ namespace QTM2Unity.SkeletonModel
         {
             get { return children; }
         }
-        
+        // TODO can a bone have more than one parent?
         private Bone parent;
         public Bone Parent
         {
             get { return parent; }
         }
         
-        private JointConstraint constraint;
-        public JointConstraint JointConstraint
+        private OrientationalConstraint orientationalConstr;
+        public OrientationalConstraint OrientationalConstraint
         {
-            get { return constraint; }
-            set { constraint = value; }
+            get { return orientationalConstr; }
+            // TODO set?
+        }
+
+        private RotationalConstraint rotationalConstr;
+        public RotationalConstraint RotationalConstraint
+        {
+            get { return rotationalConstr; }
+            // TODO set?
         }
 
         public Bone(string name, List<Bone> children, Bone parent)
@@ -102,5 +109,6 @@ namespace QTM2Unity.SkeletonModel
         {
             return (children == null || children.Count == 0);
         }
+
     }
 }

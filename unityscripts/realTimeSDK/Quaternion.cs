@@ -191,6 +191,53 @@ namespace QTM2Unity.Unity
         {
             return FromMatrix(Matrix4Helper.LookAt(root, target, up));
         }
+
+        /// <summary>
+        /// Calculates the angle in radians for a rotation around a specific axis
+        /// </summary>
+        /// <param name="quaternion">the rotation quaternion</param>
+        /// <param name="front">the specific axis</param>
+        /// <returns>the rotation angle around the given axis</returns>
+        public static float getAngleAroundRad(this Quaternion quaternion, Vector3 axis)
+        {
+            float d = Vector3.Dot(quaternion.Xyz, axis);
+            float l = length(axis.X * d, axis.Y * d, axis.Z * d, quaternion.W);
+
+            return (l == 0) ? 0f : (float)(2.0 * Math.Acos(clamp((float) (quaternion.W / Math.Sqrt(l)), -1f, 1f)));
+        }
+
+        /// <summary>
+        /// Calculates the angle in degrees for a rotation around a specific axis
+        /// </summary>
+        /// <param name="quaternion">the rotation quaternion</param>
+        /// <param name="front">the specific axis</param>
+        /// <returns>the rotation angle around the given axis</returns>
+        public static float getAngleAround(this Quaternion quaternion, Vector3 axis)
+        {
+            return radiansToDegrees(getAngleAroundRad(quaternion, axis));
+        }
+
+        public static float length (float x, float y, float z, float w) 
+        {
+		    return x * x + y * y + z * z + w * w;
+	    }
+
+        // TODO move to some math util (not quaternion specific)
+        public static float clamp (float value, float min, float max) 
+        {
+		    if (value < min) return min;
+		    if (value > max) return max;
+		    return value;
+	    }
+
+        public static float degreesToRadians(float degrees)
+        {
+            return degrees * (Mathf.PI / 180);
+        }
     
+        public static float radiansToDegrees(float radians)
+        {
+            return radians * (180 / Mathf.PI);
+        }
     }
 }
