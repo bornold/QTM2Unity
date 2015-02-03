@@ -222,6 +222,30 @@ namespace QTM2Unity.Unity
 		    return x * x + y * y + z * z + w * w;
 	    }
 
+        // TODO move to quaternion helper or something
+        // Returns a quaternion representing the rotation from vector a to b
+        public static Quaternion getRotation(Vector3 a, Vector3 b)
+        {
+            a.Normalize();
+            b.Normalize();
+
+            float precision = 0.99f; // TODO not sure if good value
+            if (Vector3.Dot(a, b) > precision) // a and b are parallel
+            {
+                return Quaternion.Identity;
+            }
+            if (Vector3.Dot(a, b) < -precision) // a and b are opposite
+            {
+                return Quaternion.Normalize(Quaternion.FromAxisAngle(new Vector3(1, 1, 1), Mathf.PI));
+            }
+
+            float angle = Vector3.CalculateAngle(a, b);
+            Vector3 axis = Vector3.Cross(a, b);
+            axis.Normalize();
+
+            return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle));
+        }
+
         // TODO move to some math util (not quaternion specific)
         public static float clamp (float value, float min, float max) 
         {

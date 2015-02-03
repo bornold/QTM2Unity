@@ -100,6 +100,13 @@ namespace QTM2Unity.SkeletonModel
             this.orientation = orientation;
         }
 
+        public Bone(String name, Vector3 pos, Quaternion orientation)
+        {
+            this.name = name;
+            this.pos = pos;
+            this.orientation = orientation;
+        }
+
         public bool isRoot()
         {
             return parent == null;
@@ -110,5 +117,25 @@ namespace QTM2Unity.SkeletonModel
             return (children == null || children.Count == 0);
         }
 
+        public Vector3 getDirectionVector()
+        {
+            // The identity quaternion is associated with the direction
+            // (0,0,-1)
+            Vector3 identityDirection = new Vector3(0, 0, -1);
+
+            return Vector3.Transform(identityDirection, orientation);
+        }
+
+        // rotates the bone with angle in radians!
+        public void rotate(float angle, Vector3 axis)
+        {
+            Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
+            rotate(rotation);
+        }
+
+        public void rotate(Quaternion rotation)
+        {
+            orientation = rotation * orientation; // TODO !!!!! Not sure if right order!
+        }
     }
 }
