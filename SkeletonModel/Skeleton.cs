@@ -76,7 +76,11 @@ namespace QTM2Unity.SkeletonModel
         public OrientationalConstraint OrientationalConstraint
         {
             get { return orientationalConstr; }
-            // TODO set?
+        }
+
+        public void setOrientationalConstraint(float from, float to)
+        {
+            orientationalConstr = new OrientationalConstraint(from, to);
         }
 
         private RotationalConstraint rotationalConstr;
@@ -117,7 +121,7 @@ namespace QTM2Unity.SkeletonModel
             return (children == null || children.Count == 0);
         }
 
-        public Vector3 getDirectionVector()
+        public Vector3 getDirection()
         {
             // The identity quaternion is associated with the direction
             // (0,0,-1)
@@ -126,6 +130,19 @@ namespace QTM2Unity.SkeletonModel
             return Vector3.Transform(identityDirection, orientation);
         }
 
+        public Vector3 getUp()
+        {
+            Vector3 identityUp = new Vector3(0, 1, 0);
+            return Vector3.Transform(identityUp, orientation);
+        }
+
+
+        public Vector3 getRight()
+        {
+            Vector3 identityRight = new Vector3(1, 0, 0);
+            return Vector3.Transform(identityRight, orientation);
+        }
+        // TODO rotateDegrees, rotateRadians
         // rotates the bone with angle in radians!
         public void rotate(float angle, Vector3 axis)
         {
@@ -135,7 +152,7 @@ namespace QTM2Unity.SkeletonModel
 
         public void rotate(Quaternion rotation)
         {
-            orientation = rotation * orientation; // TODO !!!!! Not sure if right order!
+            orientation = rotation * orientation; 
         }
     }
 }
