@@ -72,9 +72,10 @@ namespace QTM2Unity.IK
             {
                 Vector3 direction = b.getDirection();
                 float twistAngle = getTwistAngle(b, parent);
-                
-                float angle1 = QuaternionHelper.degreesToRadians(b.OrientationalConstraint.Angle1);
-                float angle2 = QuaternionHelper.degreesToRadians(b.OrientationalConstraint.Angle2);
+
+                float angle1 = MathHelper.DegreesToRadians(b.OrientationalConstraint.Angle1);
+                float angle2 = MathHelper.DegreesToRadians(b.OrientationalConstraint.Angle2);
+
 
                 if (twistAngle < angle1)
                 {

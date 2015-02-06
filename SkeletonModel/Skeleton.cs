@@ -70,6 +70,12 @@ namespace QTM2Unity.SkeletonModel
         public Bone Parent
         {
             get { return parent; }
+            set
+            {
+                this.parent = value;
+                if (parent.children == null) parent.children = new List<Bone>() { this };
+                else parent.children.Add(this);
+            }
         }
         
         private OrientationalConstraint orientationalConstr;

@@ -42,6 +42,37 @@ namespace QTM2Unity.Unity
 
             return front;
         }
+        /// <summary>
+        /// Applies Gram-Schmitt Ortho-normalization to the given set of input Vectro3 objects.
+        /// </summary>
+        /// <param name="vector array">Array of {@link Vector3} objects to be ortho-normalized</param>
+        public static void OrthoNormalize(ref Vector3[] vecs)
+        {
+            for (int i = 0; i < vecs.Length; ++i)
+            {
+                Vector3 accum = Vector3.Zero;
 
+                for (int j = 0; j < i; ++j)
+                {
+                    accum += ProjectAndCreate(vecs[i], vecs[j]);
+                }
+
+                vecs[i] = Vector3.Subtract(vecs[i], accum);
+                vecs[i].Normalize();
+            }
+        }
+        /// <summary>
+        /// Projects Vector3 v1 onto Vector3 v2 and creates a new Vector3 for the result.
+        /// </summary>
+        /// <param name="vector 1"> Vector3 to be projected.</param>
+        /// <param name="vector2">v2 Vector3 the Vector3 to be projected on.</param>
+        /// <returns>The result of the projection.</returns>
+
+        public static Vector3 ProjectAndCreate(Vector3 v1, Vector3 v2)
+        {
+            double d = Vector3.Dot(v1,v2);
+            double d_div = d / v2.Length;
+            return new Vector3 (v2 * (float)d_div);
+        }
     }
 }

@@ -34,19 +34,19 @@ namespace QTM2Unity.Unity
         
         }
         /// <summary>
-        /// Create a transformation matrix for a coordinate system based off of three vectors
+        /// Create a transformation matrix for a coordinate system based off of three points
         /// </summary>
-        /// <param name="forwardVect">vector in forward direction</param>
-        /// <param name="leftVect">vector in left direction</param>
-        /// <param name="rightVect">vector in right direction</param>
-        /// <returns>matrix coordinate system based on vectors with the mid points as transformation</returns>
-        public static Matrix4 GetOrientation(Vector3 forwardVect, Vector3 leftVect, Vector3 rightVect)
+        /// <param name="forwardPoint">point in forward direction</param>
+        /// <param name="leftPoint">point in left direction</param>
+        /// <param name="rightPoint">point in right direction</param>
+        /// <returns>matrix coordinate system based on points with the mid points as transformation</returns>
+        public static Matrix4 GetOrientation(Vector3 forwardPoint, Vector3 leftPoint, Vector3 rightPoint)
         {
-            Vector3 backMid = (leftVect - rightVect) * 0.5f + rightVect;
-            Vector3 mid = forwardVect + (backMid - forwardVect) * 2 / 3;
+            Vector3 backMid = (leftPoint - rightPoint) * 0.5f + rightPoint;
+            Vector3 mid = forwardPoint + (backMid - forwardPoint) * 2 / 3;
 
             Vector3 front = mid - backMid;
-            Vector3 right = rightVect - backMid;
+            Vector3 right = rightPoint - backMid;
 
             front.Normalize();
             right.Normalize();
@@ -79,21 +79,21 @@ namespace QTM2Unity.Unity
             Vector4 right4v = new Vector4(right);
             Vector4 up4v = new Vector4(up);
             Vector4 front4v = new Vector4(front);
-            
+            //Vector4 pos = new Vector4(root);
             mat.Row0 = right4v;
             mat.Row1 = up4v;
             mat.Row2 = front4v;
+            
             return mat;
         }
         /// <summary>
-        /// creates a transformation matrix from a two position vectors and a direction vector defined as up
+        /// creates a transformation matrix from a two position vectors and a direction vector defined as up (Z)
         /// </summary>
-        /// <param name="position">position, wher to start from</param>
-        /// <param name="front">target vector</param>
-        /// <param name="right">right vector</param>
+        /// <param name="root">position, wher to start from</param>
+        /// <param name="target">target vector</param>
         /// <param name="up">up vector, the direction defined the Z axis should alinge as good as possible</param>
         /// <returns>transformation matrix with Y axis towards target and Z as close to up vector as possible</returns>
-        public static Matrix4 LookAt(Vector3 root, Vector3 target, Vector3 up)
+        public static Matrix4 LookAtUp(Vector3 root, Vector3 target, Vector3 up)
         {
             Matrix4 matrix = new Matrix4();
             Vector3 X, Y, Z;
@@ -105,24 +105,28 @@ namespace QTM2Unity.Unity
             X.Normalize();
             Z.Normalize();
             matrix = GetMatrix(root, Z, Y, X);
-            /*
-            matrix.M11 = X.X;
-            matrix.M12 = X.Y;
-            matrix.M13 = X.Z;
-            matrix.M14 = -(Vector3.Dot(X, root));
-            matrix.M21 = Y.X;
-            matrix.M22 = Y.Y;
-            matrix.M23 = Y.Z;
-            matrix.M24 = -(Vector3.Dot(Y, root));
-            matrix.M31 = Z.X;
-            matrix.M32 = Z.Y;
-            matrix.M33 = Z.Z;
-            matrix.M34 = -(Vector3.Dot(Z, root));
-            matrix.M41 = 0;
-            matrix.M42 = 0;
-            matrix.M43 = 0;
-            matrix.M44 = 1.0f;
-            */
+            return matrix;
+        }
+        /// <summary>
+        /// creates a transformation matrix from a two position vectors and a direction vector defined as right (X)
+        /// </summary>
+        /// <param name="root">position, wher to start from</param>
+        /// <param name="target">target vector</param>
+        /// <param name="right">right vector, the direction defined the X axis should alinge as good as possible</param>
+        /// <returns>transformation matrix with Y axis towards target and X as close to right vector as possible</returns>
+        public static Matrix4 LookAtRight(Vector3 root, Vector3 target, Vector3 right)
+        {
+            Matrix4 matrix = new Matrix4();
+            Vector3 X, Y, Z;
+            Y = target - root;
+            Y.Normalize();
+            X = right;
+            Z = Vector3.Cross(Y, X);
+            X = Vector3.Cross(Z, Y);
+            X.Normalize();
+            Z.Normalize();
+            matrix = GetMatrix(root, Z, Y, X);
+
             return matrix;
         }
     }

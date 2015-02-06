@@ -10,6 +10,7 @@ namespace QTM2Unity.Unity
     {
         public static Func<float, float> Cos = angleR => (float)Math.Cos(angleR);
         public static Func<float, float> Sin = angleR => (float)Math.Sin(angleR);
+        public static Func<float, float> Acos = angleR => (float)Math.Acos(angleR);
         public static Func<float, float> Sqrt = power => (float)Math.Sqrt(power);
         public static float PI = (float)Math.PI;
     }   
@@ -58,26 +59,29 @@ namespace QTM2Unity.Unity
         }
 
         /// <summary>
-        /// Quaternion from matrix
+        /// Quaternion from Matrix4 matrix
         /// </summary>
-        /// <param name="matrix">matrix</param>
-        /// <returns></returns>
+        /// <param name="matrix">Matrix4 matrix</param>
+        /// <returns>Quaternion</returns>
         public static Quaternion FromMatrix(Matrix4 matrix)
         {
             float[] matrixArray = new float[9];
-            matrixArray[0] = matrix.M11; //m00;
-            matrixArray[1] = matrix.M21; //m10;
-            matrixArray[2] = matrix.M31; //m20;
-            matrixArray[3] = matrix.M12; //m01;
-            matrixArray[4] = matrix.M22; //m11;
-            matrixArray[5] = matrix.M32; //m21;
-            matrixArray[6] = matrix.M13; //m02;
-            matrixArray[7] = matrix.M23; //m12;
-            matrixArray[8] = matrix.M33; //m22;
-
+            matrixArray[0] = matrix.M11;
+            matrixArray[1] = matrix.M21;
+            matrixArray[2] = matrix.M31;
+            matrixArray[3] = matrix.M12;
+            matrixArray[4] = matrix.M22;
+            matrixArray[5] = matrix.M32;
+            matrixArray[6] = matrix.M13;
+            matrixArray[7] = matrix.M23;
+            matrixArray[8] = matrix.M33;
             return FromMatrix(matrixArray);
         }
-
+        /// <summary>
+        /// Quaternion from matrix array
+        /// </summary>
+        /// <param name="array float">size nine array rep of a rotation matrix</param>
+        /// <returns>Quaternion</returns>
         public static Quaternion FromMatrix(float[] matrix)
         {
             float trace, radicand, scale, xx, yx, zx, xy, yy, zy, xz, yz, zz, tmpx, tmpy, tmpz, tmpw, qx, qy, qz, qw;
@@ -151,7 +155,12 @@ namespace QTM2Unity.Unity
 
             return new Quaternion(qx, qy, qz, qw);
         }
-
+        /// <summary>
+        /// Rotates a vector according to a quaternion
+        /// </summary>
+        /// <param name="Vector">the quaternion to rotate from</param>
+        /// <param name="Vector">the vector to be rotated</param>
+        /// <returns>The rotated vector</returns>
         public static Vector3 Rotate(this Quaternion quaternion, Vector3 vec)
         {
             float tmpX, tmpY, tmpZ, tmpW;
@@ -189,7 +198,7 @@ namespace QTM2Unity.Unity
         }
         public static Quaternion LookAt(Vector3 root, Vector3 target, Vector3 up)
         {
-            return FromMatrix(Matrix4Helper.LookAt(root, target, up));
+            return FromMatrix(Matrix4Helper.LookAtUp(root, target, up));
         }
 
         /// <summary>
@@ -214,7 +223,7 @@ namespace QTM2Unity.Unity
         /// <returns>the rotation angle around the given axis</returns>
         public static float getAngleAround(this Quaternion quaternion, Vector3 axis)
         {
-            return radiansToDegrees(getAngleAroundRad(quaternion, axis));
+            return MathHelper.RadiansToDegrees(getAngleAroundRad(quaternion, axis));
         }
 
         public static float length (float x, float y, float z, float w) 
@@ -253,15 +262,145 @@ namespace QTM2Unity.Unity
 		    if (value > max) return max;
 		    return value;
 	    }
+        /// <summary>
+        /// Get hip orientation 
+        /// </summary>
+        /// <param name="sacrum">position vector of sacrum marker</param>
+        /// <param name="leftHip">position vector of left hip marker</param>
+        /// <param name="rightHip">position vector of right hip marker</param>
+        /// <returns>Quaternion with rotation of hip</returns>
+        public static Quaternion GetHipOrientation(Vector3 sacrum, Vector3 leftHip, Vector3 rightHip)
+        {
+            Vector3 hipMarkerMid = (leftHip - rightHip) * 0.5f + rightHip;
 
-        public static float degreesToRadians(float degrees)
-        {
-            return degrees * (Mathf.PI / 180);
+
+            Vector3 hipMid = sacrum + (hipMarkerMid - sacrum) * 2 / 3;
+            Vector3 right = hipMarkerMid - rightHip;
+            Vector3 front = hipMid - sacrum;
+
+            front.Normalize();
+            right.Normalize();
+            Vector3 up = Vector3.Cross(right, front);
+            Quaternion ret = fromAxes(right, up, front);
+
+            ret.Normalize();
+
+
+            return ret;
         }
-    
-        public static float radiansToDegrees(float radians)
+
+
+        /// </summary>
+        /// <param name="sourcePoint">Coordinates of source point</param>
+        /// <param name="destPoint">Coordinates of destionation point</param>
+        /// <returns></returns>
+        public static Quaternion LookAt(Vector3 c, Vector3 p)
         {
-            return radians * (180 / Mathf.PI);
+
+            Vector3 forwardVector = Vector3.Normalize(c - p);
+
+            float dot = Vector3.Dot(Vector3.UnitZ, forwardVector);
+
+            if (Math.Abs(dot - (-1.0f)) < 0.000001f)
+            {
+                return new Quaternion(Vector3.UnitZ, Mathf.PI);
+            }
+            if (Math.Abs(dot - (1.0f)) < 0.000001f)
+            {
+                return Quaternion.Identity;
+            }
+
+            float rotAngle = (float)Math.Acos(dot);
+            Vector3 rotAxis = Vector3.Cross(Vector3.UnitZ, forwardVector);
+            rotAxis = Vector3.Normalize(rotAxis);
+            return Quaternion.FromAxisAngle(rotAxis, rotAngle);
+
         }
+
+
+        public static Quaternion lookAt(Vector3 lookAt, Vector3 upDirection, bool isCamera)
+        {
+            Vector3 forward = lookAt;
+            Vector3 up = upDirection;
+            Vector3[] vecs = new Vector3[2];
+            vecs[0] = forward; vecs[1] = up;
+
+            Vector3Helper.OrthoNormalize(ref vecs);
+
+            Vector3 right = Vector3.Cross(forward, up);// forward.clone().cross(up);
+
+            Quaternion camera = new Quaternion(), ret = new Quaternion();
+            camera = fromAxes(right, up, forward);
+
+            if (isCamera)
+            {
+                return camera;
+            }
+            else
+            {
+                ret = Quaternion.Identity;
+                ret = Quaternion.Multiply(ret, camera); //ret.multiply(camera);
+                ret = Quaternion.Invert(ret);//ret.inverseSelf();
+
+                return ret;
+            }
+        }
+
+        public static Quaternion fromAxes(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis)
+        {
+            return fromAxes(xAxis.X, xAxis.Y, xAxis.Z, yAxis.X, yAxis.Y, yAxis.Z, zAxis.X, zAxis.Y, zAxis.Z);
+        }
+
+        public static Quaternion fromAxes(double xx, double xy, double xz, double yx, double yy, double yz,
+                double zx, double zy, double zz)
+        {
+            // The trace is the sum of the diagonal elements; see
+            // http://mathworld.wolfram.com/MatrixTrace.html
+            double m00 = xx, m01 = xy, m02 = xz;
+            double m10 = yx, m11 = yy, m12 = yz;
+            double m20 = zx, m21 = zy, m22 = zz;
+            double t = m00 + m11 + m22;
+
+            //Protect the division by s by ensuring that s >= 1
+            double x, y, z, w;
+            if (t >= 0)
+            {
+                double s = Math.Sqrt(t + 1); // |s| >= 1
+                w = 0.5 * s; // |w| >= 0.5
+                s = 0.5 / s; //<- This division cannot be bad
+                x = (m21 - m12) * s;
+                y = (m02 - m20) * s;
+                z = (m10 - m01) * s;
+            }
+            else if ((m00 > m11) && (m00 > m22))
+            {
+                double s = Math.Sqrt(1.0 + m00 - m11 - m22); // |s| >= 1
+                x = s * 0.5; // |x| >= 0.5
+                s = 0.5 / s;
+                y = (m10 + m01) * s;
+                z = (m02 + m20) * s;
+                w = (m21 - m12) * s;
+            }
+            else if (m11 > m22)
+            {
+                double s = Math.Sqrt(1.0 + m11 - m00 - m22); // |s| >= 1
+                y = s * 0.5; // |y| >= 0.5
+                s = 0.5 / s;
+                x = (m10 + m01) * s;
+                z = (m21 + m12) * s;
+                w = (m02 - m20) * s;
+            }
+            else
+            {
+                double s = Math.Sqrt(1.0 + m22 - m00 - m11); // |s| >= 1
+                z = s * 0.5; // |z| >= 0.5
+                s = 0.5 / s;
+                x = (m02 + m20) * s;
+                y = (m21 + m12) * s;
+                w = (m10 - m01) * s;
+            }
+            return new Quaternion((float)x, (float)y, (float)z, (float)w);
+        }
+
     }
 }

@@ -27,8 +27,8 @@ namespace QTM2Unity.Unity
 		private List<LabeledMarker> mMarkers;
 		public List<LabeledMarker> Markers { get { return mMarkers; } }
 
-		private List<Bone> mBones;
-		public List<Bone> Bones { get { return mBones; } }
+		private List<MarkerBone> mBones;
+		public List<MarkerBone> Bones { get { return mBones; } }
 
 		private eAxis mUpAxis;
 		private Quaternion mCoordinateSystemChange;
@@ -120,7 +120,7 @@ namespace QTM2Unity.Unity
 			//list of markers
 			mMarkers = new List<LabeledMarker>();
 			//list of bones
-			mBones = new List<Bone>();
+			mBones = new List<MarkerBone>();
 
             mStreamingStatus = false;
 
@@ -323,7 +323,7 @@ namespace QTM2Unity.Unity
 	                //Save bone settings
 	                foreach (var settingsBone in mProtocol.Settings3D.bones)
 	                {
-	                    Bone bone = new Bone();
+	                    MarkerBone bone = new MarkerBone();
 	                    bone.from = settingsBone.from;
 	                    bone.fromMarker = getMarker(settingsBone.from);
 	                    bone.to = settingsBone.to;
@@ -406,9 +406,9 @@ namespace QTM2Unity.Unity
 	}
 
     // Class for bones
-	public class Bone
+	public class MarkerBone
 	{
-		public Bone() { }
+		public MarkerBone() { }
 		public string from;
 		public LabeledMarker fromMarker;
 		public string to;
