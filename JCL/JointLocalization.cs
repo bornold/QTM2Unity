@@ -32,7 +32,7 @@ namespace QTM2Unity.JCL
         {
             lastFrame = currentFrame;
             markers = markerData.ToDictionary(k => k.label, v => v.position);
-            HipOrianteation();
+            HipOrientation();
             Bone pelvis = GetPlevis();
             /*
             Bone spine = GetSpine();
@@ -218,7 +218,7 @@ namespace QTM2Unity.JCL
         }
 
         //TODO reflect rias/lias through plane YZ if lias/rias is missing
-        private void HipOrianteation()
+        private void HipOrientation()
         {
             Sacrum = markers[bodyBase];
             LIAS = markers[leftHip];

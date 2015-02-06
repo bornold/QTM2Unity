@@ -238,7 +238,7 @@ namespace QTM2Unity.Unity
             a.Normalize();
             b.Normalize();
 
-            float precision = 0.99f; // TODO not sure if good value
+            float precision = 0.9999f; // TODO not sure if good value
             if (Vector3.Dot(a, b) > precision) // a and b are parallel
             {
                 return Quaternion.Identity;
@@ -262,6 +262,8 @@ namespace QTM2Unity.Unity
 		    if (value > max) return max;
 		    return value;
 	    }
+
+        // TODO maybe not a quaternion helper function?
         /// <summary>
         /// Get hip orientation 
         /// </summary>
@@ -281,12 +283,16 @@ namespace QTM2Unity.Unity
             front.Normalize();
             right.Normalize();
             Vector3 up = Vector3.Cross(right, front);
-            Quaternion ret = fromAxes(right, up, front);
+            /*Quaternion ret = fromAxes(right, up, front);
 
             ret.Normalize();
 
 
-            return ret;
+            return ret;*/
+            // The "identityfront" is -Z (0,0,-1)
+            Quaternion orientation = QuaternionHelper.getRotation(new Vector3(0,0,-1), front);
+
+            return orientation;
         }
 
 
