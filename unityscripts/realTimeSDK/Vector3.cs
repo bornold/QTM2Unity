@@ -25,7 +25,7 @@ namespace QTM2Unity.Unity
         /// <param name="left vector">the left vector</param>
         /// <param name="right vector">the right vector</param>
         /// <returns>Vector3 in the middle of three vectors</returns>
-        public static Vector3 MidPoint(this Vector3 leftVect, Vector3 rightVect, Vector3 forwardVect)
+        public static Vector3 MidPoint(Vector3 leftVect, Vector3 rightVect, Vector3 forwardVect)
         {
             Vector3 backMid = leftVect.MidPoint(rightVect);
             return forwardVect + (backMid - forwardVect) * 2 / 3;

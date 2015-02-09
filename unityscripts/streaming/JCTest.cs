@@ -47,25 +47,14 @@ namespace QTM2Unity
             {
                 Vector3 v = OpenTKV2UEV(b.Pos);
                 Gizmos.DrawSphere(v, markerScale);
-
-                if (b.Name.Equals("pelvis"))
-                {
-                    GameObject g = GameObject.Find("Jonas");
-                    g.transform.rotation = new Quaternion(b.Orientation.X, b.Orientation.Y, b.Orientation.Z, b.Orientation.W);
-                    g.transform.position = OpenTKV2UEV(b.Pos);
-                    Debug.Log(b.Name +"\t"+ b.Orientation);
-                }
-                drawRays(b.Orientation,v);
+                if (debug )
+                    drawRays(b.Orientation,v);
                 if (b.Children != null)
                 {
                     foreach (Bone b2 in b.Children)
                     {
                         drawLine(b.Pos, b2.Pos);
                     }
-                }
-                else
-                {
-                    //Debug.Log(b.Name + " is childless");
                 }
             }
         }
@@ -81,7 +70,7 @@ namespace QTM2Unity
         }
         private void drawLine(OpenTK.Vector3 start, OpenTK.Vector3 end)
         {
-            Debug.DrawLine(OpenTKV2UEV(start), OpenTKV2UEV(end),Color.yellow);
+            Debug.DrawLine(OpenTKV2UEV(start), OpenTKV2UEV(end),Color.white);
         }
 
         // TODO write a converter https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx
