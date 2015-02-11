@@ -133,21 +133,21 @@ namespace QTM2Unity.SkeletonModel
             // (0,0,-1)
             Vector3 identityDirection = new Vector3(0, 0, -1);
 
-            return Vector3.Transform(identityDirection, orientation);
+            return Vector3.Normalize(Vector3.Transform(identityDirection, orientation));
         }
 
         public Vector3 getUp()
         {
             Vector3 identityUp = new Vector3(0, 1, 0);
-            return Vector3.Transform(identityUp, orientation);
+            return Vector3.Normalize(Vector3.Transform(identityUp, orientation));
         }
-
-
+        
         public Vector3 getRight()
         {
-            Vector3 identityRight = new Vector3(1, 0, 0);
-            return Vector3.Transform(identityRight, orientation);
+            Vector3 identityRight = new Vector3(-1, 0, 0);
+            return Vector3.Normalize(Vector3.Transform(identityRight, orientation));
         }
+
         // TODO rotateDegrees, rotateRadians
         // rotates the bone with angle in radians!
         public void rotate(float angle, Vector3 axis)

@@ -11,6 +11,7 @@ namespace QTM2Unity.Unity
         public static Func<float, float> Cos = angleR => (float)Math.Cos(angleR);
         public static Func<float, float> Sin = angleR => (float)Math.Sin(angleR);
         public static Func<float, float> Acos = angleR => (float)Math.Acos(angleR);
+        public static Func<float, float> Tan = angleR => (float)Math.Tan(angleR);
         public static Func<float, float> Sqrt = power => (float)Math.Sqrt(power);
         public static float PI = (float)Math.PI;
     }   

@@ -85,5 +85,30 @@ namespace QTM2Unity.Unity
             double d_div = d / v2.Length;
             return new Vector3 (v2 * (float)d_div);
         }
+
+        /// <summary>
+        /// Projects Vector3 v onto the plane with the given normal and creates 
+        /// a new Vector3 for the result
+        /// </summary>
+        /// <param name="v"> Vector to be projected</param>
+        /// <param name="normal">The normal of the plane the vector should be projected on</param>
+        /// <returns>The result of the projection</returns>
+        public static Vector3 ProjectOnPlane(Vector3 v, Vector3 normal)
+        {
+            float dot = Vector3.Dot(v, normal);
+            float magnitude = normal.Length;
+            return new Vector3(v - ((dot / (magnitude * magnitude)) * normal));
+        }
+
+        /// <summary>
+        /// Translates a vector such that 'origin' is the new origin
+        /// </summary>
+        /// <param name="v"> Vector to be translated </param>
+        /// <param name="origin">The new origin</param>
+        /// <returns>The result of the translation</returns>
+        public static Vector3 translate(this Vector3 v, Vector3 origin)
+        {
+            return v - origin;
+        }
     }
 }

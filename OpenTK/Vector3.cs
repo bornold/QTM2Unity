@@ -1185,7 +1185,10 @@ namespace OpenTK
         /// <remarks>Note that the returned angle is never bigger than the constant Pi.</remarks>
         public static float CalculateAngle(Vector3 first, Vector3 second)
         {
-            return (float)System.Math.Acos((Vector3.Dot(first, second)) / (first.Length * second.Length));
+            //return (float)System.Math.Acos((Vector3.Dot(first, second)) / (first.Length * second.Length));
+            // This function should not be able to return NaN. Therefore fixed:
+            return (float)System.Math.Acos(
+                Math.Min((Vector3.Dot(first, second)) / (first.Length * second.Length), 1.0f));
         }
 
         /// <summary>Calculates the angle (in radians) between two vectors.</summary>

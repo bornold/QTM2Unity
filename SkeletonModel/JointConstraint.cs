@@ -12,28 +12,27 @@ namespace QTM2Unity.SkeletonModel
         // described by rotor, or maybe an angle around direction vector?
         // like a range. from angle to angle?
 
-        // Rotational: The rotation to the bones final direction vector 
-        // described by angles t1...t4 in an irregular cone
 
-    // TODO should these be private maybe? Or maybe not classes at aall. might be unnecessary.
     public class OrientationalConstraint
     {
-        // An orientational contraint is defined as a range betwen angle1 and angle2
-        private float angle1;
-        public float Angle1
+        // An orientational constraint is the twist of the bone around its own direction vector
+        // with respect to its parent
+        // It is defined as a range betwen angles [from,to]
+        private float from;
+        public float From
         {
-            get { return angle1;  }
+            get { return from; }
         }
-        private float angle2;
-        public float Angle2
+        private float to;
+        public float To
         {
-            get { return angle2; }
+            get { return to; }
         }
 
-        public OrientationalConstraint(float angle1, float angle2)
+        public OrientationalConstraint(float from, float to)
         {
-            this.angle1 = angle1;
-            this.angle2 = angle2;
+            this.from = from;
+            this.to = to;
         }
 
     }
@@ -42,7 +41,35 @@ namespace QTM2Unity.SkeletonModel
     {
         // A constraint modeled as an irregular cone
         // The four angles define the shape of the cone
+        // angle 0 is the angle to the parent's right
+        // angle 1 is the angle to the parent's down
+        // angle 2 is the angle to the parent's left
+        // angle 3 is the angle to the parent's up
         private float[] angles = new float[4];
+        public float[] Angles
+        {
+            get { return angles; }
+        }
+        
+        public float getAngle(int i)
+        {
+            return angles[i];
+        }
 
+        public RotationalConstraint(float[] angles)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                this.angles[i] = angles[i];
+            }
+        }
+
+        public RotationalConstraint(float a0, float a1, float a2, float a3)
+        {
+            angles[0] = a0;
+            angles[1] = a1;
+            angles[2] = a2;
+            angles[3] = a3;
+        }
     }
 }
