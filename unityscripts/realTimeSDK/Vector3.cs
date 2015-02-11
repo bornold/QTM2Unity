@@ -16,7 +16,18 @@ namespace QTM2Unity.Unity
         /// <returns>Vector3 in between the points</returns>
         public static Vector3 MidPoint(this Vector3 leftVect, Vector3 rightVect)
         {
-            return (leftVect - rightVect) * 0.5f + rightVect;
+            return PointBetween(leftVect, rightVect, 0.5f);//(leftVect - rightVect) * 0.5f + rightVect;
+        }
+        /// <summary>
+        /// The point d between two points 
+        /// </summary>
+        /// <param name="left vector">the first vector</param>
+        /// <param name="right vector">the secound vector</param>
+        /// <param name="distance">distans closeer to right</param>
+        /// <returns>Vector3 in between the points</returns>
+        public static Vector3 PointBetween(this Vector3 leftVect, Vector3 rightVect, float dist)
+        {
+            return (leftVect - rightVect) * dist + rightVect;
         }
         /// <summary>
         /// The Center point of three points

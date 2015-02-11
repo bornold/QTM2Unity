@@ -39,13 +39,14 @@ namespace QTM2Unity
             List<LabeledMarker> markerData = rtClient.Markers;
             if (markerData == null && markerData.Count == 0) return;
             if (joints == null) joints = new JointLocalization();
-            skeleton = joints.getJointLocazion(markerData);
+            skeleton = joints.GetJointLocation(markerData);
         }
         void OnDrawGizmos()
         {
             foreach (Bone b in skeleton.Bones)
             {
                 Vector3 v = OpenTKV2UEV(b.Pos);
+                
                 Gizmos.DrawSphere(v, markerScale);
                 if (debug )
                     drawRays(b.Orientation,v);
