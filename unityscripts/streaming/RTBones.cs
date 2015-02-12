@@ -34,8 +34,8 @@ namespace QTM2Unity.Unity
 	            {
 	                if (visibleBones)
 					{
-						Gizmos.DrawLine(convertFromSlimDXVector(boneData[i].fromMarker.position), 
-                                        convertFromSlimDXVector(boneData[i].toMarker.position));
+						Gizmos.DrawLine(convertFromSlimDXVector(boneData[i].fromMarker.position) + this.transform.position,
+                                        convertFromSlimDXVector(boneData[i].toMarker.position) + this.transform.position);
 					}
 	            }
 			}

@@ -12,7 +12,7 @@ namespace QTM2Unity.Unity
 		private List<GameObject> markers;
 
 		public bool visibleMarkers;
-
+        public bool gizmo;
 		public float markerScale = 0.01f;
 
         private bool streaming = false;
@@ -33,12 +33,15 @@ namespace QTM2Unity.Unity
 
             for (int i = 0; i < markerData.Count; i++)
             {
-                GameObject newMarker = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                newMarker.name = markerData[i].label;
-                newMarker.transform.parent = markerRoot.transform;
-                newMarker.transform.localScale = Vector3.one * markerScale;
-                newMarker.SetActive(false);
-                markers.Add(newMarker);
+                if (!GameObject.Find(markerData[i].label))
+                {
+                    GameObject newMarker = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    newMarker.name = markerData[i].label;
+                    newMarker.transform.parent = markerRoot.transform;
+                    newMarker.transform.localScale = Vector3.one * markerScale;
+                    newMarker.SetActive(false);
+                    markers.Add(newMarker);
+                }
             }
         }
 
@@ -71,14 +74,14 @@ namespace QTM2Unity.Unity
 			{
 				initiateMarkers();
 			}
-
+            
 			for (int i = 0; i < markerData.Count; i++)
 			{
 				if(markerData[i].position.Length > 0)
 				{
 					markers[i].name = markerData[i].label;
 					//markers[i].renderer.material.color = markerData[i].color;
-                    markers[i].transform.localPosition = convertFromSlimDXVector(markerData[i].position);
+                    markers[i].transform.localPosition = cv(markerData[i].position);
 					markers[i].SetActive(true);
 					markers[i].renderer.enabled = visibleMarkers;
                     markers[i].transform.localScale = Vector3.one * markerScale;
@@ -88,10 +91,23 @@ namespace QTM2Unity.Unity
                     //hide markers if we cant find them.
                     markers[i].SetActive(false);
                 }
+              
 			}
 		}
-        // TODO write a converter https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx
-        private Vector3 convertFromSlimDXVector(OTK.Vector3 v)
+        void OnDrawGizmos()
+        {
+            if (markerData != null && gizmo)
+            {
+                for (int i = 0; i < markerData.Count; i++)
+                {
+                    if (markerData[i].position.Length > 0)
+                    {
+                        Gizmos.DrawSphere(cv(markerData[i].position) + this.transform.position, markerScale);
+                    }
+                }
+            }
+        }
+        private Vector3 cv(OTK.Vector3 v)
         {
             return new Vector3(v.X, v.Y, v.Z);
         }

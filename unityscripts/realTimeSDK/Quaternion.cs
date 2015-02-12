@@ -254,16 +254,33 @@ namespace QTM2Unity.Unity
 
             return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle));
         }
-
-        // TODO move to some math util (not quaternion specific)
-        public static float clamp (float value, float min, float max) 
+        //TODO TEMP idiotic 
+        public static Quaternion GetRotation2(Vector3 a, Vector3 b)
         {
-		    if (value < min) return min;
-		    if (value > max) return max;
-		    return value;
-	    }
+            a.Normalize();
+            b.Normalize();
 
-        
+            float precision = 0.9999999f; // TODO not sure if good value
+            if (Vector3.Dot(a, b) > precision) // a and b are parallel
+            {
+                return Quaternion.Identity;
+            }
+
+            float angle = Vector3.CalculateAngle(a, b);
+            Vector3 axis = Vector3.Cross(a, b);
+            axis.Normalize();
+
+            return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle));
+        }
+        // TODO move to some math util (not quaternion specific)
+        public static float clamp(float value, float min, float max)
+        {
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
+        }
+
+
         /// <summary>
         /// Get orientation of three points
         /// </summary>
@@ -281,9 +298,9 @@ namespace QTM2Unity.Unity
             right.Normalize();
 
             Vector3 up = Vector3.Cross(front, right);
-            Quaternion frontRot = QuaternionHelper.getRotation(Vector3.UnitZ, front);
+            Quaternion frontRot = GetRotation2(Vector3.UnitZ, front);
             Vector3 possibleUp = Vector3.Transform(Vector3.UnitY, frontRot);
-            Quaternion upRot = QuaternionHelper.getRotation(possibleUp, up);
+            Quaternion upRot = GetRotation2(possibleUp, up);
 
             Quaternion orientation = upRot * frontRot;
             return orientation;
@@ -304,9 +321,9 @@ namespace QTM2Unity.Unity
             front.Normalize();
             right.Normalize();
             Vector3 up = Vector3.Cross(right, front);
-            Quaternion frontRot = QuaternionHelper.getRotation(Vector3.UnitZ, front);
+            Quaternion frontRot = GetRotation2(Vector3.UnitZ, front);
             Vector3 possibleUp = Vector3.Transform(Vector3.UnitY, frontRot);
-            Quaternion upRot = QuaternionHelper.getRotation(possibleUp, up);
+            Quaternion upRot = GetRotation2(possibleUp, up);
 
             Quaternion orientation = upRot * frontRot;
             return orientation;
@@ -318,9 +335,10 @@ namespace QTM2Unity.Unity
         /// <param name="leftHip">position vector to look at</param>
         /// <param name="rightHip">direction Z axis</param>
         /// <returns>Quaternion with rotation to target</returns>
-        public static Quaternion LookAtUp(Vector3 source, Vector3 target, Vector3 z ){
+        public static Quaternion LookAtUp(Vector3 source, Vector3 target, Vector3 z)
+        {
             Vector3 y = target - source;
-            Vector3[] normal = {y,z};
+            Vector3[] normal = { y, z };
             Vector3Helper.OrthoNormalize(ref normal);
 
             y = normal[0];
@@ -329,7 +347,7 @@ namespace QTM2Unity.Unity
 
             Quaternion zRot = QuaternionHelper.getRotation(Vector3.UnitZ, z);
             Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
-            
+
             Quaternion yRot = QuaternionHelper.getRotation(possibleY, y);
             Quaternion orientation = yRot * zRot;
             return orientation;
@@ -349,10 +367,10 @@ namespace QTM2Unity.Unity
             y = normal[0];
             x = normal[1];
             Vector3 z = Vector3.Cross(y, x);
-            Quaternion zRot = QuaternionHelper.getRotation(Vector3.UnitZ, z);
+            Quaternion zRot = GetRotation2(Vector3.UnitZ, z);
             Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
 
-            Quaternion yRot = QuaternionHelper.getRotation(possibleY, y);
+            Quaternion yRot = GetRotation2(possibleY, y);
             Quaternion orientation = yRot * zRot;
             return orientation;
         }

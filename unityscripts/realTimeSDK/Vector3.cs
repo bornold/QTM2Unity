@@ -110,5 +110,15 @@ namespace QTM2Unity.Unity
         {
             return v - origin;
         }
+
+        /// <summary>
+        /// Check if any element in vector is NaN
+        /// </summary>
+        /// <param name="vector"> Vector to be checked </param>
+        /// <returns>True if any of x, y, z is NaN</returns>
+        public static bool IsNaN(this Vector3 v)
+        {
+            return float.IsNaN(v.X) || float.IsNaN(v.Y) ||  float.IsNaN(v.Z);
+        }
     }
 }

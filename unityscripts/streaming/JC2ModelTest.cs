@@ -34,7 +34,6 @@ namespace QTM2Unity
         GameObject handRight;
 
         private RTClient rtClient;
-        public bool debug = false;
         private bool streaming = false;
         private JointLocalization joints;
         private BipedSkeleton skeleton;
@@ -61,7 +60,6 @@ namespace QTM2Unity
             }
             List<LabeledMarker> markerData = rtClient.Markers;
             if (markerData == null && markerData.Count == 0) return;
-
             if (joints == null) joints = new JointLocalization();
             
             FindGameObjects();
@@ -97,7 +95,7 @@ namespace QTM2Unity
             if (b != null && !float.IsNaN(b.Orientation.W))
             {
                 go.transform.rotation = cq(b.Orientation) * rot;
-                if (setPos && !float.IsNaN(b.Pos.X)) go.transform.position = cv(b.Pos);
+                if (setPos && !float.IsNaN(b.Pos.X)) go.transform.position = go.transform.parent.position + cv(b.Pos);
             }
         }
         private void setGO(GameObject go, string name, bool setPos)

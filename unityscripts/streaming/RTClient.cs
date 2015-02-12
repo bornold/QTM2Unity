@@ -312,7 +312,7 @@ namespace QTM2Unity.Unity
 
                     newMarker.color /= 255;
                     */
-                    Markers.Add(newMarker);
+                    mMarkers.Add(newMarker);
                 }
 
 				// Save bone settings

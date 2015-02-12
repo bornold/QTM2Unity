@@ -10,9 +10,10 @@ namespace QTM2Unity
 {
     class JCTest : MonoBehaviour {
         private RTClient rtClient;
-        public bool debug = false;
         public float markerScale = 0.015f;
+        public bool showRotationTrace = false;
         public float traceScale = 0.15f;
+        public bool debug = false;
         private bool streaming = false;
         private JointLocalization joints;
         private BipedSkeleton skeleton;
@@ -37,24 +38,37 @@ namespace QTM2Unity
                 streaming = true;
             }
             List<LabeledMarker> markerData = rtClient.Markers;
+            if (debug)
+                foreach (LabeledMarker lm in markerData)
+                    if (lm.position.IsNaN())
+                        Debug.Log(
+                            string.Format(
+                                    "{0} marker is missing from frame {1}",
+                                    lm.label,
+                                    rtClient.getFrame()
+                            )
+                        );
             if (markerData == null && markerData.Count == 0) return;
             if (joints == null) joints = new JointLocalization();
             skeleton = joints.GetJointLocation(markerData);
         }
         void OnDrawGizmos()
         {
-            foreach (Bone b in skeleton.Bones)
+            if (skeleton != null)
             {
-                Vector3 v = OpenTKV2UEV(b.Pos);
-                
-                Gizmos.DrawSphere(v, markerScale);
-                if (debug )
-                    drawRays(b.Orientation,v);
-                if (b.Children != null)
+                foreach (Bone b in skeleton.Bones)
                 {
-                    foreach (Bone b2 in b.Children)
+                    Vector3 v = OpenTKV2UEV(b.Pos);
+                
+                    Gizmos.DrawSphere(v, markerScale);
+                    if (showRotationTrace )
+                        drawRays(b.Orientation,v);
+                    if (b.Children != null)
                     {
-                        drawLine(b.Pos, b2.Pos);
+                        foreach (Bone b2 in b.Children)
+                        {
+                            drawLine(b.Pos, b2.Pos);
+                        }
                     }
                 }
             }
