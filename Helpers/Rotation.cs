@@ -4,7 +4,7 @@ using System.Text;
 using QTMRealTimeSDK;
 using OpenTK;
 
-namespace QTM2Unity.Unity
+namespace QTM2Unity
 {
 
     public static class Rotation

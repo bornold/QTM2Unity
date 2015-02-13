@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using QTM2Unity.SkeletonModel;
 using QTM2Unity.Unity;
 using OpenTK;
 using UnityEngine;
 using UnityEditor;
 
-namespace QTM2Unity.IK
+namespace QTM2Unity
 {
     class CCDTest : MonoBehaviour
     {
 
-        private SkeletonModel.Bone[] bones = new SkeletonModel.Bone[4];
+        private Bone[] bones = new Bone[4];
         private GameObject[] joints;
 
         private OpenTK.Vector3 target = new OpenTK.Vector3(5, 4, 0);
@@ -31,10 +30,10 @@ namespace QTM2Unity.IK
                 MathHelper.DegreesToRadians(-90));
             OpenTK.Quaternion rot2 = QuaternionHelper.getRotation((pos2 - pos1), (pos3 - pos2)) * rot0;
                         
-            bones[0] = new SkeletonModel.Bone("arm_root", pos0, rot0);
-            bones[1] = new SkeletonModel.Bone("arm_1", pos1, rot0);
-            bones[2] = new SkeletonModel.Bone("arm_2", pos2, rot2);
-            bones[3] = new SkeletonModel.Bone("arm_end", pos3, rot2);
+            bones[0] = new Bone("arm_root", pos0, rot0);
+            bones[1] = new Bone("arm_1", pos1, rot0);
+            bones[2] = new Bone("arm_2", pos2, rot2);
+            bones[3] = new Bone("arm_end", pos3, rot2);
 
             bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
 
@@ -65,7 +64,9 @@ namespace QTM2Unity.IK
                     bones[i].Orientation.Y,
                     bones[i].Orientation.Z,
                     bones[i].Orientation.W);
+                joint.transform.parent = this.gameObject.transform;
                 joints[i] = joint;
+
                 Debug.Log(joint.name + " has pos ("
                     + joint.transform.localPosition.x + ", "
                     + joint.transform.localPosition.y + ", "
@@ -142,7 +143,7 @@ namespace QTM2Unity.IK
             if (!Application.isPlaying)
                 return;
             
-            foreach (SkeletonModel.Bone b in bones)
+            foreach (Bone b in bones)
             {
                 // draw orientations
                 Gizmos.color = Color.cyan;
@@ -199,7 +200,7 @@ namespace QTM2Unity.IK
             updateJoints();
         }
 
-        public SkeletonModel.Bone[] solveBoneChain(SkeletonModel.Bone[] bones, OpenTK.Vector3 target)
+        public Bone[] solveBoneChain(Bone[] bones, OpenTK.Vector3 target)
         {
             int numberOfIterations = 20;
             float threshold = 0.1f;

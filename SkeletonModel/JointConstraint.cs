@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace QTM2Unity.SkeletonModel
+namespace QTM2Unity
 {
         // TODO
         // What kinds of constraints do we have?

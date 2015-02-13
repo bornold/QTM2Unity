@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using OpenTK;
 
-namespace QTM2Unity.SkeletonModel
+namespace QTM2Unity
 {
     abstract class Skeleton
     {
@@ -28,16 +28,27 @@ namespace QTM2Unity.SkeletonModel
         {
             bones.Add(b);
         }
-
-        public Bone getBone(string name)
+        public void addBoneAgain(Bone c)
         {
-            foreach (Bone b in bones) {
-                if (b.Name.Equals(name))
+            for (int i = 0; i < bones.Count; i++)
+            {
+                if (bones[i].Name.Equals(c.Name))
                 {
-                    return b;
+                    bones[i] = c;
                 }
             }
-            return null; // TODO throw exception?
+        }
+        public Bone this[string name]
+        {
+            get {
+                foreach (Bone b in bones) {
+                    if (b.Name.Equals(name))
+                    {
+                        return b;
+                    }
+                }
+                return null; // TODO throw exception?
+            }
         }
     }
 

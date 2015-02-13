@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using OpenTK;
 
-namespace QTM2Unity.SkeletonModel
+namespace QTM2Unity
 {
     class BipedSkeleton : Skeleton
     {

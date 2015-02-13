@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using OpenTK;
 using QTM2Unity.Unity;
-using QTM2Unity.SkeletonModel;
 using Debug = UnityEngine.Debug;
 
-namespace QTM2Unity.IK
+namespace QTM2Unity
 {
     class CCD
     {
        
-        private static float threshold = 0.1f; // TODO define a good default threshold value 
+        private static float threshold = 0.0001f; // TODO define a good default threshold value 
                                 // This depends on where the position is defined on the end effector
         private static int numberOfIterations = 50; // TODO what's a good value?
 
@@ -20,7 +19,7 @@ namespace QTM2Unity.IK
         // Probably don't want to handle here
 
         // Note: The end effector is assumed to be the last element in bones
-        public static SkeletonModel.Bone[] solveBoneChain(SkeletonModel.Bone[] bones, Vector3 target)
+        public static Bone[] solveBoneChain(Bone[] bones, Vector3 target)
         {
             int numberOfBones = bones.Length;
             int iter = 0;
@@ -50,14 +49,14 @@ namespace QTM2Unity.IK
                         // rotate orientation
                         bones[j].rotate(rotation);
                     }
-
+                    
                     // check constraints starting with first affected joint and moving towards end effector
                     for (int j = i; j < bones.Length; j++)
                     {
                         if (j > 0) // TODO not checking root right now, should we?
                             checkOrientationalConstraint(ref bones[j], bones[j - 1]);
                     }
-
+                    
                     // Check if we are close enough to target
                     if ((target - bones[numberOfBones-1].Pos).Length <= threshold)
                     {
@@ -71,7 +70,7 @@ namespace QTM2Unity.IK
 
         // TODO should be private, public for test purposes
         // TODO maybe this is better in the OrientationalContraint class
-        public static void checkOrientationalConstraint(ref SkeletonModel.Bone b, SkeletonModel.Bone parent)
+        public static void checkOrientationalConstraint(ref Bone b, Bone parent)
         {
             if (b.OrientationalConstraint != null) // if there exist a constraint
             {

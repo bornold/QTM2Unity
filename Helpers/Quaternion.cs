@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using OpenTK;
 
-namespace QTM2Unity.Unity
+namespace QTM2Unity
 {
     public static class Mathf
     {

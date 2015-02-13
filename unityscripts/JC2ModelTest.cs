@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using QTM2Unity.Unity;
-using QTM2Unity.JCL;
-using QTM2Unity.SkeletonModel;
-using QTM2Unity.Converter;
 namespace QTM2Unity
 {
-    class JC2ModelTest : MonoBehaviour {
+    class JC2ModelTest : RT {
         GameObject hips;
         GameObject upLegLeft;
         GameObject upLegRight;
@@ -33,31 +27,20 @@ namespace QTM2Unity
         GameObject handLeft;
         GameObject handRight;
 
-        private RTClient rtClient;
-        private bool streaming = false;
+
         private JointLocalization joints;
         private BipedSkeleton skeleton;
         // Use this for initialization
-        void Start()
+        public override void StartNext()
         {
-            rtClient = RTClient.getInstance();
             joints = new JointLocalization();
             FindGameObjects();
         }
 
         // Update is called once per frame
-        void Update()
+        public override void UpdateNext()
         {
-            if (rtClient == null)
-            {
-                rtClient = RTClient.getInstance();
-                joints = new JointLocalization();
-                streaming = false;
-            }
-            if (rtClient.getStreamingStatus() && !streaming)
-            {
-                streaming = true;
-            }
+
             List<LabeledMarker> markerData = rtClient.Markers;
             if (markerData == null && markerData.Count == 0) return;
             if (joints == null) joints = new JointLocalization();
@@ -91,7 +74,7 @@ namespace QTM2Unity
         }
         private void setGO(GameObject go, string name, Quaternion rot, bool setPos)
         {
-            Bone b = skeleton.getBone(name);
+            Bone b = skeleton[name];
             if (b != null && !float.IsNaN(b.Orientation.W))
             {
                 go.transform.rotation = cq(b.Orientation) * rot;
@@ -145,17 +128,7 @@ namespace QTM2Unity
             handLeft = GameObject.Find("LeftHand");
             handRight = GameObject.Find("RightHand");
         }
-        // TODO write a converter https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx
-        private Vector3 cv(OpenTK.Vector3 v)
-        {
-            return new Vector3(v.X, v.Y, v.Z);
-        }
-        private Quaternion cq(OpenTK.Quaternion q)
-        {
-            return new Quaternion(q.X, q.Y, q.Z, q.W);
-        }
-
-        }
     }
+}
 
 

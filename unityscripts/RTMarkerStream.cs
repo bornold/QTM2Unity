@@ -1,13 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using OTK = OpenTK;
 namespace QTM2Unity.Unity
 {
-	public class RTMarkerStream : MonoBehaviour
+	public class RTMarkerStream : RT
 	{
 		private List<LabeledMarker> markerData;
-        private RTClient rtClient;
 		private GameObject markerRoot;
 		private List<GameObject> markers;
 
@@ -18,11 +16,11 @@ namespace QTM2Unity.Unity
         private bool streaming = false;
 
 		// Use this for initialization
-		void Start ()
-		{
-            rtClient = RTClient.getInstance();
+        public override void StartNext()
+        {
 			markers = new List<GameObject>();
 			markerRoot = this.gameObject;
+            initiateMarkers();
         }
 
 
@@ -46,53 +44,36 @@ namespace QTM2Unity.Unity
         }
 
 		// Update is called once per frame
-		void Update ()
+        public override void UpdateNext()
 		{
+            markerData = rtClient.Markers;
 
-            if (rtClient == null)
-            {
-                rtClient = RTClient.getInstance();
-            }
-            if(rtClient.getStreamingStatus() && !streaming)
-            {
-                initiateMarkers();
-                streaming = true;
-            }
-
-
-            if (rtClient.getStreamingStatus() && !streaming)
-            {
-                streaming = true;
-            }
-
-			markerData = rtClient.Markers;
-			
             if (markerData == null && markerData.Count == 0)
                 return;
-
-			if (markers.Count != markerData.Count)
-			{
-				initiateMarkers();
-			}
-            
-			for (int i = 0; i < markerData.Count; i++)
-			{
-				if(markerData[i].position.Length > 0)
-				{
-					markers[i].name = markerData[i].label;
-					//markers[i].renderer.material.color = markerData[i].color;
-                    markers[i].transform.localPosition = cv(markerData[i].position);
-					markers[i].SetActive(true);
-					markers[i].renderer.enabled = visibleMarkers;
-                    markers[i].transform.localScale = Vector3.one * markerScale;
-                }
-                else
-                {
-                    //hide markers if we cant find them.
-                    markers[i].SetActive(false);
-                }
               
+            if (markers.Count != markerData.Count)
+			{
+                StartNext();
 			}
+            if (visibleMarkers)
+            {
+			    for (int i = 0; i < markerData.Count; i++)
+			    {
+				    if(markerData[i].position.Length > 0)
+				    {
+					    markers[i].name = markerData[i].label;
+                        markers[i].transform.localPosition = cv(markerData[i].position);
+					    markers[i].SetActive(true);
+					    markers[i].renderer.enabled = visibleMarkers;
+                        markers[i].transform.localScale = Vector3.one * markerScale;
+                    }
+                    else
+                    {
+                        //hide markers if we cant find them.
+                        markers[i].SetActive(false);
+                    }
+                }
+		    }
 		}
         void OnDrawGizmos()
         {
@@ -107,9 +88,6 @@ namespace QTM2Unity.Unity
                 }
             }
         }
-        private Vector3 cv(OTK.Vector3 v)
-        {
-            return new Vector3(v.X, v.Y, v.Z);
-        }
-	}
+
+    }
 }

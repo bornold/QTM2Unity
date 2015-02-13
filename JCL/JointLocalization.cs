@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using QTM2Unity.SkeletonModel;
 using OpenTK;
+using QTMRealTimeSDK;
 using QTM2Unity.Unity;
-namespace QTM2Unity.JCL
+namespace QTM2Unity
 {
     class JointLocalization
     {
@@ -23,7 +23,6 @@ namespace QTM2Unity.JCL
         private Vector3 RIAS;
         private Vector3 LIAS;
         private Vector3 Sacrum;
-
 
         private Dictionary<string, Vector3> joints;
         private Dictionary<string, Vector3> markers;
@@ -86,7 +85,8 @@ namespace QTM2Unity.JCL
             leftLowerLeg.Parent = leftUpperLeg;
             Bone leftFoot = GetFootLeft();
             leftFoot.Parent = leftLowerLeg;
-            
+            //Bone leftToe = new Bone(BipedSkeleton.TOE_L,markers[leftFoot]);
+
             Bone rightUpperLeg = GetUpperLegRight();
             rightUpperLeg.Parent = pelvis;
             Bone rightLowerLeg = GetLowerLegRight();
@@ -144,7 +144,7 @@ namespace QTM2Unity.JCL
             Vector3 target = joints[BipedSkeleton.NECK];
             Vector3 front = Vector3.Transform(Vector3.UnitZ, pelvisOrientation);
             Quaternion rot = QuaternionHelper.LookAtUp(pos, target, front);
-            return new Bone(BipedSkeleton.SPINE1, pos, rot);
+            return new Bone(BipedSkeleton.SPINE3, pos, rot);
         }
         private Bone GetNeck()
         {
@@ -273,29 +273,17 @@ namespace QTM2Unity.JCL
             return new Bone(BipedSkeleton.HAND_R, pos, rot);
         }
 
-
         private Vector3 GetFemurJoint(bool isRightHip)
         {
             float Z, X, Y;
-            X = FemurXOffset(); //0.33f * pelvisWidth - 7.3f;
-            Y = FemurYOffset(); //-0.30f * pelvisWidth - 10.9f;
-            Z = FemurZOffset(); //-0.24f * pelvisDepth - 9.9f;
+            X = 0.33f * pelvisWidth - 7.3f;
+            Y = -0.30f * pelvisWidth - 10.9f;
+            Z = -0.24f * pelvisDepth - 9.9f;
             if (!isRightHip) X = -X;
             Vector3 pos = new Vector3(X, Y, Z) / 1000;
             pos = QuaternionHelper.Rotate(pelvisOrientation, pos);
             pos = ASISMid + pos;
             return pos;
-        }
-        private float FemurXOffset()
-        {
-            return 0.33f * pelvisWidth - 7.3f;
-        }
-        private float FemurYOffset(){
-            return -0.30f * pelvisWidth - 10.9f;
-        }
-        private float FemurZOffset()
-        {
-            return -0.24f * pelvisDepth - 9.9f;
         }
         private Vector3 GetUpperarmJoint(bool isRightShoulder)
         {
@@ -304,7 +292,7 @@ namespace QTM2Unity.JCL
                 y = -66.32f + 0.30f * chestDepth - 0.432f * mass,
                 z = 66.468f - 0.531f * shoulderWidth + 0.571f * mass;
             Vector3 res = new Vector3(x, y, z) / 1000;
-            res = QuaternionHelper.Rotate(chestOrientation, res);
+            res = QuaternionHelper.Rotate(pelvisOrientation, res);
             res += isRightShoulder ? markers[rightShoulder] : markers[leftShoulder];
             return res;
         }
@@ -319,7 +307,6 @@ namespace QTM2Unity.JCL
         }
         private void HipOrientation()
         {
-
             Sacrum = markers[bodyBase];
             LIAS = markers[leftHip];
             RIAS = markers[rightHip];
@@ -486,15 +473,18 @@ namespace QTM2Unity.JCL
 
             // set chest depth
             var tmp = (chestV - neckV).Length * 1000;
+            //if (tmp > chestDepth) UnityEngine.Debug.Log("Chest depth: " + tmp + "mm");
             chestDepth = tmp > chestDepth ? tmp : chestDepth; // to mm
 
             // set shoulder width
             tmp = (Vector3Helper.MidPoint(chestV, neckV) - markers[leftShoulder]).Length * 1000;
+            //if (tmp > shoulderWidth) UnityEngine.Debug.Log("Shoulder width: " + tmp + "mm");
             shoulderWidth = tmp > shoulderWidth ? tmp : shoulderWidth;
 
             Vector3 headV = markers[head];
             Vector3 rightFootV = markers[rightFoot];
             tmp = ((rightFootV - headV).Length * 100) + 5; // * 100 to cm, + 5 just a guess
+            //if (tmp > height) UnityEngine.Debug.Log("Height:" + tmp + "cm");
             height = tmp > height ? tmp : height;
         }
 
@@ -617,10 +607,7 @@ namespace QTM2Unity.JCL
             return dic;
         }
 
-
-
-
-
+        #region skin markers 
         string bodyBase = "SACR";
         string chest = "SME";
         string neck = "TV2";
@@ -660,5 +647,6 @@ namespace QTM2Unity.JCL
         string rightAnkle = "R_FAL";
         string rightHeel = "R_FCC";
         string rightFoot = "R_FM2";
+        #endregion
     }
 }
