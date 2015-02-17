@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
-using QTM2Unity.Unity;
 using System.Collections;
 namespace QTM2Unity
 {
@@ -11,13 +10,15 @@ namespace QTM2Unity
         private JointLocalization joints;
         private BipedSkeleton skeleton;
         private Vector3 thisPos;
+        public bool debug;
         public bool showRotationTrace;
         public float markerScale;
-        Skel s;
         // Use this for initialization
         public override void StartNext()
         {
+
             joints = new JointLocalization();
+            skeleton = new BipedSkeleton();
         }
 
         // Update is called once per frame
@@ -26,92 +27,63 @@ namespace QTM2Unity
             thisPos = this.transform.position;
             if (joints == null) joints = new JointLocalization();
             BipedSkeleton lastSkel = skeleton;
-            skeleton = joints.GetJointLocation(markerData);
-            s = new Skel();
-            Skel ls = new Skel();
-            foreach (Bone b in skeleton.Bones)
-            {
-                s[b.Name] = new Bon(b.Name, b.Pos, b.Orientation);
-            }
-            foreach (Bone b in lastSkel.Bones)
-            {
-                ls[b.Name] = new Bon(b.Name, b.Pos, b.Orientation);
-            }
+            joints.GetJointLocation(ref skeleton,markerData);
 
             //IEnumerator i = s.GetEn
-            IEnumerator it = s.GetEnumerator();
-            IEnumerator itLast = ls.GetEnumerator();
+            IEnumerator it = skeleton.GetEnumerator();
+            IEnumerator itLast = lastSkel.GetEnumerator();
             while (it.MoveNext() && itLast.MoveNext())
             {
-                TreeNode<Bon> b = (TreeNode<Bon>)it.Current;
-                TreeNode<Bon> last = (TreeNode<Bon>)itLast.Current;
-                if (b.Data.Pos.IsNaN())
+                TreeNode<Bone> b = (TreeNode<Bone>)it.Current;
+                TreeNode<Bone> last = (TreeNode<Bone>)itLast.Current;
+                if (b.Data.Exists)
+
                 {
                     OpenTK.Vector3 target = OpenTK.Vector3.One ;
-                    bool set = false;
-                    Bon parent = b.Parent.Data;
-                    Bon root = last.Parent.Data; // förra framens parent är root i lösningen
+                    Bone parent = b.Parent.Data;
+                    Bone root = last.Parent.Data; // förra framens parent är root i lösningen
                     OpenTK.Vector3 offset = root.Pos - parent.Pos; // offset för att föra förra kedjan mot root
 
                     root.Pos += offset; // rör hela kedjan till nuvarande root position
                     last.Data.Pos += offset; // samtliga måste flyttas för att kedjan rotationer skall stämma
-                    List<Bon> chain = new List<Bon>() { root, last.Data }; // de som skall lösas
-                    while (it.MoveNext() && itLast.MoveNext() && !b.IsLeaf) // endeffector måste markeras
+                    if (debug) {Debug.Log("Joint missing! IK inits!!");  Debug.Log(root.Orientation);}
+                    List<Bone> chain = new List<Bone>() { root, last.Data }; // de som skall lösas
+                    while (it.MoveNext() && itLast.MoveNext() && !b.IsLeaf)
                     {
-                        b = (TreeNode<Bon>)it.Current;
-                        last = (TreeNode<Bon>)itLast.Current;
+                        b = (TreeNode<Bone>)it.Current;
+                        last = (TreeNode<Bone>)itLast.Current;
                         last.Data.Pos += offset; // denna joint 
                         chain.Add(last.Data);
-                        if (!b.Data.Pos.IsNaN())
+                        if (b.Data.Exists)
                         {
+                            if (debug) Debug.Log(string.Format("Target accuired"));
                             target = b.Data.Pos;
-                            set = true;
+                            chain = CCD.solveBoneChain(chain.ToArray(), target).ToList(); // solve with IK
                             break;
                         }
                     }
-                    Bone[] solvedBones;
-                    if (set)
-		            {
-                        Debug.Log(string.Format("Target accuired"));
-                        List<Bone> test = new List<Bone>();
-                        foreach (Bon vv in chain)
-                        {
-                            test.Add(new Bone(vv.Name,vv.Pos,vv.Rot));
-                        }
-			            solvedBones = CCD.solveBoneChain(test.ToArray(), target); // solve with IK
-                        set = false;
-                    }
-                    else
+                    foreach (Bone a in chain)
                     {
-                        Debug.Log(string.Format("Could not find target for IK"));
-                        List<Bone> haha = new List<Bone>();
-                        foreach (Bon ha in chain) {
-                            haha.Add(new Bone(ha.Name,ha.Pos,ha.Rot));
-                        }
-                        solvedBones = haha.ToArray();
-
-                    }
-                    foreach (Bone a in solvedBones)
-                    {
-                        s[a.Name] = new Bon(a.Name, a.Pos, a.Orientation); // Add all in solved except first and last element in skeleton
+                        if (debug && a.Name == BipedSkeleton.LOWERARM_L) Debug.Log(a.Name + a.Pos);
+                        skeleton[a.Name] = new Bone(a.Name, a.Pos, a.Orientation); // Add all in solved except first and last element in skeleton
                     }
                 }
             }
         }
         void OnDrawGizmos()
         {
-            if (s != null)
+            if (skeleton != null)
             {
-                foreach (TreeNode<Bon> b in s)
+                foreach (TreeNode<Bone> b in skeleton)
                 {
                     Vector3 v = cv(b.Data.Pos) + thisPos;
                 
                     Gizmos.DrawSphere(v, markerScale);
                     if (showRotationTrace )
-                        drawRays(b.Data.Rot,v);
+                        drawRays(b.Data.Orientation, cv(b.Data.Pos));
                     if (!b.IsLeaf)
                     {
-                        foreach (TreeNode<Bon> b2 in b.Children)
+                        foreach (TreeNode<Bone> b2 in b.Children)
                         {
                             drawLine(b.Data.Pos, b2.Data.Pos);
                         }

@@ -45,7 +45,7 @@ namespace QTM2Unity
 
                     Gizmos.DrawSphere(v, markerScale);
                     if (showRotationTrace)
-                        drawRays(b.Orientation, v);
+                        drawRays(b.Orientation, cv(b.Pos));
                     if (b.Children != null)
                     {
                         foreach (Bone b2 in b.Children)

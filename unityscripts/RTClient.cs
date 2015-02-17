@@ -1,20 +1,11 @@
 using Debug = UnityEngine.Debug;
-//using GUIContent = UnityEngine.GUIContent;
 using System;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading;
 using QTMRealTimeSDK;
 using QTMRealTimeSDK.Settings;
 using OpenTK;
 
-namespace QTM2Unity.Unity
+namespace QTM2Unity
 {
 	public class RTClient
 	{

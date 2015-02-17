@@ -55,7 +55,7 @@ namespace QTM2Unity
                     {
                         TreeNode<Bone> footleft = lowerlegleft.AddChild(new Bone(FOOT_L));
                         {
-                            //TreeNode<Bon> toeleft = footleft.AddChild(new Bon(TOE_L));
+                            TreeNode<Bone> toeleft = footleft.AddChild(new Bone(TOE_L));
                         }
                     }
                 }
@@ -67,7 +67,7 @@ namespace QTM2Unity
                     {
                         TreeNode<Bone> footright = lowerlegright.AddChild(new Bone(FOOT_R));
                         {
-                            // TreeNode<Bon> toeright = footright.AddChild(new Bon(TOE_R));
+                             TreeNode<Bone> toeright = footright.AddChild(new Bone(TOE_R));
                         }
                     }
                 }
@@ -96,7 +96,7 @@ namespace QTM2Unity
                                 {
                                     TreeNode<Bone> handLeft = lowerarmleft.AddChild(new Bone(HAND_L));
                                     {
-                                        // TreeNode<Bone> fingerLeft = handLeft.AddChild(new Bone(FINGER_L));
+                                         TreeNode<Bone> fingerLeft = handLeft.AddChild(new Bone(FINGER_L));
                                     }
                                 }
                             }
@@ -111,7 +111,7 @@ namespace QTM2Unity
                                 {
                                     TreeNode<Bone> handLeft = lowerarmleft.AddChild(new Bone(HAND_R));
                                     {
-                                        //TreeNode<Bon> fingerLeft = handLeft.AddChild(new Bon(FINGER_R));
+                                        TreeNode<Bone> fingerLeft = handLeft.AddChild(new Bone(FINGER_R));
                                     }
                                 }
                             }
