@@ -14,12 +14,13 @@ namespace QTM2Unity
         public override void StartNext()
         {
             joints = new JointLocalization();
+            skeleton = new BipedSkeleton();
         }
 
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if (debug)
+            if (debug && false  )
                 foreach (LabeledMarker lm in markerData)
                     if (lm.position.IsNaN())
                         Debug.Log(
@@ -31,30 +32,30 @@ namespace QTM2Unity
                         );
             thisPos = this.transform.position;
             if (joints == null) joints = new JointLocalization();
+            if (skeleton == null) skeleton = new BipedSkeleton();
             BipedSkeleton lastSkel = skeleton;
-            skeleton = joints.GetJointLocation(markerData);
-
+            joints.GetJointLocation(ref skeleton, markerData);            
         }
+
         void OnDrawGizmos()
         {
             if (skeleton != null)
             {
-                foreach (Bone b in skeleton.Bones)
+                foreach (TreeNode<Bone> b in skeleton)
                 {
-                    Vector3 v = cv(b.Pos) + thisPos;
-
-                    Gizmos.DrawSphere(v, markerScale);
-                    if (showRotationTrace)
-                        drawRays(b.Orientation, cv(b.Pos));
-                    if (b.Children != null)
+                    if (debug) Debug.Log(string.Format("Name: {0}, Pos: {1}",b.Data.Name,b.Data.Pos));
+                    Gizmos.DrawSphere(cv(b.Data.Pos) + thisPos, markerScale);
+                    foreach (TreeNode<Bone> b1 in b.Children)
                     {
-                        foreach (Bone b2 in b.Children)
-                        {
-                            drawLine(b.Pos, b2.Pos);
-                        }
+                        drawLine(b.Data.Pos, b1.Data.Pos);
                     }
                 }
             }
+            else
+            {
+                Debug.Log(" NOOOOOO! Skeleton is null!");
+            }
+            
         }
     }
 }

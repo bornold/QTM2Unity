@@ -26,8 +26,10 @@ namespace QTM2Unity
         {
             thisPos = this.transform.position;
             if (joints == null) joints = new JointLocalization();
+            if (skeleton == null) skeleton = new BipedSkeleton();
             BipedSkeleton lastSkel = skeleton;
-            joints.GetJointLocation(ref skeleton,markerData);
+            joints.GetJointLocation(ref skeleton, markerData);
+            if (debug) Debug.Log(object.ReferenceEquals(skeleton,lastSkel));
 
             //IEnumerator i = s.GetEn
             IEnumerator it = skeleton.GetEnumerator();
@@ -36,17 +38,14 @@ namespace QTM2Unity
             {
                 TreeNode<Bone> b = (TreeNode<Bone>)it.Current;
                 TreeNode<Bone> last = (TreeNode<Bone>)itLast.Current;
-                if (b.Data.Exists)
-
+                if (b.Data.Pos.IsNaN())
                 {
-                    OpenTK.Vector3 target = OpenTK.Vector3.One ;
                     Bone parent = b.Parent.Data;
                     Bone root = last.Parent.Data; // förra framens parent är root i lösningen
                     OpenTK.Vector3 offset = root.Pos - parent.Pos; // offset för att föra förra kedjan mot root
 
                     root.Pos += offset; // rör hela kedjan till nuvarande root position
                     last.Data.Pos += offset; // samtliga måste flyttas för att kedjan rotationer skall stämma
-                    if (debug) {Debug.Log("Joint missing! IK inits!!");  Debug.Log(root.Orientation);}
                     List<Bone> chain = new List<Bone>() { root, last.Data }; // de som skall lösas
                     while (it.MoveNext() && itLast.MoveNext() && !b.IsLeaf)
                     {
@@ -56,8 +55,7 @@ namespace QTM2Unity
                         chain.Add(last.Data);
                         if (b.Data.Exists)
                         {
-                            if (debug) Debug.Log(string.Format("Target accuired"));
-                            target = b.Data.Pos;
+                            OpenTK.Vector3 target = b.Data.Pos;
                             chain = CCD.solveBoneChain(chain.ToArray(), target).ToList(); // solve with IK
                             break;
                         }

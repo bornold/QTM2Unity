@@ -76,16 +76,16 @@ namespace QTM2Unity
                 #region spine and head
                 TreeNode<Bone> spine0 = root.AddChild(new Bone(SPINE0));
                 {
-                    //  TreeNode<Bone> spine1 = spine0.AddChild(new Bone(SPINE1));
-                    //  {
+                    TreeNode<Bone> spine1 = spine0.AddChild(new Bone(SPINE1));
+                    {
                     //     TreeNode<Bone> spine2 = spine1.AddChild(new Bone(SPINE2));
                     //     {
-                    TreeNode<Bone> spine3 = spine0.AddChild(new Bone(SPINE3));
-                    {
-                        TreeNode<Bone> neck = spine3.AddChild(new Bone(NECK));
+                        TreeNode<Bone> spine3 = spine1.AddChild(new Bone(SPINE3));
                         {
-                            TreeNode<Bone> head = neck.AddChild(new Bone(HEAD));
-                        }
+                            TreeNode<Bone> neck = spine3.AddChild(new Bone(NECK));
+                            {
+                                TreeNode<Bone> head = neck.AddChild(new Bone(HEAD));
+                            }
                 #endregion
                         #region arm left
                         TreeNode<Bone> shoulderleft = spine3.AddChild(new Bone(SHOULDER_L));
@@ -118,7 +118,7 @@ namespace QTM2Unity
                         }
                         #endregion
                     }
-                    //      }
+                          }
                     //    }
                 }
                 #endregion

@@ -34,6 +34,7 @@ namespace QTM2Unity
         public override void StartNext()
         {
             joints = new JointLocalization();
+            skeleton = new BipedSkeleton();
             FindGameObjects();
         }
 
@@ -44,9 +45,10 @@ namespace QTM2Unity
             List<LabeledMarker> markerData = rtClient.Markers;
             if (markerData == null && markerData.Count == 0) return;
             if (joints == null) joints = new JointLocalization();
-            
+            if (skeleton == null) skeleton = new BipedSkeleton();
+
             FindGameObjects();
-            skeleton = joints.GetJointLocation(markerData);
+            joints.GetJointLocation(ref skeleton, markerData);
             
             setGO(hips, BipedSkeleton.PELVIS, true);
             setGO(spine, BipedSkeleton.SPINE0,false);

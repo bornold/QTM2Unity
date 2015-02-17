@@ -7,7 +7,7 @@ using OpenTK;
 
 namespace QTM2Unity
 {
-    class Bone
+    class Bone : IEquatable<Bone>
     {
         private bool exists = false;
         public bool Exists
@@ -124,6 +124,10 @@ namespace QTM2Unity
             {
                 exists = false;
             }
+        }
+        bool IEquatable<Bone>.Equals(Bone other)
+        {
+            return this.Name.Equals(other.Name);
         }
     }
 }
