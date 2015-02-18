@@ -20,7 +20,7 @@ namespace QTM2Unity
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if (debug && false  )
+            if (debug )
                 foreach (LabeledMarker lm in markerData)
                     if (lm.position.IsNaN())
                         Debug.Log(
@@ -43,8 +43,9 @@ namespace QTM2Unity
             {
                 foreach (TreeNode<Bone> b in skeleton)
                 {
-                    if (debug) Debug.Log(string.Format("Name: {0}, Pos: {1}",b.Data.Name,b.Data.Pos));
                     Gizmos.DrawSphere(cv(b.Data.Pos) + thisPos, markerScale);
+                    if (showRotationTrace)
+                        drawRays(b.Data.Orientation, cv(b.Data.Pos));
                     foreach (TreeNode<Bone> b1 in b.Children)
                     {
                         drawLine(b.Data.Pos, b1.Data.Pos);

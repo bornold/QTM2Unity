@@ -438,22 +438,47 @@ namespace QTM2Unity
         }
         private void KneeOrientation()
         {
-            Vector3 lower = markers[leftAnkle]; 
+
+            /*
+            Vector3 PAS = markers[leftUpperKnee];
+            Vector3 TCC = markers[leftLowerKnee];
+            Vector3 FLE = markers[leftOuterKnee];
+
+            Vector3 mid = Vector3Helper.MidPoint(PAS, TCC);
+            Vector3 right = mid - FLE;
+            Vector3 up = PAS - TCC;
+
+            Vector3 forward = Vector3.Cross(right, up);
+            forward.Normalize();
+            kneeForwardOrientationLeft = forward;
+
+            PAS = markers[rightUpperKnee];
+            TCC = markers[rightLowerKnee];
+            FLE = markers[rightOuterKnee];
+
+            mid = Vector3Helper.MidPoint(PAS, TCC);
+            right = FLE - mid;
+            up = PAS - TCC;
+
+            forward = Vector3.Cross(right, up);
+            forward.Normalize();
+            kneeForwardOrientationRight = forward;
+            */
+             
             Vector3 upper = joints[BipedSkeleton.UPPERLEG_L];
+            Vector3 lower = markers[leftAnkle]; 
             Vector3 forward = joints[BipedSkeleton.LOWERLEG_L];
             Vector3 mid = Vector3Helper.MidPoint(upper, lower);
             Vector3 vec = forward - mid;
-            
             kneeForwardOrientationLeft = vec;
 
             upper = joints[BipedSkeleton.UPPERLEG_R];
-            forward = joints[BipedSkeleton.LOWERLEG_R];
             lower = markers[rightAnkle];
+            forward = joints[BipedSkeleton.LOWERLEG_R];
             mid = Vector3Helper.MidPoint(upper, lower);
             vec = forward - mid;
-            Vector3 target = joints[BipedSkeleton.LOWERLEG_R];
-            vec.Normalize();
             kneeForwardOrientationRight = vec;
+
 
         }
         private void WritsOrientation()
@@ -489,7 +514,7 @@ namespace QTM2Unity
             Vector3 front;
             Vector3 right;
             Vector3 left;
-
+            Vector3 up;
             /////////////// FEMUR LEFT ///////////////
             Vector3 lf = GetFemurJoint(false);
             dic.Add(BipedSkeleton.UPPERLEG_L, lf);
@@ -502,6 +527,10 @@ namespace QTM2Unity
 
             /////////////// HIP ///////////////
             Vector3 pp = Vector3Helper.MidPoint(rf,lf);
+            front = Vector3.Transform(Vector3.UnitZ, pelvisOrientation);
+            up = Vector3.Transform(Vector3.UnitY, pelvisOrientation);
+            pp += -front * 0.1f;
+            pp += up * 0.02f;
             dic.Add(BipedSkeleton.PELVIS, pp);
             //////////////////////////////
 
@@ -517,7 +546,8 @@ namespace QTM2Unity
             if (!markers.ContainsKey(spine)) markers.Add(spine,markers[bodyBase]);
             pos = markers[spine];
             front = Vector3.Transform(Vector3.UnitZ, pelvisOrientation);
-            pos = pos + front * 0.1f;
+            front.Normalize();
+            pos += front * 0.05f;
             dic.Add(BipedSkeleton.SPINE1, pos);
             //////////////////////////////
 
@@ -537,12 +567,12 @@ namespace QTM2Unity
             //Move head position down
             Vector3 down = -Vector3.Transform(Vector3.UnitZ, headOrientation);
             down.Normalize();
-            headPos += down * 0.05f; // 5 cm? maybe
+            headPos += down * 0.1f; // 5 cm? maybe
             dic.Add(BipedSkeleton.HEAD, headPos);
             //////////////////////////////
 
             /////////////// Spine end ///////////////
-            Vector3 up = headPos - neckPos;
+            up = headPos - neckPos;
             up.Normalize();
             pos = neckPos + up * 0.05f;
             dic.Add(BipedSkeleton.NECK, pos);

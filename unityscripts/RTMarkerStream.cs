@@ -28,7 +28,10 @@ namespace QTM2Unity.Unity
         {
             markers.Clear();
             markerData = rtClient.Markers;
-
+            foreach (Transform child in gameObject.transform)
+            {
+                Destroy(child.gameObject    );
+            }
             for (int i = 0; i < markerData.Count; i++)
             {
                 if (!GameObject.Find(markerData[i].label))

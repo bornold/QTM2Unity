@@ -30,6 +30,8 @@ namespace QTM2Unity
 
         public JointLocalization joints;
         public BipedSkeleton skeleton;
+        public bool showRotationTrace = false;
+        public bool showSkeleton = false;
         // Use this for initialization
         public override void StartNext()
         {
@@ -127,6 +129,21 @@ namespace QTM2Unity
             foreArmRight = transform.Search("RightForeArm");
             handLeft = transform.Search("LeftHand");
             handRight = transform.Search("RightHand");
+        }
+        void OnDrawGizmos()
+        {
+            if (skeleton != null && showSkeleton)
+            {
+                foreach (TreeNode<Bone> b in skeleton)
+                {
+                    if (showRotationTrace)
+                        drawRays(b.Data.Orientation, cv(b.Data.Pos));
+                    foreach (TreeNode<Bone> b1 in b.Children)
+                    {
+                        drawLine(b.Data.Pos, b1.Data.Pos);
+                    }
+                }
+            }
         }
     }
 }
