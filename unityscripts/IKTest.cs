@@ -27,9 +27,11 @@ namespace QTM2Unity
             thisPos = this.transform.position;
             if (joints == null) joints = new JointLocalization();
             if (skeleton == null) skeleton = new BipedSkeleton();
+            
             Dictionary<string, Bone> lastSkelDic =
                 skeleton.ToDictionary(k => k.Data.Name,v => v.Data);
             joints.GetJointLocation(ref skeleton, markerData);
+                
             IEnumerator it = skeleton.GetEnumerator();
             //TODO ATTENTION! 
             //This has oprediction that Root and all of roots children MUST have set possition
@@ -58,8 +60,10 @@ namespace QTM2Unity
                             break;
                         }
                     }
+                    foreach (Bone a in missingChain) skeleton[a.Name] = a;
                     
-                    /* //TODO change this so we add a chain instead of changing value
+                    /*
+                    //TODO change this so we add a chain instead of changing value
                     TreeNode<Bone> solvedChain = null;
                     TreeNode<Bone> last = null;
                     TreeNode<Bone> grandpa = parent.Parent;
@@ -75,7 +79,6 @@ namespace QTM2Unity
                     }
                     // Add child to last of it existslast.AddChild
                      */
-                    foreach (Bone a in missingChain) skeleton[a.Name] = a;
                 }
             }
         }

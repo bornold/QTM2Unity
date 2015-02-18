@@ -67,66 +67,14 @@ namespace QTM2Unity
             // these orientation must be set after joints have been localized
             ChestOrientation(); 
             KneeOrientation();
-
-            Bone pelvis = GetPlevis();
-
-            Bone spine0 = GetSpineRoot();
-            
-            Bone spine1 = GetSpine1();
-
-            Bone spine3 = GetSpineEnd();
-            
-            Bone neck = GetNeck();
-            
-            Bone head = GetHead();
-            
-            
-            Bone leftUpperLeg = GetUpperLegLeft();
-            
-            Bone leftLowerLeg = GetLowerLegLeft();
-            
-            Bone leftAnkle = GetAnkleLeft();
-            
-            Bone leftFoot = GetFootLeft();
-
-            Bone rightUpperLeg = GetUpperLegRight();
-            
-            Bone rightLowerLeg = GetLowerLegRight();
-            
-            Bone rightAnkle = GetAnkelRight();
-            
-            Bone rightFoot = GetFootRight();
-
-
-            Bone leftShoulder = GetShoulderLeft();
-            
-            Bone leftUpperArm = GetUpperArmLeft();
-            
-            Bone leftLowerArm = GetLowerArmLeft();
-            
-            Bone leftWrist = GetWristLeft();
-            
-            Bone leftHand = GetHandLeft();
-
-
-            Bone rightShoulder = GetShoulderRight();
-            
-            Bone rightUpperArm = GetUpperArmRight();
-            
-            Bone rightLowerArm = GetLowerArmRight();
-            
-            Bone rightWrist = GetWristRight();
-            
-            Bone rightHand = GetHandRight();
-
             List<Bone> skele = new List<Bone>()
                 {
-                    pelvis, 
-                    spine0,         spine1,         spine3,         neck,       head,
-                    rightUpperLeg,  rightLowerLeg,  rightAnkle,     rightFoot,
-                    leftUpperLeg,   leftLowerLeg,   leftAnkle,      leftFoot,
-                    leftShoulder,   leftUpperArm,   leftLowerArm,   leftWrist,  leftHand,
-                    rightShoulder,  rightUpperArm,  rightLowerArm,  rightWrist, rightHand
+                    GetPlevis(), 
+                    GetSpineRoot(),     GetSpine1(),        GetSpineEnd(),      GetNeck(),          GetHead(),
+                    GetUpperLegRight(), GetLowerLegRight(), GetAnkleRight(),    GetFootRight(),
+                    GetUpperLegLeft(),  GetLowerLegLeft(),  GetAnkleLeft(),     GetFootLeft(),
+                    GetShoulderRight(), GetUpperArmRight(), GetLowerArmRight(), GetWristRight(),    GetHandRight(),
+                    GetShoulderLeft(),  GetUpperArmLeft(),  GetLowerArmLeft(),  GetWristLeft(),     GetHandLeft(),
                     
                 };
 
@@ -211,7 +159,7 @@ namespace QTM2Unity
             Quaternion rot = QuaternionHelper.LookAtUp(pos, target, up);
             return new Bone(BipedSkeleton.FOOT_L, pos, rot);
         }
-        private Bone GetAnkelRight()
+        private Bone GetAnkleRight()
         {
             Vector3 pos = joints[BipedSkeleton.FOOT_R];
             Vector3 target = markers[rightFoot];
@@ -326,8 +274,8 @@ namespace QTM2Unity
         }
         private Vector3 GetShoulderJoint(bool isRightShoulder)
         {
-            float y = -50,
-                  x = isRightShoulder ? -y : y,
+            float y = 50,
+                  x = isRightShoulder ? y : -y,
                   z = 0;
             Vector3 res = new Vector3(x, y, z) / 1000;
             res = QuaternionHelper.Rotate(chestOrientation, res);
@@ -338,10 +286,6 @@ namespace QTM2Unity
         private void ShoulderData()
         {
             Vector3 chestV = markers[chest];
-            if (!markers.ContainsKey(neck))
-            {
-                markers.Add(neck, markers[chest]);
-            }
             Vector3 neckV = markers[neck];
 
             // set chest depth
@@ -606,8 +550,8 @@ namespace QTM2Unity
 
 
             /////////////// SHOUDLERs ///////////////
-            dic.Add(BipedSkeleton.SHOULDER_L, GetShoulderJoint(false) + neckPos);//neckPos);//
-            dic.Add(BipedSkeleton.SHOULDER_R, GetShoulderJoint(true) + neckPos);//neckPos);//
+            dic.Add(BipedSkeleton.SHOULDER_L, neckPos);//GetShoulderJoint(false) + neckPos);//
+            dic.Add(BipedSkeleton.SHOULDER_R, neckPos);//GetShoulderJoint(true) + neckPos);//
             //////////////////////////////
 
             /////////////// UPPER ARMS ///////////////
