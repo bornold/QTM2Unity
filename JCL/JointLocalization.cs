@@ -601,13 +601,13 @@ namespace QTM2Unity
             Vector3 up = headPos - neckPos;
             up.Normalize();
             pos = neckPos + up * 0.05f;
-            dic.Add(BipedSkeleton.NECK, neckPos);
+            dic.Add(BipedSkeleton.NECK, pos);
             ////////////////////////////////
 
 
             /////////////// SHOUDLERs ///////////////
-            dic.Add(BipedSkeleton.SHOULDER_L, neckPos);// GetShoulderJoint(false) + neckPos);
-            dic.Add(BipedSkeleton.SHOULDER_R, neckPos);//GetShoulderJoint(true) + neckPos);
+            dic.Add(BipedSkeleton.SHOULDER_L, GetShoulderJoint(false) + neckPos);//neckPos);//
+            dic.Add(BipedSkeleton.SHOULDER_R, GetShoulderJoint(true) + neckPos);//neckPos);//
             //////////////////////////////
 
             /////////////// UPPER ARMS ///////////////

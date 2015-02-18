@@ -7,7 +7,7 @@ using OpenTK;
 
 namespace QTM2Unity
 {
-    abstract class Skeleton : IEnumerable
+    abstract class Skeleton : IEnumerable<TreeNode<Bone>>
     {
         protected TreeNode<Bone> root;
 
@@ -28,6 +28,10 @@ namespace QTM2Unity
             return root.GetEnumerator();
 
         }
-        
+
+        IEnumerator<TreeNode<Bone>> IEnumerable<TreeNode<Bone>>.GetEnumerator()
+        {
+            return root.GetEnumerator();
+        }
     }
 }

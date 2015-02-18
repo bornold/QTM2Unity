@@ -27,44 +27,55 @@ namespace QTM2Unity
             thisPos = this.transform.position;
             if (joints == null) joints = new JointLocalization();
             if (skeleton == null) skeleton = new BipedSkeleton();
-            BipedSkeleton lastSkel = skeleton;
+            Dictionary<string, Bone> lastSkelDic =
+                skeleton.ToDictionary(k => k.Data.Name,v => v.Data);
             joints.GetJointLocation(ref skeleton, markerData);
-            if (debug) Debug.Log(object.ReferenceEquals(skeleton,lastSkel));
-
-            //IEnumerator i = s.GetEn
             IEnumerator it = skeleton.GetEnumerator();
-            IEnumerator itLast = lastSkel.GetEnumerator();
-            while (it.MoveNext() && itLast.MoveNext())
+            //TODO ATTENTION! 
+            //This has oprediction that Root and all of roots children MUST have set possition
+            while (it.MoveNext())
             {
                 TreeNode<Bone> b = (TreeNode<Bone>)it.Current;
-                TreeNode<Bone> last = (TreeNode<Bone>)itLast.Current;
-                if (b.Data.Pos.IsNaN())
+                if (!b.Data.Exists) // Possition of joint no knowned, Solve with IK
                 {
-                    Bone parent = b.Parent.Data;
-                    Bone root = last.Parent.Data; // förra framens parent är root i lösningen
-                    OpenTK.Vector3 offset = root.Pos - parent.Pos; // offset för att föra förra kedjan mot root
-
-                    root.Pos += offset; // rör hela kedjan till nuvarande root position
-                    last.Data.Pos += offset; // samtliga måste flyttas för att kedjan rotationer skall stämma
-                    List<Bone> chain = new List<Bone>() { root, last.Data }; // de som skall lösas
-                    while (it.MoveNext() && itLast.MoveNext() && !b.IsLeaf)
+                    TreeNode<Bone> parent = b.Parent; // save parent
+                    Bone root = lastSkelDic[parent.Data.Name]; // last frames' parent is root in solution
+                    Bone missing = lastSkelDic[b.Data.Name]; // this node that is missing
+                    OpenTK.Vector3 offset = parent.Data.Pos - root.Pos; // offset to move last frames chain to this frames' position
+                    root.Pos += offset; // move chain to this place
+                    missing.Pos += offset;
+                    List<Bone> missingChain = new List<Bone>() { root, missing }; // chain to be solved
+                    while (!b.IsLeaf && it.MoveNext())
                     {
                         b = (TreeNode<Bone>)it.Current;
-                        last = (TreeNode<Bone>)itLast.Current;
-                        last.Data.Pos += offset; // denna joint 
-                        chain.Add(last.Data);
+                        missing = lastSkelDic[b.Data.Name];
+                        missing.Pos += offset;
+                        missingChain.Add(missing);
                         if (b.Data.Exists)
                         {
                             OpenTK.Vector3 target = b.Data.Pos;
-                            chain = CCD.solveBoneChain(chain.ToArray(), target).ToList(); // solve with IK
+                            missingChain = CCD.solveBoneChain(missingChain.ToArray(), target).ToList(); // solve with IK
                             break;
                         }
                     }
-                    foreach (Bone a in chain)
+                    
+                    /* //TODO change this so we add a chain instead of changing value
+                    TreeNode<Bone> solvedChain = null;
+                    TreeNode<Bone> last = null;
+                    TreeNode<Bone> grandpa = parent.Parent;
+                    grandpa.RemoveChild(parent);
+                    foreach (Bone a in missingChain)
                     {
-                        if (debug && a.Name == BipedSkeleton.LOWERARM_L) Debug.Log(a.Name + a.Pos);
-                        skeleton[a.Name] = new Bone(a.Name, a.Pos, a.Orientation); // Add all in solved except first and last element in skeleton
+                        if (solvedChain == null || last == null)
+                        {
+                            last = solvedChain = new TreeNode<Bone>(a);
+                            continue;
+                        }
+                        last = last.AddChild(a);
                     }
+                    // Add child to last of it existslast.AddChild
+                     */
+                    foreach (Bone a in missingChain) skeleton[a.Name] = a;
                 }
             }
         }
