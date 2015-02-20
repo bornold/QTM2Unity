@@ -197,10 +197,6 @@ namespace QTM2Unity
                         (quaternion.W * lenInv)
                         );
         }
-        public static Quaternion LookAt(Vector3 root, Vector3 target, Vector3 up)
-        {
-            return FromMatrix(Matrix4Helper.LookAtUp(root, target, up));
-        }
 
         /// <summary>
         /// Calculates the angle in radians for a rotation around a specific axis
@@ -373,6 +369,37 @@ namespace QTM2Unity
             Quaternion yRot = GetRotation2(possibleY, y);
             Quaternion orientation = yRot * zRot;
             return orientation;
+        }
+        /// <summary>
+        /// Get quaternion with front and right vector
+        /// </summary>
+        /// <param name="source">Front vector</param>
+        /// <param name="target">right vector</param>
+        /// <returns>Quaternion with rotation</returns>
+        public static Quaternion GetOrientationFromZX(Vector3 front, Vector3 right)
+        {
+            Vector3[] normal = { front, right };
+            Vector3Helper.OrthoNormalize(ref normal);
+            Vector3 z = normal[0];
+            Vector3 x = normal[1];
+            Vector3 y = Vector3.Cross(z, x);
+            Quaternion yRot = getRotation(Vector3.UnitY, y);
+
+            Vector3 possibleZ = Vector3.Transform(Vector3.UnitZ, yRot);
+            Quaternion zRot = getRotation(possibleZ, z);
+            Quaternion orientation = zRot * yRot;
+            return orientation;
+        }
+        /// <summary>
+        /// Get quaternion with up and right vector
+        /// </summary>
+        /// <param name="source">up vector</param>
+        /// <param name="target">right vector</param>
+        /// <returns>Quaternion with rotation</returns>
+        public static Quaternion GetOrientationFromXY(Vector3 right,Vector3 up)
+        {
+            return GetOrientationFromZX(Vector3.Cross(up, right), right);
+
         }
     }
 }
