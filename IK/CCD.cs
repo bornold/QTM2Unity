@@ -8,7 +8,7 @@ using Debug = UnityEngine.Debug;
 
 namespace QTM2Unity
 {
-    class CCD
+    class CCD : IKSolver
     {
        
         private static float threshold = 0.0001f; // TODO define a good default threshold value 
@@ -19,7 +19,7 @@ namespace QTM2Unity
         // Probably don't want to handle here
 
         // Note: The end effector is assumed to be the last element in bones
-        public static Bone[] solveBoneChain(Bone[] bones, Vector3 target)
+        override public Bone[] solveBoneChain(Bone[] bones, Vector3 target)
         {
             int numberOfBones = bones.Length;
             int iter = 0;
@@ -54,7 +54,10 @@ namespace QTM2Unity
                     for (int j = i; j < bones.Length; j++)
                     {
                         if (j > 0) // TODO not checking root right now, should we?
+                        {
                             checkOrientationalConstraint(ref bones[j], bones[j - 1]);
+                            //checkRotationalConstraint(ref bones, j);
+                        }
                     }
                     
                     // Check if we are close enough to target
@@ -68,9 +71,11 @@ namespace QTM2Unity
                 return bones;
         }
 
+        // TODO: move the constraint methods to JointConstraint as static methods
+
         // TODO should be private, public for test purposes
         // TODO maybe this is better in the OrientationalContraint class
-        public static void checkOrientationalConstraint(ref Bone b, Bone parent)
+        public void checkOrientationalConstraint(ref Bone b, Bone parent)
         {
             if (b.OrientationalConstraint != null) // if there exist a constraint
             {
@@ -88,15 +93,15 @@ namespace QTM2Unity
                     if (twistAngle < from) // TODO add some precision (so it doesn't need to rotate eg 0,000324)
                     {
                         // rotate clockwise
-                        Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name + 
-                            " " + (twistAngle - from) + " clockwise around itself.");
+                        /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name + 
+                            " " + (twistAngle - from) + " clockwise around itself.");*/
                         b.rotate(Math.Abs(MathHelper.DegreesToRadians(twistAngle - from)), direction);
                     }
                     else if (twistAngle > to)
                     {
                         // rotate anticlockwise
-                        Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name +
-                            " " + (twistAngle - to) + " anticlockwise around itself.");
+                        /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name +
+                            " " + (twistAngle - to) + " anticlockwise around itself.");*/
                         b.rotate(-Math.Abs(MathHelper.DegreesToRadians(twistAngle - to)), direction);
                     }
                 }
@@ -105,7 +110,7 @@ namespace QTM2Unity
 
         // Calculates the angle b is twisted around its direction vector in radians
         // TODO make private. Only public for testing purposes.
-        public static float getTwistAngle(Bone b, Bone parent)
+        public float getTwistAngle(Bone b, Bone parent)
         {
             Vector3 direction = b.getDirection();
             Vector3 up = b.getUp();
@@ -124,10 +129,97 @@ namespace QTM2Unity
             return twistAngle;
         }
 
-        private static void checkRotationalConstraint(Bone b, Bone parent, Vector3 target)
+        private void checkRotationalConstraint(ref Bone[] bs, int current)
+        {
+            if (current == 0)
+                return; // Don't check constraint for root
+            RotationalConstraint rc = bs[current - 1].RotationalConstraint;
+            if (rc != null) // there exist a constraint on parent
+            {
+                Vector3 pos;
+                calculatePosition(out pos, ref bs[current], ref bs[current - 1]);
+
+                // Rotate b to the nearest point 
+                // Rotate b's children with the same rotation
+                if (pos != bs[current].Pos) // the position has moved
+                {
+                    Debug.Log("Position before: " +
+                        bs[current].Pos.X + ", " + bs[current].Pos.Y + ", " + bs[current].Pos.Z);
+                    // Rotate b towards pos and follow with all its children
+                    Vector3 parent = bs[current].Pos - bs[current - 1].Pos;
+                    Vector3 newParent = pos - bs[current - 1].Pos;
+                    Vector3 axis = 
+                        Vector3.Cross(parent, newParent);
+                    axis.Normalize();
+                    float angle = Vector3.CalculateAngle(parent, newParent);
+                    Quaternion rot = Quaternion.FromAxisAngle(axis, angle);
+
+                    Debug.Log("Rotate " + bs[current].Name + " " + angle + " around "
+                        + axis.X + ", " + axis.Y + ", " + axis.Z);
+
+                    for (int i = current-1; i < bs.Length; i++)
+                    {
+                        bs[i].rotate(rot);
+                    }
+                    Debug.Log("Position after: " +
+                        bs[current].Pos.X + ", " + bs[current].Pos.Y + ", " + bs[current].Pos.Z);
+                }
+            }
+        }
+
+        // denna kan kanske bli finare
+        private void calculatePosition(out Vector3 pos, ref Bone b, ref Bone parent)
+        {
+            RotationalConstraint rc = parent.RotationalConstraint;
+            pos = b.Pos;
+            // Find parents constraint cone
+            Vector3 L1 = rc.getDirection();
+            L1.Normalize();
+            L1 = L1 * (pos - parent.Pos).Length; // makes sure L1 has sufficient length
+            // find the projection O of the target on line L1
+            Vector3 O = Vector3Helper.ProjectAndCreate(pos, L1);
+            // find the distance S between O and the joint position
+            float S = (O - pos).Length;
+            // Map the target in such a way that O is located at the origin
+            // and the axes defining the constraints are aligned with x,y
+            Quaternion mappingQuat = mapToOrigin(ref pos, L1, rc.getRight(), O);
+
+            // Angles defining ellipse radii
+            float ax, ay;
+            findAngles(ref rc, pos, out ax, out ay);
+
+            // Calculate ellipse radius for x and y
+            float radiusX = S * Mathf.Tan(ax);
+            float radiusY = S * Mathf.Tan(ay);
+
+            // If b's pos is outside the parents constraint
+            if (!(Math.Abs(pos.X) <= radiusX && Math.Abs(pos.Y) <= radiusY)) // target not inside
+            {
+                Debug.Log(b.Name + " not inside constraint");
+                // Find nearest point from b on ellipse defined by radiusX and radiusY
+                Vector2 newPoint = QTM2UnityMath.findNearestPointOnEllipse
+                    (Math.Max(radiusX, radiusY), Math.Min(radiusX, radiusY),
+                    new Vector2(Math.Abs(pos.X), Math.Abs(pos.Y)));
+
+                // Move target to nearest point on the ellipse
+                moveTarget(ref pos, newPoint);
+
+            }
+
+            // Undo the origin mapping
+            // Rotation
+            pos = Vector3.Transform(pos, Quaternion.Invert(mappingQuat));
+            // Translation
+            pos = O + pos;
+        }
+
+        // TODO maybe should use references to bones
+        // TODO the name target is a bit misleading me thinks?
+       /* private static void checkRotationalConstraint(ref Bone b, Bone parent, Vector3 target)
         {
             if (b.RotationalConstraint != null) // there exist a constraint
             {
+                Debug.Log("Checking rotational constraint for " + b.Name);
                 // find the line passing through the joint under consideration and its parent
                 Vector3 L1 = b.Pos - parent.Pos;
                 L1.Normalize();
@@ -138,55 +230,46 @@ namespace QTM2Unity
                 float S = (O - b.Pos).Length;
                 // Map the target in such a way that O is located at the origin
                 // and the axes defining the constraints are aligned with x,y
-                target = mapToOrigin(target, L1, parent.getRight(), O);
+                Quaternion mappingQuat = mapToOrigin(ref target, L1, parent.getRight(), O);
 
                 // Angles defining ellipse radii
                 float ax, ay;
-
-                // Locate target in a particular quadrant
-                if (target.X >= 0 && target.Y >= 0)
-                {
-                    // x, y quadrant
-                    // Ellipse defined by q1, q2
-                    ax = b.RotationalConstraint.getAngle(1);
-                    ay = b.RotationalConstraint.getAngle(2);
-                }
-                else if (target.X < 0 && target.Y >= 0)
-                {
-                    // -x, y quadrant
-                    // Ellipse defined by q2, q3
-                    ay = b.RotationalConstraint.getAngle(2);
-                    ax = b.RotationalConstraint.getAngle(3);
-                }
-                else if (target.X <= 0 && target.Y < 0)
-                {
-                    // -x,-y quadrant
-                    // Ellipse defined by q3, q0
-                    ax = b.RotationalConstraint.getAngle(3);
-                    ay = b.RotationalConstraint.getAngle(0);
-                }
-                else /*if (target.X > 0 && target.Y < 0)*/
-                {
-                    // x, -y quadrant
-                    // Ellipse defined by q0, q1
-                    ay = b.RotationalConstraint.getAngle(0);
-                    ax = b.RotationalConstraint.getAngle(1);
-                }
+                //findAngles(ref b, target, out ax, out ay);
 
                 // Calculate ellipse radius for x and y
                 float radiusX = S * Mathf.Tan(ax);
                 float radiusY = S * Mathf.Tan(ay);
 
+                Debug.Log("radiusX: " + radiusX);
+                Debug.Log("radiusY: " + radiusY);
+                Debug.Log("'targetX': " + target.X);
+                Debug.Log("'targetY': " + target.Y);
+
                 if (!(Math.Abs(target.X) <= radiusX && Math.Abs(target.Y) <= radiusY)) // target not inside
                 {
-                    // Find nearest point from target on ellipse defined by ex and ey
+                    Debug.Log("Target not inside constraint for " + b.Name);
+                    // Find nearest point from target on ellipse defined by radiusX and radiusY
+                    Vector2 newTarget = QTM2UnityMath.findNearestPointOnEllipse
+                        (Math.Max(radiusX, radiusY), Math.Min(radiusX, radiusY), 
+                        new Vector2(Math.Abs(target.X), Math.Abs(target.Y)));
+
+                    // Move target to nearest point on the ellipse
+                    moveTarget(ref target, newTarget);
+                  
                 }
 
                 // Undo the origin mapping
-            }
-        }
+                // Rotation
+                target = Vector3.Transform(target, Quaternion.Invert(mappingQuat));
+                // Translation
+                target = O + target;
 
-        private static Vector3 mapToOrigin(Vector3 target, Vector3 L1, Vector3 right, Vector3 origin)
+                // Rotate bone to the new position
+                b.rotateTowards(target - b.Pos);
+            }
+        }*/
+
+        private Quaternion mapToOrigin(ref Vector3 target, Vector3 L1, Vector3 right, Vector3 origin)
         {
             // Translation:
             target = target.translate(origin);
@@ -196,40 +279,56 @@ namespace QTM2Unity
             Quaternion rot1 = QuaternionHelper.getRotation(L1, Vector3.UnitZ);
             right = Vector3.Transform(right, rot1);
             Quaternion rot2 = QuaternionHelper.getRotation(right, Vector3.UnitX);
-            
-            return Vector3.Transform(target, rot2 * rot1);
+            Quaternion rotation = rot2 * rot1;
+
+            target = Vector3.Transform(target, rotation);
+            return rotation;
         }
 
-
-        // TODO: remove this when it is not useful anymore, but keep it for now
-        private Vector3[] solveChain(Vector3[] jointPositions, Vector3 target)
+        private void findAngles(ref RotationalConstraint rc, Vector3 target, out float ax, out float ay)
         {
-            int numberOfJoints = jointPositions.Length - 1;
-            while ((target - jointPositions[jointPositions.Length - 1]).Length > threshold)
+            // Locate target in a particular quadrant
+            if (target.X >= 0 && target.Y >= 0)
             {
-                for (int i = numberOfJoints - 1; i >= 0; i--)
-                // for each joint, starting with the one closest to the end effector
-                {
-                    // Get the vectors between the points
-                    Vector3 a = jointPositions[jointPositions.Length - 1] - jointPositions[i];
-                    Vector3 b = target - jointPositions[i];
-                    
-                    // Make a rotation quarternion and rotate 
-                    // - first the endEffector
-                    // - then the rest of the affected joints
-                    Quaternion rotation = QuaternionHelper.getRotation(a, b); 
-                    for (int j = numberOfJoints; j >= i; j--)
-                    {
-                        jointPositions[j] = Vector3.Transform(jointPositions[j], rotation);
-                    }
-                    // I think we need to do this check here <-- TODO check som I'm right
-                    if ((target - jointPositions[jointPositions.Length - 1]).Length > threshold)
-                    {
-                        return jointPositions;
-                    }
-                }
+                // x, y quadrant
+                // Ellipse defined by q1, q2
+                ax = rc.getAngle(1);
+                ay = rc.getAngle(2);
             }
-                return jointPositions; 
+            else if (target.X < 0 && target.Y >= 0)
+            {
+                // -x, y quadrant
+                // Ellipse defined by q2, q3
+                ay = rc.getAngle(2);
+                ax = rc.getAngle(3);
+            }
+            else if (target.X <= 0 && target.Y < 0)
+            {
+                // -x,-y quadrant
+                // Ellipse defined by q3, q0
+                ax = rc.getAngle(3);
+                ay = rc.getAngle(0);
+            }
+            else /*if (target.X > 0 && target.Y < 0)*/
+            {
+                // x, -y quadrant
+                // Ellipse defined by q0, q1
+                ay = rc.getAngle(0);
+                ax = rc.getAngle(1);
+            }
+        }
+
+        private void moveTarget(ref Vector3 target, Vector2 newTarget)
+        {
+            float x = newTarget.X;
+            float y = newTarget.Y;
+            if (target.X < 0)
+                x = -x;
+            if (target.Y < 0)
+                y = -y;
+
+            target.X = x;
+            target.Y = y;
         }
 
     }

@@ -11,11 +11,11 @@ namespace QTM2Unity
 {
     class CCDTest : MonoBehaviour
     {
-
+        private CCD ccd = new CCD();
         private Bone[] bones = new Bone[4];
         private GameObject[] joints;
 
-        private OpenTK.Vector3 target = new OpenTK.Vector3(5, 4, 0);
+        private OpenTK.Vector3 target = new OpenTK.Vector3(5, 4, -1);
 
         private float markerScale = 0.3f;
 
@@ -29,6 +29,10 @@ namespace QTM2Unity
             OpenTK.Quaternion rot0 = OpenTK.Quaternion.FromAxisAngle(new OpenTK.Vector3(0,1,0), 
                 MathHelper.DegreesToRadians(-90));
             OpenTK.Quaternion rot2 = QuaternionHelper.getRotation((pos2 - pos1), (pos3 - pos2)) * rot0;
+
+            target = OpenTK.Vector3.Transform(pos3 - pos2,
+                OpenTK.Quaternion.FromAxisAngle(OpenTK.Vector3.Cross(pos3-pos2, pos2-pos1), 
+                    MathHelper.DegreesToRadians(60)));
                         
             bones[0] = new Bone("arm_root", pos0, rot0);
             bones[1] = new Bone("arm_1", pos1, rot0);
@@ -42,6 +46,9 @@ namespace QTM2Unity
             {
                 b.setOrientationalConstraint(10, 45);
             }
+            bones[1].setRotationalConstraint(45f, 45f, 45f, 45f, bones[0].getDirection, bones[0].getRight);
+            bones[2].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f, bones[1].getDirection, bones[1].getRight);
+            //bones[3].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
         }
 
         private void drawJoints()
@@ -85,7 +92,7 @@ namespace QTM2Unity
             for (int i = 1; i < bones.Length; i++)
             {
                 Debug.Log(bones[i].Name + " angle around dir: "
-                    + CCD.getTwistAngle(bones[i], bones[i-1]));
+                    + ccd.getTwistAngle(bones[i], bones[i-1]));
             }
         }
 
@@ -127,7 +134,7 @@ namespace QTM2Unity
             for (int i = 1; i < bones.Length; i++)
             {
                 Debug.Log(bones[i].Name + " angle around dir: "
-                    + CCD.getTwistAngle(bones[i], bones[i-1]));
+                    + ccd.getTwistAngle(bones[i], bones[i-1]));
             }
             
         }
@@ -175,7 +182,7 @@ namespace QTM2Unity
             Gizmos.DrawSphere(new UnityEngine.Vector3(target.X, target.Y, target.Z), 0.1f);
 
             // draw reference vector
-            Gizmos.color = Color.yellow;
+            /*Gizmos.color = Color.yellow;
             for (int i = 1; i < bones.Length; i++)
             {
                 OpenTK.Vector3 reference = 
@@ -183,14 +190,47 @@ namespace QTM2Unity
 
                 Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
                     new UnityEngine.Vector3(reference.X, reference.Y, reference.Z));
-            }
+            }*/
            /* Gizmos.color = Color.red;
             Gizmos.DrawRay(UnityEngine.Vector3.zero, new UnityEngine.Vector3(parentUp.X, parentUp.Y, parentUp.Z));*/
+
+            // Draw direction vector of constraint
+            Gizmos.color = Color.yellow;
+            for (int i = 0; i < bones.Length; i++)
+            {
+                if (bones[i].RotationalConstraint != null)
+                {
+                    OpenTK.Vector3 dir = bones[i].RotationalConstraint.getDirection();
+                    Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
+                    new UnityEngine.Vector3(dir.X, dir.Y, dir.Z));
+
+                    OpenTK.Vector3 right = bones[i].RotationalConstraint.getRight();
+                    OpenTK.Vector3 up = OpenTK.Vector3.Cross(dir, right);
+                    // TODO not sure rotating the right direction (+ or - angle)
+                    OpenTK.Vector3 coneRight = OpenTK.Vector3.Transform(dir,
+                        OpenTK.Quaternion.FromAxisAngle(up, bones[i].RotationalConstraint.getAngle(2)));
+                    OpenTK.Vector3 coneLeft = OpenTK.Vector3.Transform(dir,
+                        OpenTK.Quaternion.FromAxisAngle(up, -bones[i].RotationalConstraint.getAngle(0)));
+                    OpenTK.Vector3 coneDown = OpenTK.Vector3.Transform(dir,
+                        OpenTK.Quaternion.FromAxisAngle(right, bones[i].RotationalConstraint.getAngle(3)));
+                    OpenTK.Vector3 coneUp = OpenTK.Vector3.Transform(dir,
+                        OpenTK.Quaternion.FromAxisAngle(right, -bones[i].RotationalConstraint.getAngle(1)));
+                    Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
+                    new UnityEngine.Vector3(coneLeft.X, coneLeft.Y, coneLeft.Z));
+                    Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
+                    new UnityEngine.Vector3(coneRight.X, coneRight.Y, coneRight.Z));
+                    Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
+                    new UnityEngine.Vector3(coneDown.X, coneDown.Y, coneDown.Z));
+                    Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
+                    new UnityEngine.Vector3(coneUp.X, coneUp.Y, coneUp.Z));
+                }
+            }
+            
         }
 
         public void runCCD()
         {
-            bones = CCD.solveBoneChain(bones, target);
+            bones = ccd.solveBoneChain(bones, target);
 
             //CCD.checkOrientationalConstraint(ref bones[1], bones[0]);
             //CCD.checkOrientationalConstraint(ref bones[2], bones[1]);
@@ -198,59 +238,6 @@ namespace QTM2Unity
             
             //******************
             updateJoints();
-        }
-
-        public Bone[] solveBoneChain(Bone[] bones, OpenTK.Vector3 target)
-        {
-            int numberOfIterations = 20;
-            float threshold = 0.1f;
-            int numberOfBones = bones.Length;
-            int iter = 0;
-            while ((target - (bones[numberOfBones - 1].Pos)).Length > threshold
-                && iter < numberOfIterations)
-            {
-                // for each bone, starting with the one closest to the end effector 
-                // (but not the end effector itself)
-                for (int i = numberOfBones - 2; i >= 0; i--)
-                {
-                    // Get the vectors between the points
-                    OpenTK.Vector3 a = bones[numberOfBones - 1].Pos - bones[i].Pos;
-                    OpenTK.Vector3 b = target - bones[i].Pos;
-
-                    // Make a rotation quaternion and rotate 
-                    // - first the endEffector
-                    // - then the rest of the affected joints
-                    OpenTK.Quaternion rotation = QuaternionHelper.getRotation(a, b);
-                    for (int j = numberOfBones - 1; j >= i; j--)
-                    {
-                        if (j > i)
-                        {
-                            Debug.Log("rotating bone " + j + "around " + i);
-                            bones[j].Pos = bones[i].Pos +
-                                OpenTK.Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
-                        }
-
-                        // rotate orientation
-                        bones[j].rotate(rotation);
-
-                        // Check constraints
-                        //checkOrientationalConstraint(ref bones[j]);
-                    }
-                    // I think we need to do this check here <-- TODO check that I'm right
-                    if ((target - bones[numberOfBones - 1].Pos).Length <= threshold)
-                    {
-                        Debug.Log("Converging because close enough to target (" +
-                            (target - bones[numberOfBones - 1].Pos).Length + ")" 
-                            + " iter = " + iter);
-                        return bones;
-                    }
-                }
-                iter++;
-            }
-            Debug.Log("Converging because close enough to target (" +
-                            (target - bones[numberOfBones - 1].Pos).Length + ")"
-                            + "or because reached max number of iterations (" + iter + ")");
-            return bones;
         }
 
     }

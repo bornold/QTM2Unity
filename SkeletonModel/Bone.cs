@@ -52,7 +52,11 @@ namespace QTM2Unity
         public RotationalConstraint RotationalConstraint
         {
             get { return rotationalConstr; }
-            // TODO set?
+        }
+        public void setRotationalConstraint(float a0, float a1, float a2, float a3, 
+            Func<Vector3> directionMethod, Func<Vector3> rightMethod)
+        {
+            rotationalConstr = new RotationalConstraint(a0, a1, a2, a3, directionMethod, rightMethod);
         }
 
         public Bone(string name)
@@ -115,6 +119,13 @@ namespace QTM2Unity
         public void rotate(Quaternion rotation)
         {
             orientation = rotation * orientation;
+        }
+
+        public void rotateTowards(Vector3 v)
+        {
+            float angle = Vector3.CalculateAngle(getDirection(), v);
+            Vector3 axis = Vector3.Cross(getDirection(), v);
+            rotate(angle, axis);
         }
 
         private void flagExists()
