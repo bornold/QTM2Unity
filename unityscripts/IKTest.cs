@@ -17,9 +17,7 @@ namespace QTM2Unity
         // Use this for initialization
         public override void StartNext()
         {
-
             joints = new JointLocalization();
-            skeleton = new BipedSkeleton();
         }
 
         // Update is called once per frame
@@ -27,12 +25,7 @@ namespace QTM2Unity
         {
             thisPos = this.transform.position;
             if (joints == null) joints = new JointLocalization();
-            if (skeleton == null) skeleton = new BipedSkeleton();
-            
-            Dictionary<string, Bone> lastSkelDic =
-                skeleton.ToDictionary(k => k.Data.Name,v => v.Data);
-            joints.GetJointLocation(ref skeleton, markerData);
-
+            skeleton = joints.GetJointLocation(markerData);
             skeleton = ikApplier.ApplyIK(skeleton);
         }
         void OnDrawGizmos()

@@ -36,7 +36,6 @@ namespace QTM2Unity
         public override void StartNext()
         {
             joints = new JointLocalization();
-            skeleton = new BipedSkeleton();
             FindTransform();
         }
 

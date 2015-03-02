@@ -7,15 +7,14 @@ namespace QTM2Unity
     {
         #region varible necessary to estimate joints
         public float height = 150; // cm
-        public float mass = 76; //TODO think about how to estimate mass
+        public float mass = 40; 
         public float marker2SpineDist = 0.05f; // m
         public float midHead2HeadJoint = 0.05f; // m
         public float spineLength = 0.05f; // m
+
+        //Max width and depth
         private float chestDepth = 100; //mm
         private float shoulderWidth = 150; // mm
-        // varibles necessary to estimate hip joints
-        private float pelvisDepth = 100; // mm
-        private float pelvisWidth = 200; // mm
         #endregion
 
         #region important markers for hip joint
@@ -24,76 +23,62 @@ namespace QTM2Unity
         private Vector3 LIAS;
         private Vector3 Sacrum;
         #endregion
+
         private Dictionary<string, Vector3> joints;
         private Dictionary<string, Vector3> markers;
         private Dictionary<string, Vector3> markersLastFrame;
         private BipedSkeleton currentFrame;
-        //private BipedSkeleton lastFrame;
 
-        #region  important rotations to estimate joint
-        private Quaternion pelvisOrientation;
-        private Quaternion chestOrientation;
-        private Quaternion headOrientation;
-        private Vector3 pelvisfront;
-        #endregion
-
-        #region important orientations for estimating rotations
-        private Vector3 kneeForwardOrientationRight;
-        private Vector3 kneeForwardOrientationLeft;
-        private Vector3 armForwardOrientationRight;
-        private Vector3 armForwardOrientationLeft;
-        private Vector3 rightWristOrientation;
-        private Vector3 leftWristOrientation;
-        #endregion
-
-        public void GetJointLocation(ref BipedSkeleton skel, List<LabeledMarker> markerData)
+        public BipedSkeleton GetJointLocation(List<LabeledMarker> markerData)
         {
             // Copy last frames markers
-            markersLastFrame = markers; //TODO Only uses SACRUM LIAS and RIAS as for now, only copy them? or just keep the Vectors RIAS L
+            markersLastFrame = markers;
 
             // Copy new markers to dictionary
             markers = markerData.ToDictionary(k => k.label, v => v.position);
-            
-            // Locate hiporientation, hip orientation is important for IK solver,
-            // therefore, if markers are missing, locations are estimatetd
-            HipOrientation();
-            // collect data shoulder width, chest depth and subject length
+            // collect data from markers about body proportions
             // this is necessary for shoulder joint localization 
-            ShoulderData();
+            BodyData();
+            // Locate hiporientation, hip orientation is important for IK solver,
+            Sacrum = markers[bodyBase];
+            LIAS = markers[leftHip];
+            RIAS = markers[rightHip];
+            ASISMid = Vector3Helper.MidPoint(RIAS, LIAS);
+            // therefore, if markers are missing, locations are estimatetd
+            Quaternion pelvisOrientation = HipOrientation();
 
-            // Head
-            HeadOrientation();
-            ChestOrientation(); 
-            // get all joints, these are necessary for 
-            joints = JointPossitions();
+            Quaternion chestOrientation = ChestOrientation(); 
+            // get all joints
+            joints = JointPossitions(pelvisOrientation,chestOrientation);
 
-            ArmOrientation();
-            WritsOrientation();
-            // these orientation must be set after joints have been localized
-            KneeOrientation();
+            Vector3 rightKneeRot = KneeOrientationRight();
+            Vector3 leftKneeRot = KneeOrientationLeft();
             List<Bone> skele = new List<Bone>()
                 {
-                    GetPlevis(), 
-                    GetSpineRoot(),     GetSpine1(),        GetSpineEnd(),      GetNeck(),          GetHead(),
-                    GetUpperLegRight(), GetLowerLegRight(), GetAnkleRight(),    GetFootRight(),
-                    GetUpperLegLeft(),  GetLowerLegLeft(),  GetAnkleLeft(),     GetFootLeft(),
-                    GetShoulderRight(), GetUpperArmRight(), GetLowerArmRight(), GetWristRight(),    GetHandRight(),
-                    GetShoulderLeft(),  GetUpperArmLeft(),  GetLowerArmLeft(),  GetWristLeft(),     GetHandLeft(),
+                    GetPlevis(pelvisOrientation), 
+                    GetSpineRoot(pelvisOrientation),     GetSpine1(pelvisOrientation),
+                    GetSpineEnd(chestOrientation),      GetNeck(chestOrientation),          GetHead(),
+                    GetUpperLegRight(rightKneeRot), GetLowerLegRight(rightKneeRot), GetAnkleRight(),    GetFootRight(),
+                    GetUpperLegLeft(leftKneeRot),  GetLowerLegLeft(leftKneeRot),  GetAnkleLeft(),     GetFootLeft(),
+                    GetShoulderRight(chestOrientation), GetUpperArmRight(), GetLowerArmRight(), GetWristRight(),    GetHandRight(),
+                    GetShoulderLeft(chestOrientation),  GetUpperArmLeft(),  GetLowerArmLeft(),  GetWristLeft(),     GetHandLeft(),
                     
                 };
 
+            BipedSkeleton skel = new BipedSkeleton();
             foreach (Bone b in skele) //TODO Better way to add bones
             {
                 skel[b.Name] = b;
             }
+            return skel;
         }
 
         #region pelsvis too head getters
-        private Bone GetPlevis()
+        private Bone GetPlevis(Quaternion pelvisOrientation)
         {
             return new Bone(BipedSkeleton.PELVIS, joints[BipedSkeleton.PELVIS], pelvisOrientation);
         }
-        private Bone GetSpineRoot()
+        private Bone GetSpineRoot(Quaternion pelvisOrientation)
         {
             Vector3 target = joints[BipedSkeleton.SPINE1];
             Vector3 front = Vector3.Transform(Vector3.UnitZ,pelvisOrientation);
@@ -101,7 +86,7 @@ namespace QTM2Unity
             Quaternion rot = QuaternionHelper.LookAtUp(pos, target, front);
             return new Bone(BipedSkeleton.SPINE0, pos, rot);
         }
-        private Bone GetSpine1()
+        private Bone GetSpine1(Quaternion pelvisOrientation)
         {
             Vector3 pos = joints[BipedSkeleton.SPINE1];
             Vector3 target = joints[BipedSkeleton.SPINE3];
@@ -109,12 +94,12 @@ namespace QTM2Unity
             Quaternion rot = QuaternionHelper.LookAtUp(pos, target, front);
             return new Bone(BipedSkeleton.SPINE1, pos, rot);
         }
-        private Bone GetSpineEnd()
+        private Bone GetSpineEnd(Quaternion chestOrientation)
         {
             return new Bone(BipedSkeleton.SPINE3, joints[BipedSkeleton.SPINE3], chestOrientation);
         }
 
-        private Bone GetNeck()
+        private Bone GetNeck(Quaternion chestOrientation)
         {
             Vector3 pos = joints[BipedSkeleton.NECK];
             Vector3 target = joints[BipedSkeleton.HEAD];
@@ -124,18 +109,18 @@ namespace QTM2Unity
         }
         private Bone GetHead()
         {
-            return new Bone(BipedSkeleton.HEAD, joints[BipedSkeleton.HEAD], headOrientation);
+            return new Bone(BipedSkeleton.HEAD, joints[BipedSkeleton.HEAD], HeadOrientation());
         }
         #endregion
         #region leg getters
-        private Bone GetUpperLegLeft()
+        private Bone GetUpperLegLeft(Vector3 kneeForwardOrientationLeft)
         {
             Vector3 pos = joints[BipedSkeleton.UPPERLEG_L]; ; 
             Vector3 target = joints[BipedSkeleton.LOWERLEG_L];
             Quaternion rot = QuaternionHelper.LookAtUp(pos, target, kneeForwardOrientationLeft);
             return new Bone(BipedSkeleton.UPPERLEG_L, pos, rot);
         }
-        private Bone GetUpperLegRight()
+        private Bone GetUpperLegRight(Vector3 kneeForwardOrientationRight)
         {
             Vector3 pos = joints[BipedSkeleton.UPPERLEG_R];
             Vector3 target = joints[BipedSkeleton.LOWERLEG_R];
@@ -143,14 +128,14 @@ namespace QTM2Unity
             return new Bone(BipedSkeleton.UPPERLEG_R, pos, rot);
         }
 
-        private Bone GetLowerLegLeft()
+        private Bone GetLowerLegLeft(Vector3 kneeForwardOrientationLeft)
         {
             Vector3 pos = joints[BipedSkeleton.LOWERLEG_L];
             Vector3 target = joints[BipedSkeleton.FOOT_L];
             Quaternion rot = QuaternionHelper.LookAtUp(pos, target, kneeForwardOrientationLeft);
             return new Bone(BipedSkeleton.LOWERLEG_L, pos, rot);
         }
-        private Bone GetLowerLegRight()
+        private Bone GetLowerLegRight(Vector3 kneeForwardOrientationRight)
         {
             Vector3 pos = joints[BipedSkeleton.LOWERLEG_R];
             Vector3 target = joints[BipedSkeleton.FOOT_R];
@@ -185,7 +170,7 @@ namespace QTM2Unity
         }
         #endregion
         #region arm getters
-        private Bone GetShoulderLeft()
+        private Bone GetShoulderLeft(Quaternion chestOrientation)
         {
             Vector3 pos = joints[BipedSkeleton.SHOULDER_L];
             Vector3 target = joints[BipedSkeleton.UPPERARM_L];
@@ -193,7 +178,7 @@ namespace QTM2Unity
             Quaternion rot = QuaternionHelper.LookAtUp(pos, target, up);
             return new Bone(BipedSkeleton.SHOULDER_L, pos, rot);
         }
-        private Bone GetShoulderRight()
+        private Bone GetShoulderRight(Quaternion chestOrientation)
         {
             Vector3 pos = joints[BipedSkeleton.SHOULDER_R];
             Vector3 target = joints[BipedSkeleton.UPPERARM_R];
@@ -205,42 +190,42 @@ namespace QTM2Unity
         {
             Vector3 pos = joints[BipedSkeleton.UPPERARM_L];
             Vector3 target = joints[BipedSkeleton.LOWERARM_L];
-            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, armForwardOrientationLeft);
+            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, ArmForwardOrientationLeft());
             return new Bone(BipedSkeleton.UPPERARM_L, pos, rot);
         }
         private Bone GetUpperArmRight()
         {
             Vector3 pos = joints[BipedSkeleton.UPPERARM_R];
             Vector3 target = joints[BipedSkeleton.LOWERARM_R];
-            Quaternion rot = QuaternionHelper.LookAtRight(pos, target, armForwardOrientationRight);
+            Quaternion rot = QuaternionHelper.LookAtRight(pos, target, ArmForwardOrientationRight());
             return new Bone(BipedSkeleton.UPPERARM_R, pos, rot);
         }
         private Bone GetLowerArmLeft()
         {
             Vector3 pos = joints[BipedSkeleton.LOWERARM_L];
             Vector3 target = joints[BipedSkeleton.HAND_L];
-            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, leftWristOrientation);
+            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, WritsOrientationLeft());
             return new Bone(BipedSkeleton.LOWERARM_L, pos, rot);
         }
         private Bone GetLowerArmRight()
         {
             Vector3 pos = joints[BipedSkeleton.LOWERARM_R];
             Vector3 target = joints[BipedSkeleton.HAND_R];
-            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, rightWristOrientation);
+            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, WritsOrientationRight());
             return new Bone(BipedSkeleton.LOWERARM_R, pos, rot);
         }
         private Bone GetWristLeft()
         {
             Vector3 pos = joints[BipedSkeleton.HAND_L];
             Vector3 target = markers[leftHand];
-            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, leftWristOrientation);
+            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, WritsOrientationLeft());
             return new Bone(BipedSkeleton.HAND_L, pos, rot);
         }
         private Bone GetWristRight()
         {
             Vector3 pos = joints[BipedSkeleton.HAND_R];
             Vector3 target = markers[rightHand];
-            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, rightWristOrientation);
+            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, WritsOrientationRight());
             return new Bone(BipedSkeleton.HAND_R, pos, rot);
         }
         private Bone GetHandLeft()
@@ -254,41 +239,7 @@ namespace QTM2Unity
             return new Bone(BipedSkeleton.FINGER_R, pos);
         }
         #endregion
-        #region Special joints position Getters
-        private Vector3 GetFemurJoint(bool isRightHip)
-        {
-            float Z, X, Y;
-            X = 0.33f * pelvisWidth - 7.3f;
-            Y = -0.30f * pelvisWidth - 10.9f;
-            Z = -0.24f * pelvisDepth - 9.9f;
-            if (!isRightHip) X = -X;
-            Vector3 pos = new Vector3(X, Y, Z) / 1000;
-            pos = QuaternionHelper.Rotate(pelvisOrientation, pos);
-            pos = ASISMid + pos;
-            return pos;
-        }
-        private Vector3 GetUpperarmJoint(bool isRightShoulder)
-        {
-            float
-                x = 96.2f - 0.302f * chestDepth - 0.364f * height + 0.385f * mass,
-                y = -66.32f + 0.30f * chestDepth - 0.432f * mass,
-                z = 66.468f - 0.531f * shoulderWidth + 0.571f * mass;
-            Vector3 res = new Vector3(x, y, z) / 1000;
-            res = QuaternionHelper.Rotate(pelvisOrientation, res);
-            res += isRightShoulder ? markers[rightShoulder] : markers[leftShoulder];
-            return res;
-        }
-        private Vector3 GetShoulderJoint(bool isRightShoulder)
-        {
-            float y = 0,
-                  x = isRightShoulder ? 50 : -50,
-                  z = -chestDepth/2;
-            Vector3 res = new Vector3(x, y, z) / 1000;
-            res = QuaternionHelper.Rotate(chestOrientation, res);
-            return res;
-        }
-        // specific for shoulder localization data, 
-        private void ShoulderData()
+        private void BodyData()
         {
             Vector3 chestV = markers[chest];
             Vector3 neckV = markers[neck];
@@ -301,18 +252,22 @@ namespace QTM2Unity
             tmp = (Vector3Helper.MidPoint(chestV, neckV) - markers[leftShoulder]).Length * 1000;
             shoulderWidth = tmp > shoulderWidth && tmp < 400 ? tmp : shoulderWidth;
 
-            Vector3 headV = markers[head];
-            Vector3 rightFootV = markers[rightFoot];
-            tmp = ((rightFootV - headV).Length * 100) + 10; // * 100 to cm, + 10 cm just a guess
-            height = tmp > height && tmp < 2500 ? tmp : height;
+            tmp = (
+                    (markers[rightAnkle] - markers[rightOuterKnee]).Length +
+                    (markers[rightOuterKnee] - RIAS).Length +
+                    (Sacrum - markers[spine]).Length +
+                    (markers[spine] - markers[neck]).Length +
+                    (markers[neck] - markers[head]).Length
+                  ) * 100; // cm
+            if (tmp > height && tmp < 2500)
+            {
+                height = tmp;
+                mass = (height / 100) * (height / 100) * 24;
+            }
         }
-        #endregion
         #region Joint orientation 
-        private void HipOrientation()
+        private Quaternion HipOrientation()
         {
-            Sacrum = markers[bodyBase];
-            LIAS = markers[leftHip];
-            RIAS = markers[rightHip];
             if (Sacrum.IsNaN() || LIAS.IsNaN() || RIAS.IsNaN())
             {
                 MissingEssientialMarkers();
@@ -321,13 +276,14 @@ namespace QTM2Unity
                     //TODO The classic this should not happen case, send NaN or throw something?
                 }
             }
-            ASISMid = Vector3Helper.MidPoint(RIAS, LIAS);
-            pelvisWidth = (LIAS - RIAS).Length * 1000; //TODO set to constant sometime? same as all other constant length To mm 
-            pelvisDepth = (ASISMid - Sacrum).Length * 1000; // To mm
+            return QuaternionHelper.GetHipOrientation(Sacrum, LIAS, RIAS);
+        }
+        private Vector3 PelvisFront(Quaternion pelvisOrientation)
+        {
             pelvisOrientation = QuaternionHelper.GetHipOrientation(Sacrum, LIAS, RIAS);
-            pelvisfront = Vector3.Transform(Vector3.UnitZ, pelvisOrientation);
+            Vector3 pelvisfront = Vector3.Transform(Vector3.UnitZ, pelvisOrientation);
             pelvisfront.Normalize();
-
+            return pelvisfront;
         }
         #region Hip prediction wizard
         private void MissingEssientialMarkers()
@@ -403,7 +359,7 @@ namespace QTM2Unity
         }
         #endregion
         // SET after joints!!
-        private void ChestOrientation()
+        private Quaternion ChestOrientation()
         {
             /*
             Fram:  TV2 till SME elller TV12 till SME
@@ -411,34 +367,21 @@ namespace QTM2Unity
             UP: bodybase till spineEnd/huvud/ryggrad
                 ryggrad till nacke/huvud
                 nacke till huvud
-    */
+            */
             Vector3 neckPos = markers[neck];
             Vector3 chestPos = markers[chest];
             Vector3 rightShoulderPos = markers[rightShoulder];
             Vector3 leftShoulderPos = markers[leftShoulder];
-            //Vector3 midspinePos = markers[spine];
-            //SACRUM
             Vector3 front, up, right;
 
             Vector3 mid;
 
-            /*
-            up = neckPos - markers[spine];
-            right = rightShoulderPos - leftShoulderPos;
-            chestOrientation = QuaternionHelper.GetOrientationFromXY(up, right);
-            Vector3 x = Vector3.Transform(Vector3.UnitX,q),
-                y = Vector3.Transform(Vector3.UnitY,q),
-                z = Vector3.Transform(Vector3.UnitZ,q);
-            UnityEngine.Debug.Log(string.Format("right:{1} up:{0}", up, right));
-            UnityEngine.Debug.Log(string.Format("X:{0} Y:{1} Z:{2}",x,y,z));
-            return;
-            */
+
             if (!chestPos.IsNaN() && !neckPos.IsNaN() && !rightShoulderPos.IsNaN() && !leftShoulderPos.IsNaN())
             {
                 front = chestPos - neckPos;
                 right = rightShoulderPos - leftShoulderPos;
-                chestOrientation = QuaternionHelper.GetOrientationFromZX(front, right);
-                return;
+                return QuaternionHelper.GetOrientationFromZX(front, right);
             }
 
             if (!chestPos.IsNaN() && !neckPos.IsNaN())
@@ -448,14 +391,12 @@ namespace QTM2Unity
                 if (!rightShoulderPos.IsNaN())
                 {
                     right = rightShoulderPos - mid;
-                    chestOrientation = QuaternionHelper.GetOrientationFromZX(front, right);
-                    return;
+                    return QuaternionHelper.GetOrientationFromZX(front, right);
                 }
                 if (!leftShoulderPos.IsNaN())
                 {
                     right = mid - leftShoulderPos;
-                    chestOrientation = QuaternionHelper.GetOrientationFromZX(front, right);
-                    return;
+                    return QuaternionHelper.GetOrientationFromZX(front, right);
                 }
             }
             if (!rightShoulderPos.IsNaN() && !leftShoulderPos.IsNaN())
@@ -465,141 +406,110 @@ namespace QTM2Unity
                 if (!chestPos.IsNaN() )
                 {
                     front = chestPos - mid;
-                    chestOrientation = QuaternionHelper.GetOrientationFromZX(front, right);
-                    return;
+                    return QuaternionHelper.GetOrientationFromZX(front, right);
                 }
                 if (!neckPos.IsNaN())
                 {
                     front = mid - neckPos;
-                    chestOrientation = QuaternionHelper.GetOrientationFromZX(front, right);
-                    return;
+                    return QuaternionHelper.GetOrientationFromZX(front, right);
                 }
             }
+            return QuaternionHelper.GetOrientationFromZX((chestPos - neckPos), (rightShoulderPos - leftShoulderPos));
         }
 
-        private void ArmOrientation()
+        private Vector3 ArmForwardOrientationLeft()
         {
+
+            Vector3 ulna = markers[leftElbow];
+            Vector3 medialHumerus = markers[leftInnerElbow];
+            Vector3 lateralHumerus = markers[leftOuterElbow];
+            Vector3 midPoint = Vector3Helper.MidPoint(medialHumerus, lateralHumerus);
+            Vector3 front = midPoint - ulna;
+            front.Normalize();
+            return front;
+        }
+        private Vector3 ArmForwardOrientationRight()
+        {
+
             Vector3 ulna = markers[rightElbow];
             Vector3 medialHumerus = markers[rightInnerElbow];
             Vector3 lateralHumerus = markers[rightOuterElbow];
             Vector3 midPoint = Vector3Helper.MidPoint(medialHumerus, lateralHumerus);
             Vector3 front = midPoint - ulna;
             front.Normalize();
-            armForwardOrientationRight = front;
-
-            ulna = markers[leftElbow];
-            medialHumerus = markers[leftInnerElbow];
-            lateralHumerus = markers[leftOuterElbow];
-            midPoint = Vector3Helper.MidPoint(medialHumerus, lateralHumerus);
-            front = midPoint - ulna;
-            front.Normalize();
-            armForwardOrientationLeft = front;
-
+            return front;
         }
-        private void KneeOrientation()
+        private Vector3 KneeOrientationRight()
+        {
+            Vector3 upper = joints[BipedSkeleton.UPPERLEG_R];
+            Vector3 lower = markers[rightAnkle];
+            Vector3 forward = joints[BipedSkeleton.LOWERLEG_R];
+            Vector3 mid = Vector3Helper.MidPoint(upper, lower);
+            return forward - mid;
+        }
+
+        private Vector3 KneeOrientationLeft()
         {
 
-            /*
-            Vector3 PAS = markers[leftUpperKnee];
-            Vector3 TCC = markers[leftLowerKnee];
-            Vector3 FLE = markers[leftOuterKnee];
-
-            Vector3 mid = Vector3Helper.MidPoint(PAS, TCC);
-            Vector3 right = mid - FLE;
-            Vector3 up = PAS - TCC;
-
-            Vector3 forward = Vector3.Cross(right, up);
-            forward.Normalize();
-            kneeForwardOrientationLeft = forward;
-
-            PAS = markers[rightUpperKnee];
-            TCC = markers[rightLowerKnee];
-            FLE = markers[rightOuterKnee];
-
-            mid = Vector3Helper.MidPoint(PAS, TCC);
-            right = FLE - mid;
-            up = PAS - TCC;
-
-            forward = Vector3.Cross(right, up);
-            forward.Normalize();
-            kneeForwardOrientationRight = forward;
-            */
-             
             Vector3 upper = joints[BipedSkeleton.UPPERLEG_L];
             Vector3 lower = markers[leftAnkle]; 
             Vector3 forward = joints[BipedSkeleton.LOWERLEG_L];
             Vector3 mid = Vector3Helper.MidPoint(upper, lower);
             Vector3 vec = forward - mid;
-            kneeForwardOrientationLeft = vec;
-
-            upper = joints[BipedSkeleton.UPPERLEG_R];
-            lower = markers[rightAnkle];
-            forward = joints[BipedSkeleton.LOWERLEG_R];
-            mid = Vector3Helper.MidPoint(upper, lower);
-            vec = forward - mid;
-            kneeForwardOrientationRight = vec;
-
-
+            return vec;
+             
         }
-        private void WritsOrientation()
+
+        private Vector3 WritsOrientationRight()
+        {
+            Vector3 littleFingerSide = markers[rightWrist];
+            Vector3 thumbSide = markers[rightWristRadius];
+            Vector3 front = thumbSide - littleFingerSide;
+            front.Normalize();
+            return front;
+        }
+        private Vector3 WritsOrientationLeft()
         {
             Vector3 littleFingerSide = markers[leftWrist];
             Vector3 thumbSide = markers[leftWristRadius];
             Vector3 front = thumbSide - littleFingerSide;
             front.Normalize();
-            leftWristOrientation = front;
-
-            littleFingerSide = markers[rightWrist];
-            thumbSide = markers[rightWristRadius];
-            front = thumbSide - littleFingerSide;
-            front.Normalize();
-            rightWristOrientation = front;
-
+            return front;
         }
-        private void HeadOrientation()
+        private Quaternion HeadOrientation()
         {
-            headOrientation = QuaternionHelper.GetOrientation(markers[head], markers[leftHead], markers[rightHead]);
+            return QuaternionHelper.GetOrientation(markers[head], markers[leftHead], markers[rightHead]);
         }
         #endregion
         #region JointPossitions
-        private Dictionary<string, Vector3> JointPossitions()
+        private Dictionary<string, Vector3> JointPossitions(Quaternion pelvisOrientation, Quaternion chestOrientation)
         {
             Dictionary<string, Vector3> dic = new Dictionary<string, Vector3>();
 
-            Vector3 pos, target,
+            Vector3 
+                pos, target,
                 right, left, front, back,
-                up, forward;
+                up, forward, 
+                pelvisfront = PelvisFront(pelvisOrientation);
 
 
             /////////////// FEMUR LEFT ///////////////
-            Vector3 lf = GetFemurJoint(false);
+            Vector3 lf = GetFemurJoint(pelvisOrientation, false);
             dic.Add(BipedSkeleton.UPPERLEG_L, lf);
             //////////////////////////////////////////
 
             /////////////// FEMUR RIGHT ///////////////
-            Vector3 rf = GetFemurJoint(true);
+            Vector3 rf = GetFemurJoint(pelvisOrientation, true);
             dic.Add(BipedSkeleton.UPPERLEG_R, rf);
             //////////////////////////////////////////
 
             /////////////// SPINE0 //////////////
             Vector3 spine0 = Sacrum + pelvisfront * marker2SpineDist;
-            /*
-            Vector3 pelvY = Vector3.Transform(Vector3.UnitY, pelvisOrientation);
-            Vector3 project = Vector3Helper.ProjectAndCreate(hip2spine, pelvY);
-            Vector3 spine1 = pp + project;
-             */
             dic.Add(BipedSkeleton.SPINE0, spine0);
             //////////////////////////////////////////
 
             /////////////// HIP ///////////////
-            /*
-             * i höjd med höfter, men så att Y axel pekar på Ryggbas
-             */
-            Vector3 pp = Vector3Helper.MidPoint(rf,lf);
-            Vector3 pelvY = Vector3.Transform(Vector3.UnitY, pelvisOrientation);
-            Vector3 hip2spine = spine0 - pp;
-            Vector3 project = Vector3Helper.ProjectAndCreate(hip2spine, pelvY);
-            pos = pp + hip2spine - project;
+            pos = Vector3Helper.MidPoint(lf,rf); 
             dic.Add(BipedSkeleton.PELVIS, pos);
             //////////////////////////////////////////
 
@@ -609,15 +519,8 @@ namespace QTM2Unity
              */
             pos = markers[spine];
             target = markers[neck];
-            if (!target.IsNaN())
-            {
-                front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, pelvisfront));
-                front.Normalize();
-            }
-            else
-            {
-                front = pelvisfront;
-            }
+            front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, pelvisfront));
+            front.Normalize();
             pos += front * marker2SpineDist;
             dic.Add(BipedSkeleton.SPINE1, pos);
             //////////////////////////////////////////
@@ -625,30 +528,10 @@ namespace QTM2Unity
             /////////////// Spine end ///////////////
             back = markers[neck];
             front = markers[chest];
-            Vector3 neckPos = back;
-            if (!back.IsNaN())
-            {
-                if (!front.IsNaN())
-                {
-                    forward = front - back;
-                    forward.Normalize();
-                }
-                else
-                {
-                    forward = Vector3.Transform(Vector3.UnitZ,chestOrientation);
-                    forward.Normalize();
-                }
-                    neckPos += forward * marker2SpineDist;
-            }
-            else if (!front.IsNaN())
-            {
-                forward = Vector3.Transform(Vector3.UnitZ, chestOrientation);
-                forward.Normalize();
-                //neckPos = front + -forward * marker2SpineDist*3;
-            }
+            forward = Vector3.Transform(Vector3.UnitZ, chestOrientation);
+            Vector3 neckPos = back + forward * marker2SpineDist; ;
             dic.Add(BipedSkeleton.SPINE3, neckPos);
             //////////////////////////////////////////
-
 
             /////////////// HEAD ///////////////
             front = markers[head];
@@ -656,7 +539,7 @@ namespace QTM2Unity
             left = markers[leftHead];
             Vector3 headPos = Vector3Helper.MidPoint(left, right, front);
             //Move head position down
-            Vector3 down = -Vector3.Transform(Vector3.UnitY, headOrientation);
+            Vector3 down = -Vector3.Transform(Vector3.UnitY, HeadOrientation());
             down.Normalize();
             headPos += down * midHead2HeadJoint;
             dic.Add(BipedSkeleton.HEAD, headPos);
@@ -669,17 +552,15 @@ namespace QTM2Unity
             dic.Add(BipedSkeleton.NECK, pos);
             //////////////////////////////////////////
 
-
             /////////////// SHOUDLERs ///////////////
-            dic.Add(BipedSkeleton.SHOULDER_L, GetShoulderJoint(false) + markers[chest]); //neckPos); //Vector3.One);// 
-            dic.Add(BipedSkeleton.SHOULDER_R, GetShoulderJoint(true) + markers[chest]); //neckPos); // Vector3.One);//
+            dic.Add(BipedSkeleton.SHOULDER_L, GetShoulderJoint(chestOrientation,false) + markers[chest]); //neckPos); //Vector3.One);// 
+            dic.Add(BipedSkeleton.SHOULDER_R, GetShoulderJoint(chestOrientation,true) + markers[chest]); //neckPos); // Vector3.One);//
             //////////////////////////////
 
             /////////////// UPPER ARMS ///////////////
-            dic.Add(BipedSkeleton.UPPERARM_L, GetUpperarmJoint(false));
-            dic.Add(BipedSkeleton.UPPERARM_R, GetUpperarmJoint(true));
+            dic.Add(BipedSkeleton.UPPERARM_L, GetUpperarmJoint(pelvisOrientation, false));
+            dic.Add(BipedSkeleton.UPPERARM_R, GetUpperarmJoint(pelvisOrientation, true));
             //////////////////////////////////////////
-
 
             /////////////// HAND LEFT ///////////////
             pos = Vector3Helper.MidPoint(markers[leftWrist], markers[leftWristRadius]);
@@ -708,37 +589,148 @@ namespace QTM2Unity
             //////////////////////////////////////////
 
             /////////////// KNEE LEFT ///////////////
-            front = markers[leftOuterKnee];
-            left = markers[leftLowerKnee];
-            right = markers[leftUpperKnee];
-            pos = Vector3Helper.MidPoint(left, right, front);
+            pos = KneePos(false);
             dic.Add(BipedSkeleton.LOWERLEG_L, pos);
             //////////////////////////////////////////
 
             /////////////// KNEE RIGHT ///////////////
-            front = markers[rightOuterKnee];
-            left = markers[rightLowerKnee];
-            right = markers[rightUpperKnee];
-            pos = Vector3Helper.MidPoint(left, right, front);
+            pos = KneePos(true);
             dic.Add(BipedSkeleton.LOWERLEG_R, pos);
             //////////////////////////////
 
             /////////////// FOOT RIGHT ///////////////
-            left = markers[rightAnkle];
-            right = markers[rightHeel];
-            pos = Vector3Helper.MidPoint(left, right);
+            pos = AnklePos(true);
             dic.Add(BipedSkeleton.FOOT_R,pos);
             //////////////////////////////
 
             /////////////// FOOT LEft ///////////////
-            left = markers[leftAnkle];
-            right = markers[leftHeel];
-            pos = Vector3Helper.MidPoint(left, right);
+            pos = AnklePos(false);
             dic.Add(BipedSkeleton.FOOT_L, pos);
             //////////////////////////////
 
             return dic;
         }
+        #endregion
+        #region Special joints position
+        private Vector3 GetFemurJoint(Quaternion pelvisOrientation, bool isRightHip)
+        {
+            float Z, X, Y,
+                pelvisDepth = (ASISMid - Sacrum).Length * 1000,
+                pelvisWidth = (LIAS - RIAS).Length * 1000;
+            X = 0.33f * pelvisWidth - 7.3f;
+            Y = -0.30f * pelvisWidth - 10.9f;
+            Z = -0.24f * pelvisDepth - 9.9f;
+            if (!isRightHip) X = -X;
+            Vector3 pos = new Vector3(X, Y, Z) / 1000;
+            pos = QuaternionHelper.Rotate(pelvisOrientation, pos);
+            pos = ASISMid + pos;
+            return pos;
+        }
+        private Vector3 GetUpperarmJoint(Quaternion pelvisOrientation, bool isRightShoulder)
+        {
+            float
+                x = 96.2f - 0.302f * chestDepth - 0.364f * height + 0.385f * mass,
+                y = -66.32f + 0.30f * chestDepth - 0.432f * mass,
+                z = 66.468f - 0.531f * shoulderWidth + 0.571f * mass;
+            Vector3 res = new Vector3(x, y, z) / 1000;
+            res = QuaternionHelper.Rotate(pelvisOrientation, res);
+            res += isRightShoulder ? markers[rightShoulder] : markers[leftShoulder];
+            return res;
+        }
+        private Vector3 GetShoulderJoint(Quaternion chestOrientation, bool isRightShoulder)
+        {
+            float y = 0,
+                  x = isRightShoulder ? 50 : -50,
+                  z = -chestDepth / 2;
+            Vector3 res = new Vector3(x, y, z) / 1000;
+            res = QuaternionHelper.Rotate(chestOrientation, res);
+            return res;
+        }
+
+
+        private Vector3 KneePos(bool isRightKnee)
+        {
+            Vector3 x, y, z, M1, M2, M3, negateY = new Vector3(1f, -1f, 1f);
+            Matrix4 R;
+            if (isRightKnee)
+            {
+                M1 = markers[rightOuterKnee];//FLE
+                M3 = markers[rightLowerKnee];//TTC
+                M2 = markers[rightAnkle];//FAL
+
+            }
+            else
+            {
+                M1 = markers[leftOuterKnee];//FLE
+                M3 = markers[leftLowerKnee];//TTC
+                M2 = markers[leftAnkle];//FAL
+            }
+            x = Vector3Helper.MidPoint(M1, M2) - M3;
+            z = M1 - M2;
+            R = Matrix4Helper.GetOrientationMatrix(x, z);
+            Vector3 trans = new Vector3(-0.009f*0.7071f, 0.009f*0.7071f, 0f);
+            if (isRightKnee) Vector3.Multiply(ref trans, ref negateY, out trans);
+            Vector3 newM1 = Vector3.TransformVector(trans, R) + M1;
+
+            x = Vector3Helper.MidPoint(M1, M2) - M3;
+            z = M2 - M1;
+            R = Matrix4Helper.GetOrientationMatrix(x, z);
+            if (isRightKnee) Vector3.Multiply(ref trans, ref negateY, out trans);
+            Vector3 newM2 = Vector3.TransformVector(trans, R) + M2;
+            
+            if (isRightKnee)
+            {
+                markers[rightOuterKnee] = newM1;//FLE
+                markers[rightAnkle] = newM2;//FAL
+
+            }
+            else
+            {
+                markers[leftOuterKnee] = newM1;//FLE
+                markers[leftAnkle] = newM2;//FAL
+            }
+
+            x = Vector3Helper.MidPoint(newM1, newM2) - M3;
+            z = newM1 - newM2;
+            float scalingFactor = z.Length;
+            R = Matrix4Helper.GetOrientationMatrix(x, z);
+            trans = new Vector3(
+                -0.1033f*scalingFactor,
+                -0.09814f*scalingFactor,
+                0.0597f*scalingFactor);
+            if (isRightKnee) Vector3.Multiply(ref trans, ref negateY, out trans);
+            Vector3 knee = Vector3.TransformVector(trans, R) + newM1;
+            return knee;
+        }
+        private Vector3 AnklePos(bool isRightAnkle)
+        {
+            Vector3 x, z, M1, M2, M3, negateY = new Vector3(1f, -1f, 1f);
+            Matrix4 R;
+            if (isRightAnkle)
+            {
+                M1 = markers[rightOuterKnee];//FLE
+                M3 = markers[rightLowerKnee];//TTC
+                M2 = markers[rightAnkle];//FAL
+            }
+            else
+            {
+                M1 = markers[leftOuterKnee];//FLE
+                M3 = markers[leftLowerKnee];//TTC
+                M2 = markers[leftAnkle];//FAL
+            }
+            x = Vector3Helper.MidPoint(M1, M2) - M3;
+            z = M2 - M1;
+            float scalefactor = z.Length;
+            R = Matrix4Helper.GetOrientationMatrix(x, z);
+            Vector3 trans = new Vector3(
+                -0.07675f * scalefactor, 
+                0.05482f * scalefactor, 
+                -0.02741f * scalefactor);
+            if (!isRightAnkle) Vector3.Multiply(ref trans, ref negateY, out trans);
+            Vector3 ankle = Vector3.TransformVector(trans, R) + M2;
+            return ankle;
+        }
+
         #endregion
         #region skin markers
         string bodyBase = "SACR";

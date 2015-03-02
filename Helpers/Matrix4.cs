@@ -129,5 +129,22 @@ namespace QTM2Unity
 
             return matrix;
         }
+        /// <summary>
+        /// Returns a rotation matrix with position <0,0,0> according to vector x and z
+        /// </summary>
+        /// <param name="x"> the x vector</param>
+        /// <param name="z">the z vector</param>
+        /// <returns>Rotation matrix</returns>
+        public static Matrix4 GetOrientationMatrix(Vector3 x, Vector3 z)
+        {
+            Vector3 y;
+            y = Vector3.Cross(z, x);
+            y.Normalize();
+            x = Vector3.Cross(y, z);
+            x.Normalize();
+            z.Normalize();
+            return GetMatrix(Vector3.Zero, z, y, x);
+        }
     }
+
 }

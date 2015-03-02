@@ -9,7 +9,7 @@ namespace QTM2Unity
         public override void UpdateNext()
         {
             base.UpdateNext();
-            joints.GetJointLocation(ref skeleton, markerData);
+            skeleton = joints.GetJointLocation(markerData);
             SetAll();
         }
     
