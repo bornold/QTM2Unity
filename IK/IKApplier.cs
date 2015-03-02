@@ -8,6 +8,8 @@ namespace QTM2Unity
 {
     class IKApplier
     {
+        CCD ccd = new CCD(); // CCD for now
+
         Dictionary<string, Bone> lastSkelDic;
         public BipedSkeleton ApplyIK(BipedSkeleton skeleton)
         {
@@ -36,7 +38,7 @@ namespace QTM2Unity
                         if (b.Data.Exists)
                         {
                             OpenTK.Vector3 target = b.Data.Pos;
-                            missingChain = CCD.solveBoneChain(missingChain.ToArray(), target).ToList(); // solve with IK
+                            missingChain = ccd.solveBoneChain(missingChain.ToArray(), target).ToList(); // solve with IK
                             break;
                         }
                     }

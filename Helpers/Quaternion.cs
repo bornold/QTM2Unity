@@ -5,16 +5,7 @@ using System.Text;
 using OpenTK;
 
 namespace QTM2Unity
-{
-    public static class Mathf
-    {
-        public static Func<float, float> Cos = angleR => (float)Math.Cos(angleR);
-        public static Func<float, float> Sin = angleR => (float)Math.Sin(angleR);
-        public static Func<float, float> Acos = angleR => (float)Math.Acos(angleR);
-        public static Func<float, float> Tan = angleR => (float)Math.Tan(angleR);
-        public static Func<float, float> Sqrt = power => (float)Math.Sqrt(power);
-        public static float PI = (float)Math.PI;
-    }   
+{  
     public static class QuaternionHelper
     {
         /// <summary>
@@ -209,7 +200,7 @@ namespace QTM2Unity
             float d = Vector3.Dot(quaternion.Xyz, axis);
             float l = length(axis.X * d, axis.Y * d, axis.Z * d, quaternion.W);
 
-            return (l == 0) ? 0f : (float)(2.0 * Math.Acos(clamp((float) (quaternion.W / Math.Sqrt(l)), -1f, 1f)));
+            return (l == 0) ? 0f : (float)(2.0 * Math.Acos(QTM2UnityMath.clamp((float) (quaternion.W / Math.Sqrt(l)), -1f, 1f)));
         }
 
         /// <summary>
@@ -220,7 +211,7 @@ namespace QTM2Unity
         /// <returns>the rotation angle around the given axis</returns>
         public static float getAngleAround(this Quaternion quaternion, Vector3 axis)
         {
-            return MathHelper.RadiansToDegrees(getAngleAroundRad(quaternion, axis));
+            return OpenTK.MathHelper.RadiansToDegrees(getAngleAroundRad(quaternion, axis));
         }
 
         public static float length (float x, float y, float z, float w) 
@@ -268,14 +259,7 @@ namespace QTM2Unity
 
             return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle));
         }
-        // TODO move to some math util (not quaternion specific)
-        public static float clamp(float value, float min, float max)
-        {
-            if (value < min) return min;
-            if (value > max) return max;
-            return value;
-        }
-
+        
 
         /// <summary>
         /// Get orientation of three points
