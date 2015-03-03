@@ -51,7 +51,7 @@ namespace QTM2Unity
         {
             setGO(hips, BipedSkeleton.PELVIS, true);
             setGO(spine, BipedSkeleton.SPINE0, false);
-            setGO(spine2, BipedSkeleton.SPINE1, false);
+            setGO(spine1, BipedSkeleton.SPINE1, false);
             setGO(neck, BipedSkeleton.NECK, false);
             setGO(head, BipedSkeleton.HEAD, false);
 

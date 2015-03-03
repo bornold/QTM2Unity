@@ -13,8 +13,8 @@ namespace QTM2Unity
         public float spineLength = 0.05f; // m
 
         //Max width and depth
-        private float chestDepth = 100; //mm
-        private float shoulderWidth = 150; // mm
+        private float chestDepth = 50; //mm
+        private float shoulderWidth = 50; // mm
         #endregion
 
         #region important markers for hip joint
@@ -248,8 +248,8 @@ namespace QTM2Unity
             chestDepth = tmp > chestDepth && tmp < 500 ? tmp : chestDepth; // to mm
 
             // set shoulder width
-            tmp = (Vector3Helper.MidPoint(chestV, neckV) - markers[leftShoulder]).Length * 1000;
-            shoulderWidth = tmp > shoulderWidth && tmp < 400 ? tmp : shoulderWidth;
+            tmp = (markers[leftShoulder] - markers[rightShoulder]).Length * 500; // to mm half the width
+            shoulderWidth = tmp > shoulderWidth && tmp < 500 ? tmp : shoulderWidth;
 
             tmp = (
                     (markers[rightAnkle] - markers[rightOuterKnee]).Length +
@@ -258,7 +258,7 @@ namespace QTM2Unity
                     (markers[spine] - markers[neck]).Length +
                     (markers[neck] - markers[head]).Length
                   ) * 100; // cm
-            if (tmp > height && tmp < 2500)
+            if (tmp > height && tmp < 250)
             {
                 height = tmp;
                 mass = (height / 100) * (height / 100) * 24;
@@ -494,9 +494,6 @@ namespace QTM2Unity
             /////////////// FEMUR LEFT ///////////////
             Vector3 lf = GetFemurJoint(pelvisOrientation, false);
             dic.Add(BipedSkeleton.UPPERLEG_L, lf);
-            //////////////////////////////////////////
-
-            /////////////// FEMUR RIGHT ///////////////
             Vector3 rf = GetFemurJoint(pelvisOrientation, true);
             dic.Add(BipedSkeleton.UPPERLEG_R, rf);
             //////////////////////////////////////////
@@ -638,8 +635,7 @@ namespace QTM2Unity
                 x = 96.2f - 0.302f * chestDepth - 0.364f * height + 0.385f * mass,
                 y = -66.32f + 0.30f * chestDepth - 0.432f * mass,
                 z = 66.468f - 0.531f * shoulderWidth + 0.571f * mass;
-
-            Vector3 res = new Vector3(x, y, z) / 1000;
+            Vector3 res = new Vector3(x, y, z) / 1000; // to mm
             res = QuaternionHelper.Rotate(chestOrientation, res);
             res += isRightShoulder ? markers[rightShoulder] : markers[leftShoulder];
             return res;
