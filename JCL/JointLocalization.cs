@@ -18,7 +18,6 @@ namespace QTM2Unity
         #endregion
 
         #region important markers for hip joint
-        private Vector3 ASISMid;
         private Vector3 RIAS;
         private Vector3 LIAS;
         private Vector3 Sacrum;
@@ -43,7 +42,7 @@ namespace QTM2Unity
             Sacrum = markers[bodyBase];
             LIAS = markers[leftHip];
             RIAS = markers[rightHip];
-            ASISMid = Vector3Helper.MidPoint(RIAS, LIAS);
+
             // therefore, if markers are missing, locations are estimatetd
             Quaternion pelvisOrientation = HipOrientation();
 
@@ -492,7 +491,6 @@ namespace QTM2Unity
                 up, forward, 
                 pelvisfront = PelvisFront(pelvisOrientation);
 
-
             /////////////// FEMUR LEFT ///////////////
             Vector3 lf = GetFemurJoint(pelvisOrientation, false);
             dic.Add(BipedSkeleton.UPPERLEG_L, lf);
@@ -503,14 +501,14 @@ namespace QTM2Unity
             dic.Add(BipedSkeleton.UPPERLEG_R, rf);
             //////////////////////////////////////////
 
-            /////////////// SPINE0 //////////////
-            Vector3 spine0 = Sacrum + pelvisfront * marker2SpineDist;
-            dic.Add(BipedSkeleton.SPINE0, spine0);
-            //////////////////////////////////////////
-
             /////////////// HIP ///////////////
             pos = Vector3Helper.MidPoint(lf,rf); 
             dic.Add(BipedSkeleton.PELVIS, pos);
+            //////////////////////////////////////////
+
+            /////////////// SPINE0 //////////////
+            Vector3 spine0 = Sacrum + pelvisfront * marker2SpineDist;
+            dic.Add(BipedSkeleton.SPINE0, spine0);
             //////////////////////////////////////////
 
             /////////////// SPINE1 //////////////
@@ -558,8 +556,8 @@ namespace QTM2Unity
             //////////////////////////////
 
             /////////////// UPPER ARMS ///////////////
-            dic.Add(BipedSkeleton.UPPERARM_L, GetUpperarmJoint(pelvisOrientation, false));
-            dic.Add(BipedSkeleton.UPPERARM_R, GetUpperarmJoint(pelvisOrientation, true));
+            dic.Add(BipedSkeleton.UPPERARM_L, GetUpperarmJoint(chestOrientation, false));
+            dic.Add(BipedSkeleton.UPPERARM_R, GetUpperarmJoint(chestOrientation, true));
             //////////////////////////////////////////
 
             /////////////// HAND LEFT ///////////////
@@ -614,6 +612,10 @@ namespace QTM2Unity
         #region Special joints position
         private Vector3 GetFemurJoint(Quaternion pelvisOrientation, bool isRightHip)
         {
+            // as described by Harrington et al. 2006
+            // Prediction of the hip joint centre in adults, children, and patients with
+            // cerebral palsy based on magnetic resonance imaging
+            Vector3 ASISMid = Vector3Helper.MidPoint(RIAS, LIAS);
             float Z, X, Y,
                 pelvisDepth = (ASISMid - Sacrum).Length * 1000,
                 pelvisWidth = (LIAS - RIAS).Length * 1000;
@@ -626,14 +628,19 @@ namespace QTM2Unity
             pos = ASISMid + pos;
             return pos;
         }
-        private Vector3 GetUpperarmJoint(Quaternion pelvisOrientation, bool isRightShoulder)
+        private Vector3 GetUpperarmJoint(Quaternion chestOrientation, bool isRightShoulder)
         {
+            // as described by Campbell et al. 2009 in 
+            // MRI development and validation of two new predictive methods of
+            // glenohumeral joint centre location identification and comparison with
+            // established techniques
             float
                 x = 96.2f - 0.302f * chestDepth - 0.364f * height + 0.385f * mass,
                 y = -66.32f + 0.30f * chestDepth - 0.432f * mass,
                 z = 66.468f - 0.531f * shoulderWidth + 0.571f * mass;
+
             Vector3 res = new Vector3(x, y, z) / 1000;
-            res = QuaternionHelper.Rotate(pelvisOrientation, res);
+            res = QuaternionHelper.Rotate(chestOrientation, res);
             res += isRightShoulder ? markers[rightShoulder] : markers[leftShoulder];
             return res;
         }
@@ -650,6 +657,8 @@ namespace QTM2Unity
 
         private Vector3 KneePos(bool isRightKnee)
         {
+
+            // Stolen from Visual3D
             Vector3 x, y, z, M1, M2, M3, negateY = new Vector3(1f, -1f, 1f);
             Matrix4 R;
             if (isRightKnee)
@@ -704,6 +713,7 @@ namespace QTM2Unity
         }
         private Vector3 AnklePos(bool isRightAnkle)
         {
+            //Stolen from Visual3d
             Vector3 x, z, M1, M2, M3, negateY = new Vector3(1f, -1f, 1f);
             Matrix4 R;
             if (isRightAnkle)

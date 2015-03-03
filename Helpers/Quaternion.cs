@@ -325,10 +325,10 @@ namespace QTM2Unity
             z = normal[1];
             Vector3 x = Vector3.Cross(z, y);
 
-            Quaternion zRot = QuaternionHelper.getRotation(Vector3.UnitZ, z);
+            Quaternion zRot = GetRotation2(Vector3.UnitZ, z);
             Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
 
-            Quaternion yRot = QuaternionHelper.getRotation(possibleY, y);
+            Quaternion yRot = GetRotation2(possibleY, y);
             Quaternion orientation = yRot * zRot;
             return orientation;
         }

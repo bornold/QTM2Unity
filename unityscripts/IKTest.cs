@@ -11,7 +11,6 @@ namespace QTM2Unity
         private BipedSkeleton skeleton;
         private Vector3 thisPos;
         private IKApplier ikApplier = new IKApplier();
-        public bool debug;
         public bool showRotationTrace;
         public float markerScale;
         // Use this for initialization

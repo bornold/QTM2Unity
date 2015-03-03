@@ -6,7 +6,7 @@ namespace QTM2Unity
     public abstract class RT : MonoBehaviour
     {
         public RTClient rtClient;
-        public float traceScale = 0.15f;
+        public float traceScale = 0.07f;
         protected bool streaming = false;
         protected List<LabeledMarker> markerData;
 

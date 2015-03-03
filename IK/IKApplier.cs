@@ -16,7 +16,7 @@ namespace QTM2Unity
             if (lastSkelDic == null) lastSkelDic = skeleton.ToDictionary(k => k.Data.Name, v => v.Data);
             IEnumerator it = skeleton.GetEnumerator();
             //TODO ATTENTION! 
-            //This has oprediction that Root and all of roots children MUST have set possition
+            //Root and all of roots children MUST have set possition
             while (it.MoveNext())
             {
                 TreeNode<Bone> b = (TreeNode<Bone>)it.Current;
