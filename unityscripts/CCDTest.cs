@@ -12,10 +12,11 @@ namespace QTM2Unity
     class CCDTest : MonoBehaviour
     {
         private CCD ccd = new CCD();
+        private FABRIK fabrik = new FABRIK();
         private Bone[] bones = new Bone[4];
         private GameObject[] joints;
 
-        private OpenTK.Vector3 target = new OpenTK.Vector3(5, 4, -1);
+        private OpenTK.Vector3 target = new OpenTK.Vector3(5, 4, -1);//(7, 2, 0); //unreachable //(5, 4, -1);
 
         private float markerScale = 0.3f;
 
@@ -30,24 +31,24 @@ namespace QTM2Unity
                 MathHelper.DegreesToRadians(-90));
             OpenTK.Quaternion rot2 = QuaternionHelper.getRotation((pos2 - pos1), (pos3 - pos2)) * rot0;
 
-            target = OpenTK.Vector3.Transform(pos3 - pos2,
+            /*target = OpenTK.Vector3.Transform(pos3 - pos2,
                 OpenTK.Quaternion.FromAxisAngle(OpenTK.Vector3.Cross(pos3-pos2, pos2-pos1), 
-                    MathHelper.DegreesToRadians(60)));
+                    MathHelper.DegreesToRadians(60)));*/
                         
             bones[0] = new Bone("arm_root", pos0, rot0);
             bones[1] = new Bone("arm_1", pos1, rot0);
             bones[2] = new Bone("arm_2", pos2, rot2);
-            bones[3] = new Bone("arm_end", pos3, rot2);
+            bones[3] = new Bone("arm_end", pos3/*, rot2*/);
 
             bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
 
             //Constraints
-            foreach (Bone b in bones)
+           /* foreach (Bone b in bones)
             {
                 b.setOrientationalConstraint(10, 45);
             }
             bones[1].setRotationalConstraint(45f, 45f, 45f, 45f, bones[0].getDirection, bones[0].getRight);
-            bones[2].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f, bones[1].getDirection, bones[1].getRight);
+            bones[2].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f, bones[1].getDirection, bones[1].getRight);*/
             //bones[3].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
         }
 
@@ -149,9 +150,10 @@ namespace QTM2Unity
         {
             if (!Application.isPlaying)
                 return;
-            
-            foreach (Bone b in bones)
+
+            for (int i = 0; i < bones.Length - 1; i++ )
             {
+                Bone b = bones[i];
                 // draw orientations
                 Gizmos.color = Color.cyan;
                 var pos = new UnityEngine.Vector3(b.Pos.X, b.Pos.Y, b.Pos.Z);
@@ -168,6 +170,7 @@ namespace QTM2Unity
                 OpenTK.Vector3 r = b.getRight();
                 var right = new UnityEngine.Vector3(r.X, r.Y, r.Z);
                 Gizmos.DrawRay(pos, right);
+
             }
 
             //draw "bones"
@@ -240,6 +243,12 @@ namespace QTM2Unity
             updateJoints();
         }
 
+        public void runFABRIK()
+        {
+            bones = fabrik.solveBoneChain(bones, target);
+            updateJoints();
+        }
+
     }
 
 
@@ -255,6 +264,10 @@ namespace QTM2Unity
                  myTarget.runCCD();
              }
 
+             if (GUILayout.Button("FABRIK"))
+             {
+                 myTarget.runFABRIK();
+             }
         }
     }
 }
