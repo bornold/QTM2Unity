@@ -385,5 +385,11 @@ namespace QTM2Unity
             return GetOrientationFromZX(Vector3.Cross(up, right), right);
 
         }
+        public static Quaternion RotationBetween(Vector3 from, Vector3 to)
+        {
+            float angle = Vector3.CalculateAngle(from, to);
+            Vector3 axis = Vector3.Cross(from, to);
+            return Quaternion.FromAxisAngle(axis, angle);
+        }
     }
 }

@@ -9,22 +9,25 @@ namespace QTM2Unity
 {
     class IKMover : StandardUnityModel
     {
-        public IK ik = IK.ccd;
+        public IK ik = IK.CCD;
         private IKApplier ikApplier = new IKApplier();
         public override void UpdateNext()
         {
             base.UpdateNext();
             skeleton = joints.GetJointLocation(markerData);
-            if (ik == IK.ccd)
+            if (ik == IK.CCD)
             {
                 skeleton = ikApplier.ApplyIK(skeleton, new CCD());
             }
-            else
+            else if (ik == IK.TT)
             {
                 skeleton = ikApplier.ApplyIK(skeleton, new TargetTriangleIK());
+            } else
+            {
+                skeleton = ikApplier.ApplyIK(skeleton, new FABRIK());
             }
             SetAll();
         }
     }
-    public enum IK { ccd, TT}
+    public enum IK { CCD, TT, FABRIK}
 }

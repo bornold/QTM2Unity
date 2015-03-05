@@ -13,7 +13,7 @@ namespace QTM2Unity
         private IKApplier ikApplier = new IKApplier();
         public bool showRotationTrace;
         public float markerScale;
-        public IK ik = IK.ccd;
+        public IK ik = IK.CCD;
         // Use this for initialization
         public override void StartNext()
         {
@@ -26,15 +26,18 @@ namespace QTM2Unity
             thisPos = this.transform.position;
             if (joints == null) joints = new JointLocalization();
             skeleton = joints.GetJointLocation(markerData);
-            if (ik == IK.ccd)
+            if (ik == IK.CCD)
             {
                 skeleton = ikApplier.ApplyIK(skeleton, new CCD());
             }
-            else
+            else if (ik == IK.TT)
             {
                 skeleton = ikApplier.ApplyIK(skeleton, new TargetTriangleIK());
             }
-            skeleton = (ik == IK.ccd) ? ikApplier.ApplyIK(skeleton, new CCD()) : ikApplier.ApplyIK(skeleton, new TargetTriangleIK());
+            else
+            {
+                skeleton = ikApplier.ApplyIK(skeleton, new FABRIK());
+            }
         }
         void OnDrawGizmos()
         {

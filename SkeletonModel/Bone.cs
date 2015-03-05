@@ -91,7 +91,7 @@ namespace QTM2Unity
         {
             // The identity quaternion is associated with the direction
             // (0,0,-1)
-            Vector3 identityDirection = new Vector3(0, 0, -1);
+            Vector3 identityDirection = Vector3.UnitY;// new Vector3(0, 0, -1); //Vector3.UnitY;//
 
             return Vector3.Normalize(Vector3.Transform(identityDirection, orientation));
         }
