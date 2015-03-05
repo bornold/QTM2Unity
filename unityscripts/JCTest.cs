@@ -49,12 +49,7 @@ namespace QTM2Unity
                         drawLine(b.Data.Pos, b1.Data.Pos);
                     }
                 }
-            }
-            else
-            {
-                Debug.Log(" NOOOOOO! Skeleton is null!");
-            }
-            
+            }    
         }
     }
 }

@@ -144,17 +144,15 @@ namespace QTM2Unity
         private Bone GetAnkleLeft()
         {
             Vector3 pos = joints[BipedSkeleton.FOOT_L];
-            Vector3 target = markers[leftFoot];
             Vector3 up = joints[BipedSkeleton.LOWERLEG_L] - pos;
-            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, up);
+            Quaternion rot = QuaternionHelper.LookAtUp(pos, markers[leftFoot], up);
             return new Bone(BipedSkeleton.FOOT_L, pos, rot);
         }
         private Bone GetAnkleRight()
         {
             Vector3 pos = joints[BipedSkeleton.FOOT_R];
-            Vector3 target = markers[rightFoot];
             Vector3 up = joints[BipedSkeleton.LOWERLEG_R] - pos;
-            Quaternion rot = QuaternionHelper.LookAtUp(pos, target, up);
+            Quaternion rot = QuaternionHelper.LookAtUp(pos, markers[rightFoot], up);
             return new Bone(BipedSkeleton.FOOT_R, pos, rot);
         }
         private Bone GetFootLeft()
@@ -240,11 +238,8 @@ namespace QTM2Unity
         #endregion
         private void BodyData()
         {
-            Vector3 chestV = markers[chest];
-            Vector3 neckV = markers[neck];
-
             // set chest depth
-            var tmp = (chestV - neckV).Length * 1000;
+            var tmp = (markers[chest] - markers[neck]).Length * 1000;
             chestDepth = tmp > chestDepth && tmp < 500 ? tmp : chestDepth; // to mm
 
             // set shoulder width

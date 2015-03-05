@@ -67,7 +67,7 @@ namespace QTM2Unity.Unity
 					    markers[i].name = markerData[i].label;
                         markers[i].transform.localPosition = cv(markerData[i].position);
 					    markers[i].SetActive(true);
-					    markers[i].renderer.enabled = visibleMarkers;
+					    markers[i].GetComponent<Renderer>().enabled = visibleMarkers;
                         markers[i].transform.localScale = Vector3.one * markerScale;
                     }
                     else

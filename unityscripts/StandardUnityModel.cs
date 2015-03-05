@@ -5,6 +5,8 @@ namespace QTM2Unity
 {
     class StandardUnityModel : RT
     {
+        public bool firstSpine = true;
+
         Transform hips;
         Transform upLegLeft;
         Transform upLegRight;
@@ -51,8 +53,10 @@ namespace QTM2Unity
         {
             setGO(hips, BipedSkeleton.PELVIS, true);
             setGO(spine, BipedSkeleton.SPINE0, false);
-            setGO(spine1, BipedSkeleton.SPINE1, false);
-            setGO(neck, BipedSkeleton.NECK, false);
+            if (firstSpine) setGO(spine1, BipedSkeleton.SPINE1, false);
+            else setGO(spine2, BipedSkeleton.SPINE1, false);
+            
+            setGO(neck1, BipedSkeleton.NECK, false);
             setGO(head, BipedSkeleton.HEAD, false);
 
             setGOLeg(upLegLeft, BipedSkeleton.UPPERLEG_L);
@@ -131,16 +135,17 @@ namespace QTM2Unity
         }
         void OnDrawGizmos()
         {
-            if (skeleton != null && showSkeleton)
+            if (skeleton != null )
             {
                 foreach (TreeNode<Bone> b in skeleton)
                 {
                     if (showRotationTrace)
-                        drawRays(b.Data.Orientation, cv(b.Data.Pos));
-                    foreach (TreeNode<Bone> b1 in b.Children)
-                    {
-                        drawLine(b.Data.Pos, b1.Data.Pos);
-                    }
+                        UnityDebug.DrawRays(b.Data.Orientation, cv(b.Data.Pos));
+                    if (showSkeleton)
+                        foreach (TreeNode<Bone> b1 in b.Children)
+                        {
+                            UnityDebug.DrawLine(b.Data.Pos, b1.Data.Pos);
+                        }
                 }
             }
         }

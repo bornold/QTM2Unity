@@ -7,6 +7,7 @@ namespace QTM2Unity
     {
         public RTClient rtClient;
         public float traceScale = 0.07f;
+        public Color skelettColor = Color.white;
         protected bool streaming = false;
         protected List<LabeledMarker> markerData;
 
@@ -40,17 +41,11 @@ namespace QTM2Unity
         protected void drawRays(OpenTK.Quaternion rot, Vector3 pos)
         {
             pos += this.transform.position;
-            OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
-            OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
-            OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot);
-            Debug.DrawRay(pos, cv(up) * traceScale, Color.green);
-            Debug.DrawRay(pos, cv(right) * traceScale, Color.red);
-            Debug.DrawRay(pos, cv(forward) * traceScale, Color.blue);
-
+            UnityDebug.DrawRays(rot, pos);
         }
         protected void drawLine(OpenTK.Vector3 start, OpenTK.Vector3 end)
         {
-            Debug.DrawLine(cv(start) + this.transform.position, cv(end) + this.transform.position, Color.white);
+            Debug.DrawLine(cv(start) + this.transform.position, cv(end) + this.transform.position, skelettColor);
         }
 
         public Vector3 cv(OpenTK.Vector3 v)
