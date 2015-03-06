@@ -129,7 +129,8 @@ namespace QTM2Unity
             return twistAngle;
         }
 
-        private void checkRotationalConstraint(ref Bone[] bs, int current)
+        // TODO should not be public. Or should probably not be in this class even..
+        public void checkRotationalConstraint(ref Bone[] bs, int current)
         {
             if (current == 0)
                 return; // Don't check constraint for root
@@ -177,7 +178,7 @@ namespace QTM2Unity
             L1.Normalize();
             L1 = L1 * (pos - parent.Pos).Length; // makes sure L1 has sufficient length
             // find the projection O of the target on line L1
-            Vector3 O = Vector3Helper.ProjectAndCreate(pos, L1);
+            Vector3 O = Vector3Helper.ProjectAndCreate(pos-parent.Pos, L1); // must project the right vector!!
             // find the distance S between O and the joint position
             float S = (O - pos).Length;
             // Map the target in such a way that O is located at the origin
@@ -204,7 +205,9 @@ namespace QTM2Unity
                 // Move target to nearest point on the ellipse
                 moveTarget(ref pos, newPoint);
 
-            }
+            } 
+            else
+                Debug.Log(b.Name + " is inside constraint");
 
             // Undo the origin mapping
             // Rotation
@@ -213,61 +216,6 @@ namespace QTM2Unity
             pos = O + pos;
         }
 
-        // TODO maybe should use references to bones
-        // TODO the name target is a bit misleading me thinks?
-       /* private static void checkRotationalConstraint(ref Bone b, Bone parent, Vector3 target)
-        {
-            if (b.RotationalConstraint != null) // there exist a constraint
-            {
-                Debug.Log("Checking rotational constraint for " + b.Name);
-                // find the line passing through the joint under consideration and its parent
-                Vector3 L1 = b.Pos - parent.Pos;
-                L1.Normalize();
-                L1 = L1 * (target - b.Pos).Length; // makes sure L1 has sufficient length
-                // find the projection O of the target on line L1
-                Vector3 O = Vector3Helper.ProjectAndCreate(target, L1);
-                // find the distance S between O and the joint position
-                float S = (O - b.Pos).Length;
-                // Map the target in such a way that O is located at the origin
-                // and the axes defining the constraints are aligned with x,y
-                Quaternion mappingQuat = mapToOrigin(ref target, L1, parent.getRight(), O);
-
-                // Angles defining ellipse radii
-                float ax, ay;
-                //findAngles(ref b, target, out ax, out ay);
-
-                // Calculate ellipse radius for x and y
-                float radiusX = S * Mathf.Tan(ax);
-                float radiusY = S * Mathf.Tan(ay);
-
-                Debug.Log("radiusX: " + radiusX);
-                Debug.Log("radiusY: " + radiusY);
-                Debug.Log("'targetX': " + target.X);
-                Debug.Log("'targetY': " + target.Y);
-
-                if (!(Math.Abs(target.X) <= radiusX && Math.Abs(target.Y) <= radiusY)) // target not inside
-                {
-                    Debug.Log("Target not inside constraint for " + b.Name);
-                    // Find nearest point from target on ellipse defined by radiusX and radiusY
-                    Vector2 newTarget = QTM2UnityMath.findNearestPointOnEllipse
-                        (Math.Max(radiusX, radiusY), Math.Min(radiusX, radiusY), 
-                        new Vector2(Math.Abs(target.X), Math.Abs(target.Y)));
-
-                    // Move target to nearest point on the ellipse
-                    moveTarget(ref target, newTarget);
-                  
-                }
-
-                // Undo the origin mapping
-                // Rotation
-                target = Vector3.Transform(target, Quaternion.Invert(mappingQuat));
-                // Translation
-                target = O + target;
-
-                // Rotate bone to the new position
-                b.rotateTowards(target - b.Pos);
-            }
-        }*/
 
         private Quaternion mapToOrigin(ref Vector3 target, Vector3 L1, Vector3 right, Vector3 origin)
         {

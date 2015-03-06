@@ -43,12 +43,12 @@ namespace QTM2Unity
             bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
 
             //Constraints
-           /* foreach (Bone b in bones)
+            foreach (Bone b in bones)
             {
                 b.setOrientationalConstraint(10, 45);
             }
             bones[1].setRotationalConstraint(45f, 45f, 45f, 45f, bones[0].getDirection, bones[0].getRight);
-            bones[2].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f, bones[1].getDirection, bones[1].getRight);*/
+            bones[2].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f, bones[1].getDirection, bones[1].getRight);
             //bones[3].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
         }
 

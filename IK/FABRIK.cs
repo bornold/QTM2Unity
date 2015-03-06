@@ -52,7 +52,7 @@ namespace QTM2Unity
             for (int i = 0; i < distances.Length; i++)
             {
                 // position
-                float r = Math.Abs((target - bones[i].Pos).Length);
+                float r = (target - bones[i].Pos).Length;
                 float l = distances[i] / r;
 
                 bones[i + 1].Pos = ((1 - l) * bones[i].Pos) + (l * target);
@@ -69,7 +69,7 @@ namespace QTM2Unity
             for (int i = bones.Length - 2; i >= 0; i--)
             {
                 // Position
-                float r = Math.Abs((bones[i + 1].Pos - bones[i].Pos).Length);
+                float r = (bones[i + 1].Pos - bones[i].Pos).Length;
                 float l = distances[i] / r;
 
                 bones[i].Pos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
@@ -85,7 +85,7 @@ namespace QTM2Unity
             for (int i = 0; i < bones.Length-1; i++)
             {
                 // Position
-                float r = Math.Abs((bones[i + 1].Pos - bones[i].Pos).Length);
+                float r = (bones[i + 1].Pos - bones[i].Pos).Length;
                 float l = distances[i] / r;
 
                 bones[i+1].Pos = (1 - l) * bones[i].Pos + l * bones[i+1].Pos;
