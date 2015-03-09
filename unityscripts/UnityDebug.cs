@@ -18,6 +18,21 @@ namespace QTM2Unity
             Debug.DrawRay(pos, cv(right) * 0.07f, Color.red);
             Debug.DrawRay(pos, cv(forward) * 0.07f, Color.blue);
         }
+        public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir, Color c)
+        {
+            Debug.DrawRay(cv(pos), cv(dir) * 1f, c);
+
+        }
+        public static void DrawRay(UnityEngine.Vector3 pos, OpenTK.Vector3 dir, Color c)
+        {
+            Debug.DrawRay(pos, cv(dir) * 1f, c);
+
+        }
+        public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir)
+        {
+            DrawRay(pos, dir * 1f, Color.black);
+
+        }
         public static void DrawRays(OpenTK.Quaternion rot, OpenTK.Vector3 pos)
         {
             DrawRays(rot, cv(pos));
@@ -42,6 +57,28 @@ namespace QTM2Unity
         public static Quaternion cq(OpenTK.Quaternion q)
         {
             return new Quaternion(q.X, q.Y, q.Z, q.W);
+        }
+        public static Vector3[] CreateEllipse(float a, float b, Vector3 pos, Quaternion rot, int resolution)
+        {
+
+            Vector3[] positions = new Vector3[resolution + 1]; Vector3 center = pos;
+
+            for (int i = 0; i <= resolution; i++)
+            {
+                float angle = (float)i / (float)resolution * 2.0f * Mathf.PI;
+                positions[i] = new Vector3(a * Mathf.Cos(angle), b * Mathf.Sin(angle), 0.0f);
+                positions[i] = rot * positions[i] + center;
+            }
+
+            return positions;
+        }
+        public static Vector3[] CreateEllipse(float a, float b, OpenTK.Vector3 pos, Quaternion rot, int resolution)
+        {
+            return CreateEllipse(a, b, cv(pos), rot, resolution);
+        }
+        public static Vector3[] CreateEllipse(float a, float b, OpenTK.Vector3 pos, OpenTK.Quaternion rot, int resolution)
+        {
+            return CreateEllipse(a, b, cv(pos), cq(rot), resolution);
         }
     }
 }
