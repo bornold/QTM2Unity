@@ -62,7 +62,7 @@ namespace QTM2Unity
         {
             return new Quaternion(q.X, q.Y, q.Z, q.W);
         }
-        public static void CreateEllipse(float x, float y, Vector3 pos, Quaternion rot, int resolution)
+        public static void CreateEllipse(float x, float y, Vector3 pos, Quaternion rot, int resolution, Color c)
         {
 
             Vector3[] positions = new Vector3[resolution + 1];
@@ -76,21 +76,44 @@ namespace QTM2Unity
             }
             for (int i = 0; i < resolution; i++)
             {
-                Debug.DrawLine(positions[i], positions[i + 1], Color.cyan);
+                Debug.DrawLine(positions[i], positions[i + 1], c);
             }
         }
-        public static void CreateEllipse(float x, float y, OpenTK.Vector3 pos, Quaternion rot, int resolution)
+        public static void CreateEllipse(float x, float y, OpenTK.Vector3 pos, Quaternion rot, int resolution,Color c)
         {
-            CreateEllipse(x, y, cv(pos), rot, resolution);
+            CreateEllipse(x, y, cv(pos), rot, resolution,c);
         }
-        public static void CreateEllipse(float x, float y, OpenTK.Vector3 pos, OpenTK.Quaternion rot, int resolution)
+        public static void CreateEllipse(float x, float y, OpenTK.Vector3 pos, OpenTK.Quaternion rot, int resolution, Color c)
         {
-            CreateEllipse(x, y, cv(pos), cq(rot), resolution);
+            CreateEllipse(x, y, cv(pos), cq(rot), resolution,c);
         }
-        public static void CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 center,
-            OpenTK.Quaternion rot, int resolution, Color c)
+        public static void CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 o,
+            OpenTK.Quaternion rot, int resolution)
         {
-            float S = (center-top).Length;
+
+            OpenTK.Vector4 rests = new OpenTK.Vector4();
+            if (strains.X >= 90f)
+            {
+                Debug.Log("X is Over 90  " + strains.X % 90f);
+                rests.X = 89.9f;
+            }
+            if (strains.Y >= 90f)
+            {
+                Debug.Log("Y is Over 90  " + strains.Y % 90f);
+                rests.Y = 89.9f;
+            }
+            if (strains.Z >= 90f)
+            {
+                Debug.Log("Z is Over 90  " + strains.Z % 90f);
+                rests.Z = 89.9f;
+            }
+            if (strains.W >= 90f)
+            {
+                Debug.Log("W is Over 90  " + strains.W % 90f);
+                rests.W = 89.9f;
+            }
+            OpenTK.Vector3 center = top + o;
+            float S = (top - o).Length;
             strains.X = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(strains.X));
             strains.Y = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(strains.Y));
             strains.Z = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(strains.Z));
@@ -98,35 +121,41 @@ namespace QTM2Unity
 
             OpenTK.Vector3[] positions = new OpenTK.Vector3[resolution + 1];
             float a, b;
+            Color c;
             for (int i = 0; i <= resolution; i++)
             {
                 float angle = (float)i / (float)resolution * 2.0f * Mathf.PI;
                 if (i < resolution * 0.25)
                 {
+                    //Q1
                     c = Color.blue;
                     a = strains.X;
                     b = strains.Y;
                 }
                 else if (i < resolution * 0.5)
                 {
+                    //Q4
                     c = Color.red;
                     a = strains.Z;
                     b = strains.Y;
                 }
                 else if (i < resolution * 0.75)
                 {
+                    //Q3
                     c = Color.green;
                     a = strains.Z;
                     b = strains.W;
                 }
                 else
                 {
+                    //Q2
                     c = Color.yellow;
                     a = strains.X;
                     b = strains.W;
+
                 }
                 positions[i] = new OpenTK.Vector3(a * Mathf.Cos(angle), b * Mathf.Sin(angle), 0.0f);
-                positions[i] = OpenTK.Vector3.Transform(positions[i], rot) + center;//rot * positions[i] + center;
+                positions[i] = OpenTK.Vector3.Transform(positions[i], rot) + center;
                 if (i > 0)
                 {
                     DrawLine(positions[i], positions[i - 1], c);
