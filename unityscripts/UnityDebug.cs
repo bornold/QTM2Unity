@@ -90,40 +90,18 @@ namespace QTM2Unity
         public static void CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 o,
             OpenTK.Quaternion rot, int resolution)
         {
-
-            OpenTK.Vector4 rests = new OpenTK.Vector4();
-            if (strains.X >= 90f)
-            {
-                Debug.Log("X is Over 90  " + strains.X % 90f);
-                rests.X = 89.9f;
-            }
-            if (strains.Y >= 90f)
-            {
-                Debug.Log("Y is Over 90  " + strains.Y % 90f);
-                rests.Y = 89.9f;
-            }
-            if (strains.Z >= 90f)
-            {
-                Debug.Log("Z is Over 90  " + strains.Z % 90f);
-                rests.Z = 89.9f;
-            }
-            if (strains.W >= 90f)
-            {
-                Debug.Log("W is Over 90  " + strains.W % 90f);
-                rests.W = 89.9f;
-            }
-            OpenTK.Vector3 center = top + o;
-            float S = (top - o).Length;
-            strains.X = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(strains.X));
-            strains.Y = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(strains.Y));
-            strains.Z = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(strains.Z));
-            strains.W = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(strains.W));
+            OpenTK.Vector3 center = top + o; 
+            float S = o.Length;
+            strains.X = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.X)));
+            strains.Y = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.Y)));
+            strains.Z = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.Z)));
+            strains.W = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.W)));
 
             OpenTK.Vector3[] positions = new OpenTK.Vector3[resolution + 1];
-            float a, b;
-            Color c;
             for (int i = 0; i <= resolution; i++)
             {
+                float a, b;
+                Color c;
                 float angle = (float)i / (float)resolution * 2.0f * Mathf.PI;
                 if (i < resolution * 0.25)
                 {
