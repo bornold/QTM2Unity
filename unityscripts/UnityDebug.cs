@@ -8,15 +8,23 @@ namespace QTM2Unity
 {
     static class UnityDebug
     {
-        public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos)
+        public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos, float scale)
         {
-            
+
             OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
             OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
             OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot);
-            Debug.DrawRay(pos, cv(up) * 0.07f, Color.green);
-            Debug.DrawRay(pos, cv(right) * 0.07f, Color.red);
-            Debug.DrawRay(pos, cv(forward) * 0.07f, Color.blue);
+            Debug.DrawRay(pos, cv(up) * scale, Color.green);
+            Debug.DrawRay(pos, cv(right) * scale, Color.red);
+            Debug.DrawRay(pos, cv(forward) * scale, Color.blue);
+        }
+        public static void DrawRays(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale)
+        {
+            DrawRays(rot, cv(pos), scale);
+        }
+        public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos)
+        {
+            DrawRays(rot, pos, 0.07f);
         }
         public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir, Color c)
         {
@@ -90,7 +98,7 @@ namespace QTM2Unity
         public static void CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 o,
             OpenTK.Quaternion rot, int resolution)
         {
-            OpenTK.Vector3 center = top + o; 
+            OpenTK.Vector3 center = top + o;//OpenTK.Vector3.Normalize(o); 
             float S = o.Length;
             strains.X = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.X)));
             strains.Y = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.Y)));
