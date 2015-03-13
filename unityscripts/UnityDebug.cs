@@ -70,6 +70,14 @@ namespace QTM2Unity
         {
             return new Quaternion(q.X, q.Y, q.Z, q.W);
         }
+        public static void CreateEllipse(float x, float y, int resolution)
+        {
+            CreateEllipse(x, y, Vector3.zero, Quaternion.identity, resolution, Color.white);
+        }
+        public static void CreateEllipse(float x, float y, int resolution, Color c)
+        {
+            CreateEllipse(x, y, Vector3.zero, Quaternion.identity, resolution, c);
+        }
         public static void CreateEllipse(float x, float y, Vector3 pos, Quaternion rot, int resolution, Color c)
         {
 
@@ -105,8 +113,8 @@ namespace QTM2Unity
             strains.Z = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.Z)));
             strains.W = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.W)));
 
-            OpenTK.Vector3[] positions = new OpenTK.Vector3[resolution + 1];
-            for (int i = 0; i <= resolution; i++)
+            OpenTK.Vector3[] positions = new OpenTK.Vector3[resolution];
+            for (int i = 0; i < resolution; i++)
             {
                 float a, b;
                 Color c;
@@ -148,6 +156,69 @@ namespace QTM2Unity
                     DrawLine(top, positions[i], c);
                 }
             }
+        }
+        public static void CreateIrregularCone2(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 dir,
+                                                OpenTK.Quaternion rot, int resolution)
+        {
+            dir.Normalize();
+            OpenTK.Vector3 center = top + dir;
+
+            strains.X = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f, strains.X)));
+            strains.Y = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f, strains.Y)));
+            strains.Z = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f, strains.Z)));
+            strains.W = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f, strains.W)));
+
+            OpenTK.Vector3 current, last, first;
+
+            float a = strains.X, b = strains.Y;
+            float angle = 0;// (float)1 / (float)resolution * 2.0f * Mathf.PI;
+            last = new OpenTK.Vector3(a * Mathf.Cos(angle), b * Mathf.Sin(angle), 0.0f);
+            last = OpenTK.Vector3.Transform(last, rot) + center;
+            last = last - top;  
+            last.Normalize();
+            last = top + last;
+            first = last;
+            Color c = Color.blue;
+            DrawLine(top, first, c);
+            for (int i = 1; i < resolution ; i++)
+            {
+                angle = (float)i / (float)resolution * 2.0f * Mathf.PI;
+                float part = (float)(i % (resolution / 4)) / (float)(resolution / 4);
+                if (i < resolution * 0.25)
+                {  //Q1
+                    c = Color.Lerp(Color.blue, Color.red, part );
+                    a = strains.X;
+                    b = strains.Y;
+                }
+                else if (i < resolution * 0.5)
+                {   //Q4
+                    c = Color.Lerp(Color.red, Color.green, part);
+                    a = strains.Z;
+                    b = strains.Y;
+                }
+                else if (i < resolution * 0.75)
+                {   //Q3
+                    c = Color.Lerp(Color.green, Color.yellow, part );
+                    a = strains.Z;
+                    b = strains.W;
+                }
+                else
+                {   //Q2
+                    c = Color.Lerp(Color.yellow, Color.blue, part);
+                    a = strains.X;
+                    b = strains.W;
+
+                }
+                current = new OpenTK.Vector3(a * Mathf.Cos(angle), b * Mathf.Sin(angle), 0.0f);
+                current = OpenTK.Vector3.Transform(current, rot) + center;
+                current = current - top;
+                current.Normalize();
+                current = top + current;
+                DrawLine(top, current, c);
+                DrawLine(current, last, c);
+                last = current;
+            }
+            DrawLine(first, last, c);
         }
     }
 }
