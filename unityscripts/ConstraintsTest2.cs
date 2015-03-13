@@ -111,7 +111,7 @@ namespace QTM2Unity
             OpenTK.Vector3 OPos = O + jointPos; 
             if (Math.Abs(OpenTK.Vector3.Dot(L1, joint2Target)) < precision)
             {
-                if (debug2) Debug.LogError ("---- ORTHAGONAL CASE -------- ");
+                if (debug2) Debug.Log ("---- ORTHAGONAL CASE -------- ");
                 if (debug2) Debug.Log(" O before: " + O);
                 orthogonal = true;
                 //behind = true;
@@ -244,6 +244,8 @@ namespace QTM2Unity
                 if (debug2) UnityEngine.Debug.Log(string.Format("CONE IN FRONT, but target behind"));
                 O = -O;
                 OPos = O + jointPos;
+                radius.X = Math.Min(90 - precision, radius.X); // clamp it so if 90 -> 89.999, 
+                radius.Y = Math.Min(90 - precision, radius.Y);
             } 
             #endregion
 
@@ -286,8 +288,8 @@ namespace QTM2Unity
             }
             else
             {
-                if (    debug2)
-                    UnityDebug.CreateIrregularCone2(constraints, jointPos, behind ? -O : O, OpenTK.Quaternion.Invert(rotation), coneResolution);
+                if (debug2)
+                    UnityDebug.CreateIrregularCone2(constraints, jointPos, O, OpenTK.Quaternion.Invert(rotation), coneResolution);
             } 
             #endregion
 
