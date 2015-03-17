@@ -57,6 +57,11 @@ namespace QTM2Unity
             return Children.Remove(node);
         }
 
+        public TreeNode<T> ReplaceChildWith(T child, TreeNode<T> node)
+        {
+            return (Children.Remove(node)) ? AddChild(child) : null;
+        }
+
         public void Traverse(Action<T> action)
         {
             action(Data);

@@ -200,7 +200,7 @@ namespace QTM2Unity
             float d = Vector3.Dot(quaternion.Xyz, axis);
             float l = length(axis.X * d, axis.Y * d, axis.Z * d, quaternion.W);
 
-            return (l == 0) ? 0f : (float)(2.0 * Math.Acos(QTM2UnityMath.clamp((float) (quaternion.W / Math.Sqrt(l)), -1f, 1f)));
+            return (l == 0) ? 0f : (float)(2.0 * Math.Acos(Mathf.Clamp((float) (quaternion.W / Math.Sqrt(l)), -1f, 1f)));
         }
 
         /// <summary>

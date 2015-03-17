@@ -140,11 +140,11 @@ namespace QTM2Unity
                 foreach (TreeNode<Bone> b in skeleton)
                 {
                     if (showRotationTrace)
-                        UnityDebug.DrawRays(b.Data.Orientation, cv(b.Data.Pos));
+                        UnityDebug.DrawRays(b.Data.Orientation, cv(b.Data.Pos) + this.transform.position);
                     if (showSkeleton)
                         foreach (TreeNode<Bone> b1 in b.Children)
                         {
-                            UnityDebug.DrawLine(b.Data.Pos, b1.Data.Pos);
+                            UnityDebug.DrawLine(b.Data.Pos + UnityDebug.cv(this.transform.position), b1.Data.Pos + UnityDebug.cv(this.transform.position));
                         }
                 }
             }

@@ -43,10 +43,11 @@ namespace QTM2Unity
         public const string FINGER_R = "finger_R";
         #endregion
 
+        [Obsolete]
         public BipedSkeleton()
         {
-            #region bone structure
             root = new TreeNode<Bone>(new Bone(PELVIS));
+            #region bone structure
             {
                 #region legs left
                 TreeNode<Bone> upperlegleft = root.AddChild(new Bone(UPPERLEG_L));
@@ -80,12 +81,12 @@ namespace QTM2Unity
                     {
                     //     TreeNode<Bone> spine2 = spine1.AddChild(new Bone(SPINE2));
                     //     {
-                        TreeNode<Bone> spine3 = spine1.AddChild(new Bone(SPINE3));
+                    TreeNode<Bone> spine3 = spine1.AddChild(new Bone(SPINE3));
+                    {
+                        TreeNode<Bone> neck = spine3.AddChild(new Bone(NECK));
                         {
-                            TreeNode<Bone> neck = spine3.AddChild(new Bone(NECK));
-                            {
-                                TreeNode<Bone> head = neck.AddChild(new Bone(HEAD));
-                            }
+                            TreeNode<Bone> head = neck.AddChild(new Bone(HEAD));
+                        }
                 #endregion
                         #region arm left
                         TreeNode<Bone> shoulderleft = spine3.AddChild(new Bone(SHOULDER_L));
@@ -119,11 +120,15 @@ namespace QTM2Unity
                         #endregion
                     }
                           }
-                    //    }
+            //    }
                 }
                 #endregion
             }
             #endregion
+        }
+        public BipedSkeleton(TreeNode<Bone> pelvis)
+        {
+            root = pelvis;
         }
     }
 }

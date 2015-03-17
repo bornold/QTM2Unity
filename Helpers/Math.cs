@@ -14,23 +14,20 @@ namespace QTM2Unity
         public static Func<float, float> Tan = angleR => (float)Math.Tan(angleR);
         public static Func<float, float> Sqrt = power => (float)Math.Sqrt(power);
         public static float PI = (float)Math.PI;
-    } 
 
-    class QTM2UnityMath // TODO maybe bad name
-    {
 
-        public static float clamp(float value, float min, float max)
+        public static float Clamp(float value, float min, float max)
         {
             if (value < min) return min;
             if (value > max) return max;
             return value;
         }
-
+        
         // Finding the nearest point on an ellipse from the given point
         // According to http://www.geometrictools.com/Documentation/DistancePointEllipseEllipsoid.pdf
         // eMax >= eMin > 0, point.X > 0, point.Y > 0
         // values must be in first quadrant? (+,+)
-        public static Vector2 findNearestPointOnEllipse(float eMax, float eMin, Vector2 point)
+        public static Vector2 FindNearestPointOnEllipse(float eMax, float eMin, Vector2 point)
         {
             if (point.Y > 0)
             {
@@ -43,7 +40,7 @@ namespace QTM2Unity
                     if (g != 0)
                     {
                         float r0 = (float)Math.Pow(eMax / eMin, 2);
-                        float sbar = getRoot(r0, z0, z1, g);
+                        float sbar = GetRoot(r0, z0, z1, g);
                         
                         float x0 = r0 * point.X / (sbar + r0);
                         float x1 = point.Y / (sbar + 1);
@@ -77,13 +74,13 @@ namespace QTM2Unity
             }
         }
 
-        public static float getRoot(float r0, float z0, float z1, float g)
+        public static float GetRoot(float r0, float z0, float z1, float g)
         {
             int maxIterations = 149; // According to the document http://www.geometrictools.com/Documentation/DistancePointEllipseEllipsoid.pdf
 
             float n0 = r0 *z0;
             float s0 = z1 - 1;
-            float s1 = (g < 0 ? 0 : robustLength(n0, z1) -1);
+            float s1 = (g < 0 ? 0 : RobustLength(n0, z1) -1);
             float s = 0;
 
             for (int i = 0; i < maxIterations; i++ )
@@ -115,7 +112,7 @@ namespace QTM2Unity
         // computes the length of the vector (v0, v1) by avoiding floating-point overflow that could occur 
         // normally when computing v0^2 + v1^0 
         // (ref http://www.geometrictools.com/Documentation/DistancePointEllipseEllipsoid.pdf)
-        private static float robustLength(float v0, float v1)
+        private static float RobustLength(float v0, float v1)
         {
              if (Math.Max(Math.Abs(v0), Math.Abs(v1)) == Math.Abs(v0))
              {

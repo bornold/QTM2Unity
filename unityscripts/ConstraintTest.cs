@@ -290,7 +290,7 @@ namespace QTM2Unity
             {
                 Debug.Log(b.Name + " not inside constraint");
                 // Find nearest point from b on ellipse defined by radiusX and radiusY
-                OpenTK.Vector2 newPoint = QTM2UnityMath.findNearestPointOnEllipse
+                OpenTK.Vector2 newPoint = Mathf.FindNearestPointOnEllipse
                     (Math.Max(radiusX, radiusY), Math.Min(radiusX, radiusY),
                     new OpenTK.Vector2(Math.Abs(pos.X), Math.Abs(pos.Y)));
 

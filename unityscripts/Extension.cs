@@ -15,40 +15,29 @@ namespace QTM2Unity
             }
             return null;
         }
-        public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos)
-        {
-
-            OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
-            OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
-            OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot);
-            Debug.DrawRay(pos, cv(up) * 0.07f, Color.green);
-            Debug.DrawRay(pos, cv(right) * 0.07f, Color.red);
-            Debug.DrawRay(pos, cv(forward) * 0.07f, Color.blue);
-        }
-        public static void DrawRays(OpenTK.Quaternion rot, OpenTK.Vector3 pos)
-        {
-            DrawRays(rot, cv(pos));
-        }
-        public static void DrawVector(OpenTK.Vector3 start, OpenTK.Vector3 vec)
-        {
-            DrawLine(start, start + vec);
-        }
-        public static void DrawLine(OpenTK.Vector3 start, OpenTK.Vector3 end)
-        {
-            Debug.DrawLine(cv(start), cv(end));
-        }
-        public static void DrawLine(OpenTK.Vector3 start, OpenTK.Vector3 end, Color c)
-        {
-            Debug.DrawLine(cv(start), cv(end), c);
-        }
-
-        public static Vector3 cv(OpenTK.Vector3 v)
+        public static Vector3 Convert(this OpenTK.Vector3 v)
         {
             return new Vector3(v.X, v.Y, v.Z);
         }
-        public static Quaternion cq(OpenTK.Quaternion q)
+        public static OpenTK.Vector3 Convert(this Vector3 v)
+        {
+            return new OpenTK.Vector3(v.x, v.y, v.z);
+        }
+        public static Quaternion Convert(this OpenTK.Quaternion q)
         {
             return new Quaternion(q.X, q.Y, q.Z, q.W);
+        }
+        public static OpenTK.Quaternion Convert(this Quaternion q)
+        {
+            return new OpenTK.Quaternion(q.x, q.y, q.z, q.w);
+        }
+        public static Vector4 Convert(this OpenTK.Vector4 v)
+        {
+            return new Vector4(v.X, v.Y, v.Z, v.W);
+        }
+        public static OpenTK.Vector4 Convert(this Vector4 v)
+        {
+            return new OpenTK.Vector4(v.x, v.y, v.z, v.w);
         }
     }
 }
