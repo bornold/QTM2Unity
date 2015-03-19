@@ -18,7 +18,7 @@ namespace QTM2Unity
                     bones[j].Pos = bones[i].Pos +
                         Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
                 }
-                bones[j].rotate(rotation);
+                bones[j].Rotate(rotation);
             }
         }
         private void RotateTowards(ref Bone[] bones, Vector3 toRotate, Vector3 towards, int numberOfBones, int i)
@@ -28,7 +28,7 @@ namespace QTM2Unity
             Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
             ForwardKinematics(ref bones, rotation, numberOfBones, i);
         }
-        public override Bone[] solveBoneChain(Bone[] bones, Vector3 target)
+        public override Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1)
         {
             int numberOfBones = bones.Length;
             for (int i = 0; i < numberOfBones - 1; i++)
@@ -41,7 +41,7 @@ namespace QTM2Unity
                 {
                     b += (bones[j].Pos - bones[j + 1].Pos).Length;
                 }
-                Vector3 cVector = (target - bones[i].Pos);
+                Vector3 cVector = (target.Pos - bones[i].Pos);
                 float c = cVector.Length;
                 if (c >= a + b)
                 {

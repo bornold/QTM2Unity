@@ -9,6 +9,7 @@ namespace QTM2Unity
 {
     class Bone : IEquatable<Bone>
     {
+        #region Vars getters and setters
         private bool exists = false;
         public bool Exists
         {
@@ -27,7 +28,7 @@ namespace QTM2Unity
             get { return pos; }
             set { 
                 pos = value;
-                flagExists();
+                FlagExists();
             }
         }
 
@@ -37,7 +38,36 @@ namespace QTM2Unity
             get { return orientation; }
             set { orientation = value; }
         }
+        #endregion
+        #region Constructors
+        public Bone(string name)
+        {
+            this.name = name;
+        }
 
+        public Bone(string name, Vector3 position) 
+            : this(name)
+        {
+            pos = position;
+            FlagExists();
+        }
+
+        public Bone(string name, Vector3 position, Quaternion orientation) 
+            : this (name, position)
+        {
+            this.orientation = orientation;
+        }
+        public Bone(string name, Vector3 position, Quaternion orientation, 
+            float constraintRight,float constraintUp, float constraintLeft, float constraintDown)
+            : this(name, position, orientation)
+        {
+            SetRotationalConstraint(constraintRight, constraintUp, constraintLeft, constraintDown);
+        }
+        public Bone(string name, Vector3 position, Quaternion orientation, Vector4 constriants)
+            : this(name, position, orientation, constriants.X, constriants.Y, constriants.Z, constriants.W) 
+        { }
+#endregion
+#region Orientational constraints
         private OrientationalConstraint orientationalConstr;
         public OrientationalConstraint OrientationalConstraint
         {
@@ -53,30 +83,17 @@ namespace QTM2Unity
         {
             get { return rotationalConstr; }
         }
-        public void setRotationalConstraint(float a0, float a1, float a2, float a3, 
-            Func<Vector3> directionMethod, Func<Vector3> rightMethod)
+        #endregion
+        #region RotationalConstraints
+        public void SetRotationalConstraint(float right, float up, float left, float down)
         {
-            rotationalConstr = new RotationalConstraint(a0, a1, a2, a3, directionMethod, rightMethod);
+            rotationalConstr = new RotationalConstraint(right, up, left, down);
         }
-
-        public Bone(string name)
+        public void SetRotationalConstraint(Vector4 constraints)
         {
-            this.name = name;
+            rotationalConstr = new RotationalConstraint(constraints.X, constraints.Y, constraints.Z, constraints.W);
         }
-
-        public Bone(string name, Vector3 position) 
-            : this(name)
-        {
-            pos = position;
-            flagExists();
-        }
-
-        public Bone(string name, Vector3 position, Quaternion orientation) 
-            : this (name, position)
-        {
-            this.orientation = orientation;
-        }
-
+        #endregion
         public bool Equals(Bone other)
         {
             return name.Equals(other.Name) && orientation.Equals(other.Orientation) && pos.Equals(other.Pos);
@@ -87,47 +104,43 @@ namespace QTM2Unity
             return string.Format("{0} at position: {1} with orientation: {2}", name, pos, orientation);
         }
 
-        public Vector3 getDirection()
+        public Vector3 GetDirection()
         {
             // The identity quaternion is associated with the direction
-            Vector3 identityDirection = Vector3.UnitY;
-
-            return Vector3.Normalize(Vector3.Transform(identityDirection, orientation));
+            return Vector3.Normalize(Vector3.Transform(Vector3.UnitY, orientation));
         }
 
-        public Vector3 getUp()
+        public Vector3 GetUp()
         {
-            Vector3 identityUp = Vector3.UnitZ;
-            return Vector3.Normalize(Vector3.Transform(identityUp, orientation));
+            return Vector3.Normalize(Vector3.Transform(Vector3.UnitZ, orientation));
         }
 
-        public Vector3 getRight()
+        public Vector3 GetRight()
         {
-            Vector3 identityRight = Vector3.UnitX;
-            return Vector3.Normalize(Vector3.Transform(identityRight, orientation));
+            return Vector3.Normalize(Vector3.Transform(Vector3.UnitX, orientation));
         }
 
         // TODO rotateDegrees, rotateRadians
         // rotates the bone with angle in radians!
-        public void rotate(float angle, Vector3 axis)
+        public void Rotate(float angle, Vector3 axis)
         {
             Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
-            rotate(rotation);
+            Rotate(rotation);
         }
 
-        public void rotate(Quaternion rotation)
+        public void Rotate(Quaternion rotation)
         {
             orientation = rotation * orientation;
         }
 
-        public void rotateTowards(Vector3 v)
+        public void RotateTowards(Vector3 v)
         {
-            float angle = Vector3.CalculateAngle(getDirection(), v);
-            Vector3 axis = Vector3.Cross(getDirection(), v);
-            rotate(angle, axis);
+            float angle = Vector3.CalculateAngle(GetDirection(), v);
+            Vector3 axis = Vector3.Cross(GetDirection(), v);
+            Rotate(angle, axis);
         }
 
-        private void flagExists()
+        private void FlagExists()
         {
             exists = true;
             if (pos.IsNaN())

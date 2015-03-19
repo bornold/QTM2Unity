@@ -4,9 +4,9 @@ namespace QTM2Unity
 {
     class ConstraintsTest2 : UnityEngine.MonoBehaviour
     {
+        public bool chooseTarget = false;
         public bool printCone = true;
         public bool debug = false;
-        public bool debug2 = false;
         public bool spin = false;
         public bool spinAroundX = false;
         public bool spinAroundY = false;
@@ -17,6 +17,7 @@ namespace QTM2Unity
         public UnityEngine.Vector3 ParentJoint = new UnityEngine.Vector3(-2,-2,-1);
         public UnityEngine.Vector4 Constraints = new UnityEngine.Vector4(110,20,30,40);
         public float targetScale = 0.05f;
+        public float coneScale = 1f;
         public float precision = 0.001f;
         public int coneResolution = 60;
         public int spins = 360;
@@ -55,17 +56,57 @@ namespace QTM2Unity
         }
         void Update()
         {
-            UpdateGOS("CurrentJoint", CurrentJoint);
-            UpdateGOS("ParentJoint", ParentJoint);
-            Vector3 jointPos = new Vector3(CurrentJoint.x, CurrentJoint.y, CurrentJoint.z);
-            Vector3 parentPos =  new Vector3(ParentJoint.x, ParentJoint.y, ParentJoint.z);
-            Vector3 targ = new Vector3(Target.x, Target.y, Target.z);
-            Vector4 constr = new Vector4(Constraints.x,Constraints.y,Constraints.z,Constraints.w);
+            Vector3 jointPos;
+            Vector3 parentPos;
+            Vector3 targ;
+            Vector4 constr = new Vector4(Constraints.x, Constraints.y, Constraints.z, Constraints.w);
+            if (!chooseTarget)
+            {
+                jointPos = new Vector3(CurrentJoint.x, CurrentJoint.y, CurrentJoint.z);
+                parentPos = new Vector3(ParentJoint.x, ParentJoint.y, ParentJoint.z);
+                targ = new Vector3(Target.x, Target.y, Target.z);
+                UpdateGOS("Target", UnityDebug.cv(targ));
+                UpdateGOS("CurrentJoint", CurrentJoint);
+                UpdateGOS("ParentJoint", ParentJoint);
+            }
+            else
+            {
+                targ = transform.Search("Target").position.Convert();
+                jointPos = transform.Search("CurrentJoint").position.Convert();
+                parentPos = transform.Search("ParentJoint").position.Convert();
+            }   
             if (spin) targ = UpdateTarget(targ, parentPos, jointPos);
-            UpdateGOS("Target", UnityDebug.cv(targ));
             RotationalConstraint strains = new RotationalConstraint(constr);
-            Vector3 newPos = strains.RotationalConstraints(targ, parentPos, jointPos, constr);
-            UpdateGOS("Replaced", UnityDebug.cv(newPos));
+            Vector3 res;
+            OpenTK.Vector3 L1 = jointPos - parentPos;
+            float angle = Vector3.CalculateAngle(L1, Vector3.UnitY);
+            Vector3 axis = Vector3.Cross(L1, Vector3.UnitY);
+            OpenTK.Quaternion rot = Quaternion.FromAxisAngle(axis, angle);
+            rot = OpenTK.Quaternion.Invert(rot);
+            if (debug)
+            {
+                UnityDebug.DrawLine(parentPos, jointPos, UnityEngine.Color.white);
+                UnityDebug.DrawRay(jointPos, L1, UnityEngine.Color.black);
+                UnityDebug.DrawLine(jointPos, targ, UnityEngine.Color.magenta);
+                UnityDebug.DrawRays(rot, jointPos, coneScale*2);
+            }
+            if (printCone)
+            {
+                UnityDebug.CreateIrregularCone3(
+                        constr,
+                        jointPos,
+                        rot,
+                        coneResolution,
+                        coneScale
+                        );
+            }
+            if (strains.RotationalConstraints(targ, jointPos, L1, constr, out res)) targ = res;
+            if (debug)
+            {
+                UnityDebug.DrawLine(jointPos, res, UnityEngine.Color.cyan);
+            }
+
+            UpdateGOS("Replaced", UnityDebug.cv(targ));
         }
         Vector3 UpdateTarget(Vector3 targetPos, Vector3 parentPos, Vector3 jointPos)
         {

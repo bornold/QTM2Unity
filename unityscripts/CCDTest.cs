@@ -40,15 +40,15 @@ namespace QTM2Unity
             bones[2] = new Bone("arm_2", pos2, rot2);
             bones[3] = new Bone("arm_end", pos3/*, rot2*/);
 
-            bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
+            bones[3].Rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].GetDirection(), UnityEngine.Mathf.PI / 4));
 
             //Constraints
             foreach (Bone b in bones)
             {
                 b.setOrientationalConstraint(10, 45);
             }
-            bones[1].setRotationalConstraint(45f, 45f, 45f, 45f, bones[0].getDirection, bones[0].getRight);
-            bones[2].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f, bones[1].getDirection, bones[1].getRight);
+            bones[1].SetRotationalConstraint(45f, 45f, 45f, 45f);
+            bones[2].SetRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
             //bones[3].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
         }
 
@@ -157,17 +157,17 @@ namespace QTM2Unity
                 // draw orientations
                 Gizmos.color = Color.cyan;
                 var pos = new UnityEngine.Vector3(b.Pos.X, b.Pos.Y, b.Pos.Z);
-                OpenTK.Vector3 d = b.getDirection();
+                OpenTK.Vector3 d = b.GetDirection();
                 var direction = new UnityEngine.Vector3(d.X, d.Y, d.Z);
                 Gizmos.DrawRay(pos, direction);
 
                 Gizmos.color = Color.magenta;
-                OpenTK.Vector3 u = b.getUp();
+                OpenTK.Vector3 u = b.GetUp();
                 var up = new UnityEngine.Vector3(u.X, u.Y, u.Z);
                 Gizmos.DrawRay(pos, up);
 
                 Gizmos.color = Color.green;
-                OpenTK.Vector3 r = b.getRight();
+                OpenTK.Vector3 r = b.GetRight();
                 var right = new UnityEngine.Vector3(r.X, r.Y, r.Z);
                 Gizmos.DrawRay(pos, right);
 
@@ -198,6 +198,7 @@ namespace QTM2Unity
             Gizmos.DrawRay(UnityEngine.Vector3.zero, new UnityEngine.Vector3(parentUp.X, parentUp.Y, parentUp.Z));*/
 
             // Draw direction vector of constraint
+                    /*
             Gizmos.color = Color.yellow;
             for (int i = 0; i < bones.Length; i++)
             {
@@ -228,12 +229,12 @@ namespace QTM2Unity
                     new UnityEngine.Vector3(coneUp.X, coneUp.Y, coneUp.Z));
                 }
             }
-            
+            */
         }
 
         public void runCCD()
         {
-            bones = ccd.solveBoneChain(bones, target);
+            bones = ccd.solveBoneChain(bones, new Bone("target", target),OpenTK.Vector3.UnitY);
 
             //CCD.checkOrientationalConstraint(ref bones[1], bones[0]);
             //CCD.checkOrientationalConstraint(ref bones[2], bones[1]);
@@ -245,7 +246,7 @@ namespace QTM2Unity
 
         public void runFABRIK()
         {
-            bones = fabrik.solveBoneChain(bones, target);
+            bones = fabrik.solveBoneChain(bones, new Bone("target", target), OpenTK.Vector3.UnitY);
             updateJoints();
         }
 

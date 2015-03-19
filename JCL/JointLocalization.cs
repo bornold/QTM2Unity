@@ -53,7 +53,7 @@ namespace QTM2Unity
 
             Vector3 rightKneeRot = KneeOrientationRight();
             Vector3 leftKneeRot = KneeOrientationLeft();
-            List<Bone> skele = new List<Bone>()
+            /*List<Bone> skele = new List<Bone>()
                 {
                     //GetPlevis(pelvisOrientation), 
                     //GetSpineRoot(pelvisOrientation), GetSpine1(pelvisOrientation),
@@ -64,7 +64,7 @@ namespace QTM2Unity
                    // GetShoulderLeft(chestOrientation),  GetUpperArmLeft(),  GetLowerArmLeft(),  GetWristLeft(),     GetHandLeft(),
                     
                 };
-
+            */
             TreeNode<Bone> root = new TreeNode<Bone>(GetPlevis(pelvisOrientation));
             #region bone structure
             {
@@ -96,10 +96,10 @@ namespace QTM2Unity
                 #region spine and head
                 TreeNode<Bone> spine0 = root.AddChild(GetSpineRoot(pelvisOrientation));
                 {
-                    TreeNode<Bone> spine1 = spine0.AddChild(GetSpine1(pelvisOrientation));
+                   TreeNode<Bone> spine1 = spine0.AddChild(GetSpine1(pelvisOrientation));
                     {
                         //     TreeNode<Bone> spine2 = spine1.AddChild(new Bone(SPINE2));
-                        //     {
+                             {
                         TreeNode<Bone> spine3 = spine1.AddChild(GetSpineEnd(chestOrientation));
                         {
                             TreeNode<Bone> neck = spine3.AddChild(GetNeck(chestOrientation));
@@ -139,16 +139,11 @@ namespace QTM2Unity
                             #endregion
                         }
                     }
-                    //    }
+                }
                 }
                 #endregion
             }
             #endregion
-            BipedSkeleton skel = new BipedSkeleton();
-            foreach (Bone b in skele) //TODO Better way to add bones
-            {
-                skel[b.Name] = b;
-            }
             return new BipedSkeleton(root);
         }
 

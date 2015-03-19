@@ -19,11 +19,11 @@ namespace QTM2Unity
         // Probably don't want to handle here
 
         // Note: The end effector is assumed to be the last element in bones
-        override public Bone[] solveBoneChain(Bone[] bones, Vector3 target)
+        override public Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1)
         {
             int numberOfBones = bones.Length;
             int iter = 0;
-            while ((target - (bones[numberOfBones-1].Pos)).Length > threshold
+            while ((target.Pos - (bones[numberOfBones-1].Pos)).Length > threshold
                 && iter < numberOfIterations)
             {
                 // for each bone, starting with the one closest to the end effector 
@@ -32,7 +32,7 @@ namespace QTM2Unity
                 {
                     // Get the vectors between the points
                     Vector3 a = bones[numberOfBones-1].Pos - bones[i].Pos;
-                    Vector3 b = target - bones[i].Pos;
+                    Vector3 b = target.Pos - bones[i].Pos;
 
                     // Make a rotation quaternion and rotate 
                     // - first the endEffector
@@ -47,7 +47,7 @@ namespace QTM2Unity
                         }
                         
                         // rotate orientation
-                        bones[j].rotate(rotation);
+                        bones[j].Rotate(rotation);
                     }
                     
                     // check constraints starting with first affected joint and moving towards end effector
@@ -61,7 +61,7 @@ namespace QTM2Unity
                     }
                     
                     // Check if we are close enough to target
-                    if ((target - bones[numberOfBones-1].Pos).Length <= threshold)
+                    if ((target.Pos - bones[numberOfBones - 1].Pos).Length <= threshold)
                     {
                         return bones;
                     }
@@ -79,11 +79,11 @@ namespace QTM2Unity
         {
             if (b.OrientationalConstraint != null) // if there exist a constraint
             {
-                Vector3 direction = b.getDirection();
+                Vector3 direction = b.GetDirection();
                 float twistAngle = getTwistAngle(b, parent);
 
-                float from = b.OrientationalConstraint.From;
-                float to = b.OrientationalConstraint.To;
+                float from = b.OrientationalConstraint.Right;
+                float to = b.OrientationalConstraint.Left;
 
                 if (!(twistAngle >= from && twistAngle <= to)) // not inside constraints
                 {
@@ -95,14 +95,14 @@ namespace QTM2Unity
                         // rotate clockwise
                         /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name + 
                             " " + (twistAngle - from) + " clockwise around itself.");*/
-                        b.rotate(Math.Abs(MathHelper.DegreesToRadians(twistAngle - from)), direction);
+                        b.Rotate(Math.Abs(MathHelper.DegreesToRadians(twistAngle - from)), direction);
                     }
                     else if (twistAngle > to)
                     {
                         // rotate anticlockwise
                         /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name +
                             " " + (twistAngle - to) + " anticlockwise around itself.");*/
-                        b.rotate(-Math.Abs(MathHelper.DegreesToRadians(twistAngle - to)), direction);
+                        b.Rotate(-Math.Abs(MathHelper.DegreesToRadians(twistAngle - to)), direction);
                     }
                 }
             }
@@ -112,14 +112,14 @@ namespace QTM2Unity
         // TODO make private. Only public for testing purposes.
         public float getTwistAngle(Bone b, Bone parent)
         {
-            Vector3 direction = b.getDirection();
-            Vector3 up = b.getUp();
-            Vector3 right = b.getRight();
+            Vector3 direction = b.GetDirection();
+            Vector3 up = b.GetUp();
+            Vector3 right = b.GetRight();
 
             // construct a reference vector which the twist/orientation will depend on
             // The reference is the parents up vector projected on the same plane as the 
             // current bone's up vector
-            Vector3 reference = Vector3Helper.ProjectOnPlane(parent.getUp(), direction);
+            Vector3 reference = Vector3Helper.ProjectOnPlane(parent.GetUp(), direction);
 
             float twistAngle = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(reference, up));
 
@@ -130,6 +130,7 @@ namespace QTM2Unity
         }
 
         // TODO should not be public. Or should probably not be in this class even..
+#if false
         public void checkRotationalConstraint(ref Bone[] bs, int current)
         {
             if (current == 0)
@@ -278,6 +279,6 @@ namespace QTM2Unity
             target.X = x;
             target.Y = y;
         }
-
+#endif
     }
 }

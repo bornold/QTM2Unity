@@ -48,8 +48,8 @@ namespace QTM2Unity
                 missingChain.Add(missing);
                 if (b.Data.Exists) // target found! it the last in list
                 {
-                    OpenTK.Vector3 target = b.Data.Pos;
-                    missingChain = iks.solveBoneChain(missingChain.ToArray(), target).ToList(); // solve with IK
+                    Bone target = b.Data;
+                    missingChain = iks.solveBoneChain(missingChain.ToArray(), target, root.GetDirection()).ToList(); // solve with IK
                     break;
                 }
             }

@@ -57,7 +57,14 @@ namespace QTM2Unity
         {
             Debug.DrawLine(cv(start), cv(end),c);
         }
-
+        public static void DrawLine(OpenTK.Vector2 start, OpenTK.Vector2 end, Color c)
+        {
+            Debug.DrawLine(new Vector3(start.X,start.Y,0.0f), new Vector3(end.X,end.Y,0.0f), c);
+        }
+        public static void DrawLine(OpenTK.Vector2 start, OpenTK.Vector2 end)
+        {
+            Debug.DrawLine(new Vector3(start.X, start.Y, 0.0f), new Vector3(end.X, end.Y, 0.0f));
+        }
         public static Vector3 cv(OpenTK.Vector3 v)
         {
             return new Vector3(v.X, v.Y, v.Z);
@@ -218,11 +225,12 @@ namespace QTM2Unity
             }
             DrawLine(first, last, c);
         }
-        public static void CreateIrregularCone3(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 L1,
-                                                OpenTK.Quaternion rot, int resolution, float scale)
+        public static void CreateIrregularCone3(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Quaternion rot, int resolution, float scale)
         {
-            List<OpenTK.Vector3> positions = new List<OpenTK.Vector3>(); 
-            positions.AddRange(GetQuarter(strains.X,strains.Y, top, L1, rot, resolution, 1, scale));
+            OpenTK.Vector3 L1 = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
+            L1.Normalize();
+            List<OpenTK.Vector3> positions = new List<OpenTK.Vector3>();
+            positions.AddRange(GetQuarter(strains.X, strains.Y, top, L1, rot, resolution, 1, scale));
             positions.AddRange(GetQuarter(strains.Z, strains.Y, top, L1, rot, resolution, 2, scale));
             positions.AddRange(GetQuarter(strains.Z, strains.W, top, L1, rot, resolution, 3, scale));
             positions.AddRange(GetQuarter(strains.X, strains.W, top, L1, rot, resolution, 4, scale));
@@ -231,7 +239,7 @@ namespace QTM2Unity
             int i = 0;
             foreach (OpenTK.Vector3 v in positions)
             {
-                float part = ((float)i++ % ((float)resolution / 4f)) / ((float)resolution / 4f);
+                float part = ((float)i % ((float)resolution / 4f)) / ((float)resolution / 4f);
                 if (i < resolution * 0.25)
                 {  //Q1
                     c = Color.Lerp(Color.blue, Color.red, part);
@@ -248,6 +256,7 @@ namespace QTM2Unity
                 {   //Q2
                     c = Color.Lerp(Color.yellow, Color.blue, part);
                 }
+                i++;
                 DrawLine(v, prev , c);
                 DrawLine(top, v , c);
                 prev = v;
@@ -257,44 +266,46 @@ namespace QTM2Unity
             DrawLine(prev, positions.First(), c);
             DrawLine(top, positions.First(), c);
         }
+
         private static List<OpenTK.Vector3> GetQuarter(
             float a, float b, OpenTK.Vector3 top, 
             OpenTK.Vector3 L1,       OpenTK.Quaternion rot, 
             int resolution,         int p, float scale)
         {
             OpenTK.Quaternion extraRot = OpenTK.Quaternion.Identity;
-
+            OpenTK.Vector3 L2 = L1;
             if (a > 90 && b > 90)
             {
-                L1 = -L1;
+                L2 = -L1;
                 a = 180 - a;
                 b = 180 - b;
             }
             else if ((a > 90) ^ (b > 90))
             {
+            #region Crazy cone
                 OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
-                OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
-                OpenTK.Vector3 L2 = right;
+                OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot);
+                L2 = right;
                 switch (p)
                 {
-                    case 1:
-                        if (a > 90) L2 = right;
-                        else L2 = up;
-                        break;
-                    case 2:
-                        if (a > 90) L2 = -right;
-                        else L2 = up;
-                        break;
-                    case 3:
-                        if (a > 90) L2 = -right;
-                        else L2 = -up;
-                        break;
-                    case 4:
-                        if (a > 90) L2 = right;
-                        else L2 = -up;
-                        break;
-                    default:
-                        break;
+                case 1:
+                    if (a > 90) L2 = right;
+                    else L2 = forward;
+                    break;
+                case 2:
+                    if (a > 90) L2 = -right;
+                    else L2 = forward;
+                    break;
+                case 3:
+                    if (a > 90) L2 = -right;
+                    else L2 = -forward;
+                    break;
+                case 4:
+                    if (a > 90) L2 = right;
+                    else L2 = -forward;
+                    break;
+                default:
+                    break;
                 }
                 if (a > 90)
                     a = a - 90;
@@ -304,29 +315,25 @@ namespace QTM2Unity
                 OpenTK.Vector3 axis = OpenTK.Vector3.Cross(L2, L1);
                 extraRot = OpenTK.Quaternion.FromAxisAngle(axis, angle);
                 extraRot = OpenTK.Quaternion.Invert(extraRot);
-                L1 = L2;
+            #endregion
             }
-            a = Math.Min(89.9f, a);
-            b = Math.Min(89.9f, b);
-            float A = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(a));
-            float B = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(b));
 
+            float A = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.99f, a)));
+            float B = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.99f, b)));
             List<OpenTK.Vector3> te = new List<OpenTK.Vector3>();
             float part = resolution * (p / 4f);
             float start = resolution * ((p - 1f) / 4f);
-
             for (float i = start; i < part; i++)
             {
                 float angle = i / resolution * 2.0f * Mathf.PI;
                 float x = A * Mathf.Cos(angle);
                 float y = B * Mathf.Sin(angle);
-                OpenTK.Vector3 t = new OpenTK.Vector3(x, y, 0.0f );
-                t = OpenTK.Vector3.Transform(t, rot);
-                t = OpenTK.Vector3.Transform(t, extraRot);
-                t += L1;
+                OpenTK.Vector3 t = new OpenTK.Vector3(x, 0.0f, y );
+                t = OpenTK.Vector3.Transform(t, extraRot * rot );
+                t += L2;
                 t.Normalize();
-                t = top + t;
                 t *= scale;
+                t += top;
                 te.Add(t);
             }
             return te;

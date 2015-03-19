@@ -8,6 +8,6 @@ namespace QTM2Unity
 {
     abstract class IKSolver
     {
-        abstract public Bone[] solveBoneChain(Bone[] bones, Vector3 target); // TODO bones as ref instead?
+        abstract public Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1); 
     }
 }

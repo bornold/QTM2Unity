@@ -6,7 +6,7 @@ using QTM2Unity.Unity;
 using OpenTK;
 using UnityEngine;
 using UnityEditor;
-
+#if flase
 namespace QTM2Unity
 {
     class ConstraintTest : MonoBehaviour
@@ -34,15 +34,15 @@ namespace QTM2Unity
             bones[2] = new Bone("arm_2", pos2, rot2);
             bones[3] = new Bone("arm_end", pos3/*, rot2*/);
 
-            bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
+            bones[3].Rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].GetDirection(), UnityEngine.Mathf.PI / 4));
 
             //Constraints
             foreach (Bone b in bones)
             {
                 b.setOrientationalConstraint(10, 45);
             }
-            bones[1].setRotationalConstraint(45f, 45f, 45f, 45f, bones[0].getDirection, bones[0].getRight);
-            bones[2].setRotationalConstraint(0.1f, 0.1f, 0.1f, 0.1f, bones[1].getDirection, bones[1].getRight);
+            //bones[1].SetRotationalConstraint(45f, 45f, 45f, 45f, bones[0].getDirection, bones[0].getRight);
+            //bones[2].SetRotationalConstraint(0.1f, 0.1f, 0.1f, 0.1f, bones[1].getDirection, bones[1].getRight);
             //bones[3].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
         }
 
@@ -134,17 +134,17 @@ namespace QTM2Unity
                 // draw orientations
                 Gizmos.color = Color.cyan;
                 var pos = new UnityEngine.Vector3(b.Pos.X, b.Pos.Y, b.Pos.Z);
-                OpenTK.Vector3 d = b.getDirection();
+                OpenTK.Vector3 d = b.GetDirection();
                 var direction = new UnityEngine.Vector3(d.X, d.Y, d.Z);
                 Gizmos.DrawRay(pos, direction);
 
                 Gizmos.color = Color.magenta;
-                OpenTK.Vector3 u = b.getUp();
+                OpenTK.Vector3 u = b.GetUp();
                 var up = new UnityEngine.Vector3(u.X, u.Y, u.Z);
                 Gizmos.DrawRay(pos, up);
 
                 Gizmos.color = Color.green;
-                OpenTK.Vector3 r = b.getRight();
+                OpenTK.Vector3 r = b.GetRight();
                 var right = new UnityEngine.Vector3(r.X, r.Y, r.Z);
                 Gizmos.DrawRay(pos, right);
 
@@ -193,7 +193,7 @@ namespace QTM2Unity
             // constraint calculated in solver
             Gizmos.color = Color.blue;
             // Find parents constraint cone
-            OpenTK.Vector3 L1 = bones[1].getDirection();
+            OpenTK.Vector3 L1 = bones[1].GetDirection();
             L1.Normalize();
             L1 = L1 * (bones[3].Pos - bones[2].Pos).Length; // makes sure L1 has sufficient length
             // find the projection O of the target on line L1
@@ -206,7 +206,7 @@ namespace QTM2Unity
             OpenTK.Vector3 target = bones[3].Pos;
             target = target.translate(O);
             
-            OpenTK.Vector3 right2 = bones[1].getRight();
+            OpenTK.Vector3 right2 = bones[1].GetRight();
             OpenTK.Quaternion rot1 = QuaternionHelper.getRotation(L1, OpenTK.Vector3.UnitZ);
             right2 = OpenTK.Vector3.Transform(right2, rot1);
             OpenTK.Quaternion rot2 = QuaternionHelper.getRotation(right2, OpenTK.Vector3.UnitX);
@@ -249,7 +249,7 @@ namespace QTM2Unity
 
                     for (int i = current - 1; i < bs.Length; i++)
                     {
-                        bs[i].rotate(rot);
+                        bs[i].Rotate(rot);
                     }
                     Debug.Log("Position after: " +
                         bs[current].Pos.X + ", " + bs[current].Pos.Y + ", " + bs[current].Pos.Z);
@@ -399,3 +399,4 @@ namespace QTM2Unity
         }
     }
 }
+#endif
