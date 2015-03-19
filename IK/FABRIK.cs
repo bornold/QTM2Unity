@@ -15,7 +15,7 @@ namespace QTM2Unity
         {
             // Calculate distances 
             float[] distances;
-            getDistances(out distances, bones);
+            getDistances(out distances, ref bones);
 
             double dist = Math.Abs((bones[0].Pos - target.Pos).Length);
             if (dist > distances.Sum()) // the target is unreachable
@@ -35,16 +35,6 @@ namespace QTM2Unity
             }
 
             return bones;
-        }
-
-        // TODO probably better if we just keep length in bones... oor is it...
-        private void getDistances(out float[] distances, Bone[] bones)
-        {
-            distances = new float[bones.Length-1];
-            for (int i = 0; i < distances.Length; i++)
-            {
-                distances[i] = (bones[i].Pos - bones[i + 1].Pos).Length;
-            }
         }
 
         private Bone[] targetUnreachable(ref float[] distances, Bone[] bones, Vector3 target)
@@ -77,7 +67,7 @@ namespace QTM2Unity
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
                 
-                if (bones[i + 1].RotationalConstraint != null)
+                if (bones[i + 1].RotationalConstraint != null && bones[i].RotationalConstraint != null)
                 {
                     Vector4 constra = bones[i + 1].RotationalConstraint.Constraints;
                     Vector3 joint = bones[i + 1].Pos;

@@ -13,10 +13,13 @@ namespace QTM2Unity
     {
         private CCD ccd = new CCD();
         private FABRIK fabrik = new FABRIK();
+        private DampedLeastSquares dls = new DampedLeastSquares();
+        private JacobianTranspose jtr = new JacobianTranspose();
         private Bone[] bones = new Bone[4];
         private GameObject[] joints;
 
-        private OpenTK.Vector3 target = new OpenTK.Vector3(5, 4, -1);//(7, 2, 0); //unreachable //(5, 4, -1);
+        //private OpenTK.Vector3 target = new OpenTK.Vector3(5, 2, 0);//(7, 2, 0); //unreachable //(5, 4, -1);
+        private Bone target = new Bone("target", new OpenTK.Vector3(5, 2, 0), OpenTK.Quaternion.Identity);
 
         private float markerScale = 0.3f;
 
@@ -26,21 +29,27 @@ namespace QTM2Unity
             OpenTK.Vector3 pos1 = new OpenTK.Vector3(2, 2, 0);
             OpenTK.Vector3 pos2 = new OpenTK.Vector3(4, 2, 0);
             OpenTK.Vector3 pos3 = new OpenTK.Vector3(5, 1, 1);
-        
-            OpenTK.Quaternion rot0 = OpenTK.Quaternion.FromAxisAngle(new OpenTK.Vector3(0,1,0), 
+
+            OpenTK.Quaternion rot0 = OpenTK.Quaternion.FromAxisAngle(new OpenTK.Vector3(0, 1, 0),
                 MathHelper.DegreesToRadians(-90));
             OpenTK.Quaternion rot2 = QuaternionHelper.getRotation((pos2 - pos1), (pos3 - pos2)) * rot0;
 
             /*target = OpenTK.Vector3.Transform(pos3 - pos2,
                 OpenTK.Quaternion.FromAxisAngle(OpenTK.Vector3.Cross(pos3-pos2, pos2-pos1), 
                     MathHelper.DegreesToRadians(60)));*/
-                        
-            bones[0] = new Bone("arm_root", pos0, rot0);
-            bones[1] = new Bone("arm_1", pos1, rot0);
-            bones[2] = new Bone("arm_2", pos2, rot2);
+
+            bones[0] = new Bone("arm_root", pos0, OpenTK.Quaternion.Identity); //rot0);
+            bones[1] = new Bone("arm_1", pos1, OpenTK.Quaternion.Identity);// rot0);
+            bones[2] = new Bone("arm_2", pos2, OpenTK.Quaternion.Identity);//rot2);
             bones[3] = new Bone("arm_end", pos3/*, rot2*/);
 
-            bones[3].Rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].GetDirection(), UnityEngine.Mathf.PI / 4));
+            bones[0].RotateTowards(pos1 - pos0);
+            bones[1].RotateTowards(pos2 - pos1);
+            bones[2].RotateTowards(pos3 - pos2);
+
+            for (int i = 0; i < bones.Length - 2; i++)
+                bones[i].Rotate(OpenTK.Quaternion.FromAxisAngle(bones[i].GetDirection(), -UnityEngine.Mathf.PI / 2));
+            //bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
 
             //Constraints
             foreach (Bone b in bones)
@@ -62,7 +71,7 @@ namespace QTM2Unity
             {
                 //GameObject joint = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 GameObject joint = UnityEngine.GameObject.CreatePrimitive(PrimitiveType.Cube);
-                
+
                 joint.name = bones[i].Name;
                 joint.transform.localScale = UnityEngine.Vector3.one * markerScale;
                 joint.transform.localPosition =
@@ -80,7 +89,7 @@ namespace QTM2Unity
                     + joint.transform.localPosition.y + ", "
                     + joint.transform.localPosition.z + ")");
 
-                
+
             }
 
             for (int i = 0; i < joints.Length - 1; i++)
@@ -93,7 +102,7 @@ namespace QTM2Unity
             for (int i = 1; i < bones.Length; i++)
             {
                 Debug.Log(bones[i].Name + " angle around dir: "
-                    + ccd.getTwistAngle(bones[i], bones[i-1]));
+                    + ccd.getTwistAngle(bones[i], bones[i - 1]));
             }
         }
 
@@ -104,7 +113,7 @@ namespace QTM2Unity
 
             for (int i = 0; i < joints.Length; i++)
             {
-                joints[i].transform.localPosition = 
+                joints[i].transform.localPosition =
                     new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z);
                 joints[i].transform.localRotation = new UnityEngine.Quaternion(
                     bones[i].Orientation.X,
@@ -119,13 +128,13 @@ namespace QTM2Unity
 
             for (int i = 0; i < joints.Length - 1; i++)
             {
-                Debug.Log("Length between " + joints[i].name + " and " + joints[i+1].name + ": "
-                    + (joints[i+1].transform.localPosition - joints[i].transform.localPosition).magnitude);
+                Debug.Log("Length between " + joints[i].name + " and " + joints[i + 1].name + ": "
+                    + (joints[i + 1].transform.localPosition - joints[i].transform.localPosition).magnitude);
             }
 
             Debug.Log("Length between end effector and target: "
                 + (joints[joints.Length - 1].transform.localPosition
-                - new UnityEngine.Vector3(target.X, target.Y, target.Z)).magnitude);
+                - new UnityEngine.Vector3(target.Pos.X, target.Pos.Y, target.Pos.Z)).magnitude);
 
             /*CCD.checkOrientationalConstraint(ref bones[1], bones[0]);
             CCD.checkOrientationalConstraint(ref bones[2], bones[1]);
@@ -135,9 +144,9 @@ namespace QTM2Unity
             for (int i = 1; i < bones.Length; i++)
             {
                 Debug.Log(bones[i].Name + " angle around dir: "
-                    + ccd.getTwistAngle(bones[i], bones[i-1]));
+                    + ccd.getTwistAngle(bones[i], bones[i - 1]));
             }
-            
+
         }
 
         void Start()
@@ -151,22 +160,22 @@ namespace QTM2Unity
             if (!Application.isPlaying)
                 return;
 
-            for (int i = 0; i < bones.Length - 1; i++ )
+            for (int i = 0; i < bones.Length - 1; i++)
             {
                 Bone b = bones[i];
                 // draw orientations
-                Gizmos.color = Color.cyan;
+                Gizmos.color = Color.cyan; // direction
                 var pos = new UnityEngine.Vector3(b.Pos.X, b.Pos.Y, b.Pos.Z);
                 OpenTK.Vector3 d = b.GetDirection();
                 var direction = new UnityEngine.Vector3(d.X, d.Y, d.Z);
                 Gizmos.DrawRay(pos, direction);
 
-                Gizmos.color = Color.magenta;
+                Gizmos.color = Color.magenta; // up
                 OpenTK.Vector3 u = b.GetUp();
                 var up = new UnityEngine.Vector3(u.X, u.Y, u.Z);
                 Gizmos.DrawRay(pos, up);
 
-                Gizmos.color = Color.green;
+                Gizmos.color = Color.green; // right
                 OpenTK.Vector3 r = b.GetRight();
                 var right = new UnityEngine.Vector3(r.X, r.Y, r.Z);
                 Gizmos.DrawRay(pos, right);
@@ -182,7 +191,7 @@ namespace QTM2Unity
 
             // draw target
             Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(new UnityEngine.Vector3(target.X, target.Y, target.Z), 0.1f);
+            Gizmos.DrawSphere(new UnityEngine.Vector3(target.Pos.X, target.Pos.Y, target.Pos.Z), 0.1f);
 
             // draw reference vector
             /*Gizmos.color = Color.yellow;
@@ -194,12 +203,11 @@ namespace QTM2Unity
                 Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
                     new UnityEngine.Vector3(reference.X, reference.Y, reference.Z));
             }*/
-           /* Gizmos.color = Color.red;
-            Gizmos.DrawRay(UnityEngine.Vector3.zero, new UnityEngine.Vector3(parentUp.X, parentUp.Y, parentUp.Z));*/
+            /* Gizmos.color = Color.red;
+             Gizmos.DrawRay(UnityEngine.Vector3.zero, new UnityEngine.Vector3(parentUp.X, parentUp.Y, parentUp.Z));*/
 
-            // Draw direction vector of constraint
-                    /*
-            Gizmos.color = Color.yellow;
+            // Draw constraints
+            /*Gizmos.color = Color.yellow;
             for (int i = 0; i < bones.Length; i++)
             {
                 if (bones[i].RotationalConstraint != null)
@@ -228,47 +236,69 @@ namespace QTM2Unity
                     Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
                     new UnityEngine.Vector3(coneUp.X, coneUp.Y, coneUp.Z));
                 }
-            }
-            */
+            }*/
+
         }
 
         public void runCCD()
         {
-            bones = ccd.solveBoneChain(bones, new Bone("target", target),OpenTK.Vector3.UnitY);
+            bones = ccd.solveBoneChain(bones, target, OpenTK.Vector3.Zero);
 
             //CCD.checkOrientationalConstraint(ref bones[1], bones[0]);
             //CCD.checkOrientationalConstraint(ref bones[2], bones[1]);
             //CCD.checkOrientationalConstraint(ref bones[3], bones[2]);
-            
+
             //******************
             updateJoints();
         }
 
         public void runFABRIK()
         {
-            bones = fabrik.solveBoneChain(bones, new Bone("target", target), OpenTK.Vector3.UnitY);
+            bones = fabrik.solveBoneChain(bones, target, OpenTK.Vector3.Zero);
             updateJoints();
         }
 
+        public void runDLS()
+        {
+            bones = dls.solveBoneChain(bones, target, OpenTK.Vector3.Zero);
+            updateJoints();
+        }
+
+        public void runTranspose()
+        {
+            bones = jtr.solveBoneChain(bones, target, OpenTK.Vector3.Zero);
+            updateJoints();
+        }
     }
 
 
     [CustomEditor(typeof(CCDTest))]
-    class CCDTestEditor : Editor {
+    class CCDTestEditor : Editor
+    {
 
         public override void OnInspectorGUI()
         {
-             CCDTest myTarget = (CCDTest)target;
+            CCDTest myTarget = (CCDTest)target;
 
-             if (GUILayout.Button("CCD"))
-             {
-                 myTarget.runCCD();
-             }
+            if (GUILayout.Button("CCD"))
+            {
+                myTarget.runCCD();
+            }
 
-             if (GUILayout.Button("FABRIK"))
-             {
-                 myTarget.runFABRIK();
-             }
+            if (GUILayout.Button("FABRIK"))
+            {
+                myTarget.runFABRIK();
+            }
+
+            if (GUILayout.Button("DLS"))
+            {
+                myTarget.runDLS();
+            }
+
+            if (GUILayout.Button("Jacobian Transpose"))
+            {
+                myTarget.runTranspose();
+            }
         }
     }
 }
