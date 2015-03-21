@@ -97,7 +97,7 @@ namespace QTM2Unity
                         jointPos,
                         rot,
                         coneResolution,
-                        coneScale
+                        (float)(targ - jointPos).Length
                         );
             }
             if (strains.RotationalConstraints(targ, jointPos, L1, constr, out res)) targ = res;

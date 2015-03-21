@@ -13,8 +13,9 @@ public class IKChainTest : MonoBehaviour {
     public IKS IK = IKS.ccd;
     public int conResolution = 50;
     public bool showconstraints = true;
+    public float scale = 0.5f;
     public Vector4 constraints = new Vector4(20, 30, 20, 30);
-    public Vector4 _constraints;
+    private Vector4 _constraints;
     private List<Bone> bones = new List<Bone>();
     private IKSolver solver = new FABRIK();
     public enum IKS
@@ -28,6 +29,7 @@ public class IKChainTest : MonoBehaviour {
 	void Start () {
         solver = new CCD();
         bones = AddBones();
+        this.transform.localScale *= scale; 
 	}
 	
 	// Update is called once per frame
@@ -62,10 +64,15 @@ public class IKChainTest : MonoBehaviour {
             bones = solver.solveBoneChain(bones.ToArray(), target,OpenTK.Vector3.UnitY).ToList();
         }
         float d = 0;
+        Bone prev = bones[0];
         foreach (Bone curr in bones)
         {
             Color c = Color.Lerp(Color.magenta, Color.cyan, d++ / (float)bones.Count);
             UnityDebug.DrawRays(curr.Orientation, curr.Pos, boneLength);
+            UnityDebug.DrawLine(prev.Pos, curr.Pos);
+            UnityDebug.DrawLine(curr.Pos, curr.Pos + (curr.Pos - prev.Pos), UnityEngine.Color.black);
+
+            prev = curr;
             if (showconstraints && curr.RotationalConstraint != null)
             {
                 UnityDebug.CreateIrregularCone3(
@@ -73,7 +80,7 @@ public class IKChainTest : MonoBehaviour {
                     curr.Pos,
                     curr.Orientation,
                     conResolution,
-                    coneSize    
+                    boneLength    
                     );
             } 
         } 
@@ -91,8 +98,7 @@ public class IKChainTest : MonoBehaviour {
             b.SetRotationalConstraint(constraints.Convert());
             newBones.Add(b);
         }
-        Bone c = new Bone("endeffector", new OpenTK.Vector3(0f, _chains * boneLength, 0f));
-        newBones.Add(c);
+        newBones.Add(new Bone("endeffector", new OpenTK.Vector3(0f, _chains * boneLength, 0f)));
         return newBones;
     }
     private void newConstraints()

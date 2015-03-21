@@ -70,7 +70,7 @@ namespace QTM2Unity
             this.left = givenConstraints.Z;
             this.down = givenConstraints.W;
         }
-        
+
         public bool RotationalConstraints(Vector3 target, Vector3 jointPos, Vector3 L1, Vector4 constraints, out Vector3 res)
         {
             Vector3 targetPos = new Vector3(target.X, target.Y, target.Z);
@@ -78,8 +78,7 @@ namespace QTM2Unity
 
             bool behind = false;
             bool reverseCone = false;
-            bool orthogonal = false;
-
+            bool sideCone = false;
             //3.1 Find the line equation L1
             //Vector3 L1 = jointPos - parentPos;
             //3.2 Find the projection O of the target t on line L1
@@ -87,8 +86,6 @@ namespace QTM2Unity
             Vector3 OPos = O + jointPos;
             if (Math.Abs(Vector3.Dot(L1, joint2Target)) < precision)
             {
-                orthogonal = true;
-                //behind = true;
                 O = Vector3.Normalize(L1) * precision * 10;
                 OPos = O + jointPos;
             }
@@ -103,12 +100,11 @@ namespace QTM2Unity
             //3.4 Map the target (rotate and translate) in such a
             //way that O is now located at the axis origin and oriented
             //according to the x and y-axis ) Now it is a 2D simplified problem
-            float angle = Vector3.CalculateAngle(L1, Vector3.UnitZ);
-            Vector3 axis = Vector3.Cross(L1, Vector3.UnitZ);
+            float angle = Vector3.CalculateAngle(L1, Vector3.UnitY);
+            Vector3 axis = Vector3.Cross(L1, Vector3.UnitY);
             Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
-            Quaternion orgiRot = rotation;
             Vector3 TRotated = Vector3.Transform(joint2Target, rotation);
-            Vector2 target2D = new Vector2(TRotated.X, TRotated.Y);
+            Vector2 target2D = new Vector2(TRotated.X, TRotated.Z);
 
             //3.5 Find in which quadrant the target belongs 
             // Locate target in a particular quadrant
@@ -137,46 +133,51 @@ namespace QTM2Unity
                 q = Q.q4;
                 radius = new Vector2(constraints.Z, constraints.Y);
             }
+//            UnityEngine.Debug.Log(q + " " + radius);
             #endregion
             #region check cone
             if (radius.X > 90 && radius.Y > 90) // cone is reversed
             {
                 reverseCone = true;
+                radius.X = 90 - (radius.X - 90);
+                radius.Y = 90 - (radius.Y - 90);
             }
             else if ((behind) && (radius.X > 90 || radius.Y > 90)) // has one angle > 90, other not, very speciall case
             {
+                sideCone = true;
                 Quaternion inverRot = Quaternion.Invert(rotation);
                 Vector3 right = Vector3.Transform(Vector3.UnitX, inverRot);
-                Vector3 up = Vector3.Transform(Vector3.UnitY, inverRot);
+                Vector3 forward = Vector3.Transform(Vector3.UnitY, inverRot);
                 Vector3 L2 = right;
                 switch (q)
                 {
                     case Q.q1:
                         if (radius.X > 90) L2 = right;
-                        else L2 = up;
+                        else L2 = forward;
                         break;
                     case Q.q2:
                         if (radius.X > 90) L2 = right;
-                        else L2 = -up;
+                        else L2 = -forward;
                         break;
                     case Q.q3:
                         if (radius.X > 90) L2 = -right;
-                        else L2 = -up;
+                        else L2 = -forward;
                         break;
                     case Q.q4:
-                        if (radius.X > 90) L2 = -right;
-                        else L2 = up;
+                        if (radius.X > 90) { L2 = -right; }
+                        else L2 = forward;
                         break;
                     default:
                         break;
                 }
-                angle = Vector3.CalculateAngle(L2, Vector3.UnitZ);
+                L2.Normalize();
+                angle = Vector3.CalculateAngle(L2, Vector3.UnitY);
 
-                axis = Vector3.Cross(L2, Vector3.UnitZ);
+                axis = Vector3.Cross(L2, Vector3.UnitY);
                 rotation = Quaternion.FromAxisAngle(axis, angle);
 
                 TRotated = Vector3.Transform(joint2Target, rotation);
-                target2D = new Vector2(TRotated.Xy);
+                target2D = new Vector2(TRotated.X,TRotated.Z);
                 O = Vector3Helper.Project(joint2Target, L2);
 
                 OPos = O + jointPos;
@@ -191,7 +192,7 @@ namespace QTM2Unity
                     radius.Y = (radius.Y - 90);
                 }
             }
-            else if (behind && !orthogonal && radius.X <= 90 && radius.Y <= 90) // behind and cone i front
+            else if (behind && radius.X <= 90 && radius.Y <= 90) // behind and cone i front
             {
                 O = -O;
                 OPos = O + jointPos;
@@ -207,8 +208,7 @@ namespace QTM2Unity
                 radius.Y = Math.Min(90 - precision, radius.Y);
             }
             radius.X = Mathf.Clamp(radius.X, precision, 90 - precision);  // clamp it so if <=0 -> 0.001, >=90 -> 89.999
-            radius.Y = Mathf.Clamp(radius.Y, precision, 90 - precision); 
-
+            radius.Y = Mathf.Clamp(radius.Y, precision, 90 - precision);
             //3.7 Find the conic section which is associated with
             //that quadrant using the distances qj = Stanhj, where
             //j = 1,..,4
@@ -220,11 +220,15 @@ namespace QTM2Unity
             //section or not
             bool inside = (target2D.X * target2D.X) / (radiusX * radiusX) +
                 (target2D.Y * target2D.Y) / (radiusY * radiusY) <= 1 + precision;
-            //3.9 if within the conic section then
-            if ((inside && !reverseCone && !behind)
-                || (!inside && reverseCone && behind)
-                || (inside && reverseCone && !behind)
-                || (!inside && reverseCone && behind)
+            
+            //3.9 if within the conic section then         
+//            UnityEngine.Debug.Log(" inside: " + inside + " reverseCone: " + reverseCone + " behind: " + behind + " sidecone: " + sideCone);
+            if (   
+                   ( inside && !reverseCone && !behind)
+                || ( inside &&  reverseCone && !behind)
+                || (!inside &&  reverseCone &&  behind)
+                || (!inside &&  reverseCone && !behind)
+                || (inside && !reverseCone && behind && sideCone)
                )
             {
                 //3.10 use the true target position t
@@ -239,15 +243,18 @@ namespace QTM2Unity
                 //from the target
                 Vector2 newPoint = NearestPoint(radiusX, radiusY, target2D, q, reverseCone);
 
-                Vector3 newPointV3 = new Vector3(newPoint);
+                Vector3 newPointV3 = new Vector3(newPoint.X,0.0f,newPoint.Y);
+                //UnityDebug.CreateEllipse(radiusX, radiusY, 500, UnityEngine.Color.black);
+                //UnityDebug.DrawLine(new Vector3(target2D.X,0,target2D.Y), newPointV3);
 
                 //3.13 Map (rotate and translate) that point on the
                 //conic section via reverse of 3.4 and use that point as
                 //the new target position
                 rotation = Quaternion.Invert(rotation);
-                UnityDebug.CreateEllipse(radiusX, radiusY,  OPos.Convert(), rotation.Convert(), 500, UnityEngine.Color.black);
                 Vector3 moveTo = Vector3.Transform(newPointV3, rotation);
                 moveTo += OPos;
+                //UnityDebug.CreateEllipse(radiusX, radiusY,  OPos.Convert(), rotation.Convert(), 500, UnityEngine.Color.black);
+                //UnityDebug.DrawLine(target, moveTo);
                 Vector3 vectorToMoveTo = (moveTo - jointPos);
                 axis = Vector3.Cross(joint2Target, vectorToMoveTo);
                 angle = Vector3.CalculateAngle(joint2Target, vectorToMoveTo);
@@ -263,7 +270,7 @@ namespace QTM2Unity
             Vector2 newPoint;
             float xRad, yRad, pX, pY;
 
-            if (radiusX >= radiusY ^ reverseCone)
+            if (radiusX >= radiusY )//^ reverseCone)
             {
                 xRad = Math.Abs(radiusX);
                 yRad = Math.Abs(radiusY);

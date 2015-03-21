@@ -34,10 +34,13 @@ namespace QTM2Unity.Unity
         {
             String[] servers;
             RTClient.getInstance().getServers(out servers);
-            popuplist = new GUIContent[servers.Length];
-            for (int i = 0; i < servers.Length; i++)
+            if (connected)
             {
-                popuplist[i] = new GUIContent(servers[i]);
+                popuplist = new GUIContent[servers.Length];
+                for (int i = 0; i < servers.Length; i++)
+                {
+                    popuplist[i] = new GUIContent(servers[i]);
+                }
             }
         }
 

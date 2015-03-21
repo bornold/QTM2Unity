@@ -89,18 +89,18 @@ namespace QTM2Unity
         {
 
             Vector3[] positions = new Vector3[resolution + 1];
-            Vector3 center = pos;
-
             for (int i = 0; i <= resolution; i++)
             {
                 float angle = (float)i / (float)resolution * 2.0f * Mathf.PI;
-                positions[i] = new Vector3(x * Mathf.Cos(angle), y * Mathf.Sin(angle), 0.0f);
-                positions[i] = rot * positions[i] + center;
+                positions[i] = new Vector3(x * Mathf.Cos(angle), 0.0f, y * Mathf.Sin(angle));
+                positions[i] = rot * positions[i] + pos;
+                if (i > 0)
+                {
+                    Debug.DrawLine(positions[i], positions[i - 1], c);
+                }
             }
-            for (int i = 0; i < resolution; i++)
-            {
-                Debug.DrawLine(positions[i], positions[i + 1], c);
-            }
+            Debug.DrawLine(positions[0], positions[positions.Length-1], c);
+
         }
         public static void CreateEllipse(float x, float y, OpenTK.Vector3 pos, Quaternion rot, int resolution,Color c)
         {
@@ -110,7 +110,7 @@ namespace QTM2Unity
         {
             CreateEllipse(x, y, cv(pos), cq(rot), resolution,c);
         }
-        public static void CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 o,
+        public static void CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 o, 
             OpenTK.Quaternion rot, int resolution)
         {
             OpenTK.Vector3 center = top + o;//OpenTK.Vector3.Normalize(o); 
@@ -155,7 +155,7 @@ namespace QTM2Unity
                     b = strains.W;
 
                 }
-                positions[i] = new OpenTK.Vector3(a * Mathf.Cos(angle), b * Mathf.Sin(angle), 0.0f);
+                positions[i] = new OpenTK.Vector3(a * Mathf.Cos(angle), 0.0f, b * Mathf.Sin(angle));
                 positions[i] = OpenTK.Vector3.Transform(positions[i], rot) + center;
                 if (i > 0)
                 {
@@ -164,67 +164,7 @@ namespace QTM2Unity
                 }
             }
         }
-        public static void CreateIrregularCone2(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 dir,
-                                                OpenTK.Quaternion rot, int resolution)
-        {
-            dir.Normalize();
-            OpenTK.Vector3 center = top + dir;
-            strains.X = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f, strains.X)));
-            strains.Y = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f, strains.Y)));
-            strains.Z = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f, strains.Z)));
-            strains.W = Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f, strains.W)));
 
-            OpenTK.Vector3 current, last, first;
-
-            float a = strains.X, b, angle, part;
-            last = new OpenTK.Vector3(a, 0.0f, 0.0f);
-            last = OpenTK.Vector3.Transform(last, rot) + center;
-            last = last - top;  
-            last.Normalize();
-            last = top + last;
-            first = last;
-            Color c = Color.blue;
-            DrawLine(top, first, c);
-            for (int i = 1; i < resolution ; i++)
-            {
-                angle = (float)i / (float)resolution * 2.0f * Mathf.PI;
-                part = ((float)i % ((float)resolution / 4f)) / ((float)resolution / 4f);
-                if (i < resolution * 0.25)
-                {  //Q1
-                    c = Color.Lerp(Color.blue, Color.red, part);
-                    a = strains.X;
-                    b = strains.Y;
-                }
-                else if (i < resolution * 0.5)
-                {   //Q4
-                    c = Color.Lerp(Color.red, Color.green, part);
-                    a = strains.Z;
-                    b = strains.Y;
-                }
-                else if (i < resolution * 0.75)
-                {   //Q3
-                    c = Color.Lerp(Color.green, Color.yellow, part);
-                    a = strains.Z;
-                    b = strains.W;
-                }
-                else
-                {   //Q2
-                    c = Color.Lerp(Color.yellow, Color.blue, part);
-                    a = strains.X;
-                    b = strains.W;
-
-                }
-                current = new OpenTK.Vector3(a * Mathf.Cos(angle), b * Mathf.Sin(angle), 0.0f);
-                current = OpenTK.Vector3.Transform(current, rot) + center;
-                current = current - top;
-                current.Normalize();
-                current = top + current;
-                DrawLine(top, current, c);
-                DrawLine(current, last, c);
-                last = current;
-            }
-            DrawLine(first, last, c);
-        }
         public static void CreateIrregularCone3(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Quaternion rot, int resolution, float scale)
         {
             OpenTK.Vector3 L1 = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
@@ -327,8 +267,8 @@ namespace QTM2Unity
             {
                 float angle = i / resolution * 2.0f * Mathf.PI;
                 float x = A * Mathf.Cos(angle);
-                float y = B * Mathf.Sin(angle);
-                OpenTK.Vector3 t = new OpenTK.Vector3(x, 0.0f, y );
+                float z = B * Mathf.Sin(angle);
+                OpenTK.Vector3 t = new OpenTK.Vector3(x, 0.0f, z );
                 t = OpenTK.Vector3.Transform(t, extraRot * rot );
                 t += L2;
                 t.Normalize();
