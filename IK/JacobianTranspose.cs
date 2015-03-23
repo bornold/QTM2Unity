@@ -9,7 +9,7 @@ namespace QTM2Unity
 {
     class JacobianTranspose : IKSolver
     {
-        private static float threshold = 0.0001f;
+        private static float threshold = 0.001f; // TODO good value?
 
         override public Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1)
         {
@@ -20,6 +20,7 @@ namespace QTM2Unity
             // J[rows][columns]
             int k = 1; // only one end effector now
             Vector3[,] J = new Vector3[k, bones.Length - 1];
+            Vector3[,] rotAxis = new Vector3[k, bones.Length - 1];
 
             int iter = 0;
             while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 10000)
@@ -30,14 +31,17 @@ namespace QTM2Unity
                 {
                     for (int j = 0; j < bones.Length - 1; j++)
                     {
-                        //J[i, j] = Vector3.Cross(bones[j].getRight(), bones[bones.Length - 1].Pos - bones[j].Pos);
-                        /*Vector3 rotationAxis;
-                        float angle;
-                        bones[j].Orientation.ToAxisAngle(out rotationAxis, out angle);*/
-                        J[i, j] = Vector3.Cross(bones[j].GetRight(), bones[bones.Length - 1].Pos - bones[j].Pos);
-                        // Obs: bones[bones.Length-1] is the last in the chain, the end effector. 
-                        // Will be different when we have several end effectors
-                        //Debug.Log("J[" + i + ", " + j + "] = " + J[i, j].X + ", " + J[i, j].Y + ", " + J[i, j].Z);
+                        Vector3 a = Vector3.Cross(bones[bones.Length - 1].Pos - bones[j].Pos, target.Pos - bones[j].Pos);
+                        // If a is the zero vector the end effector and the target are aligned
+                        // we choose a to be the cross between the bone itself and the vector to the target 
+                        if (a.X == 0 && a.Y == 0 && a.Z == 0)
+                        {
+                            a = Vector3.Cross(bones[j].GetDirection(), target.Pos - bones[j].Pos);
+                        }
+                        a.Normalize();
+                     
+                        rotAxis[i, j] = a;
+                        J[i, j] = Vector3.Cross(a, bones[bones.Length - 1].Pos - bones[j].Pos);
                     }
                 }
 
@@ -50,26 +54,22 @@ namespace QTM2Unity
 
                 float[,] dTheta = mult(alpha, mult(JT, e));
 
-                //print dTheta
-               /* string s = "";
-                for (int i = 0; i < dTheta.GetLength(0); i++)
-                {
-                    for (int j = 0; j < dTheta.GetLength(1); j++)
-                    {
-                        s += " " + dTheta[i, j];
-                    }
-                }
-                Debug.Log(s);*/
-
-                // Let's try
+                bool allZero = true;
                 for (int i = 0; i < bones.Length - 1; i++) // go through all joints (not end effector)
                 {
-                   // Debug.Log("Rotate " + bones[i].Name + " " + dTheta[i, 0] + " degrees");
-                   
-                    Quaternion q = Quaternion.FromAxisAngle(bones[i].GetRight(), dTheta[i, 0]);
-                    bones[i].Rotate(q);
-                    // Need to set new position for bone[i+1]
-                    //bones[i+1].Pos = Vector3.Transform(bones[i + 1].Pos, q);
+                    if (dTheta[i, 0] > 0.000001) // good values? TODO
+                        allZero = false;
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, i], dTheta[i, 0]);
+                    bones[i].Rotate(q); // Rotate bone i dTheta[i,0] radians around previously calculated axis
+                }
+
+                // if we got (almost) no change in the angles we want to force change to not get stuck
+                if (allZero) 
+                {
+                    // rotate end effector 1 degree
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, bones.Length - 2], 
+                        MathHelper.DegreesToRadians(2));
+                    bones[bones.Length-2].Rotate(q);
                 }
 
                 // set all positions

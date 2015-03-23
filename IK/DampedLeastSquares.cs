@@ -77,15 +77,29 @@ namespace QTM2Unity
             getDistances(out distances, ref bones);
 
             Vector3[] J = new Vector3[bones.Length-1];
+            Vector3[] rotAxis = new Vector3[bones.Length - 1];
 
             int iter = 0;
             while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 10000)
             {
+
                 // Create Jacobian matrix J(theta) = (ds[i]/dtheta[j])[ij]
                 // ds[i]/dtheta[j] = v[j] x (s[i]-p[j])
                 for (int i = 0; i < bones.Length - 1; i++)
                 {
-                    J[i] = Vector3.Cross(bones[i].GetRight(), bones[bones.Length - 1].Pos - bones[i].Pos);
+                    Vector3 a = Vector3.Cross(bones[bones.Length - 1].Pos - bones[i].Pos, target.Pos - bones[i].Pos);
+                    //Debug.Log("a: " + a.X + "," + a.Y + "," + a.Z);
+                    // If a is the zero vector the end effector and the target are aligned
+                    // we choose the cross between the bone itself and the vector to the target 
+                    if (a.X == 0 && a.Y == 0 && a.Z == 0)
+                    {
+                        a = Vector3.Cross(bones[i].GetDirection(), target.Pos - bones[i].Pos);
+                    }
+                    a.Normalize();
+
+                    rotAxis[i] = a;
+                    J[i] = Vector3.Cross(a, bones[bones.Length - 1].Pos - bones[i].Pos);
+                    //J[i] = Vector3.Cross(bones[i].GetRight(), bones[bones.Length - 1].Pos - bones[i].Pos);
                     // Obs: bones[bones.Length-1] is the last in the chain, the end effector. 
                     // Will be different when we have several end effectors
                     //Debug.Log("J[" + i + "] = " + J[i].X + ", " + J[i].Y + ", " + J[i].Z);
@@ -110,7 +124,7 @@ namespace QTM2Unity
                 for (int i = 0; i < bones.Length - 1; i++) // go through all joints (not end effector)
                 {
                     //Debug.Log("Rotate " + bones[i].Name + " " + dTheta[i, 0] + " degrees");
-                    Quaternion q = Quaternion.FromAxisAngle(bones[i].GetRight(), dTheta[i]);
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[i], dTheta[i]);
                     bones[i].Rotate(q);
                 }
 
