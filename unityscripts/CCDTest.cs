@@ -19,7 +19,7 @@ namespace QTM2Unity
         private GameObject[] joints;
 
         //private OpenTK.Vector3 target = new OpenTK.Vector3(5, 2, 0);//(7, 2, 0); //unreachable //(5, 4, -1);
-        private Bone target = new Bone("target", new OpenTK.Vector3(5, 2, 0), OpenTK.Quaternion.Identity);
+        private Bone target = new Bone("target", new OpenTK.Vector3(4, 4, -1), OpenTK.Quaternion.Identity);
 
         private float markerScale = 0.3f;
 
@@ -52,12 +52,12 @@ namespace QTM2Unity
             //bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
 
             //Constraints
-            foreach (Bone b in bones)
+           /* foreach (Bone b in bones)
             {
                 b.setOrientationalConstraint(10, 45);
             }
             bones[1].SetRotationalConstraint(45f, 45f, 45f, 45f);
-            bones[2].SetRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
+            bones[2].SetRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);*/
             //bones[3].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
         }
 
