@@ -98,7 +98,7 @@ namespace QTM2Unity
             if (orientationalConstr != null && checkRot)
             {
                 //UnityEngine.Debug.Log(string.Format("orientational constraining {0} with regards to {1}", target.Name, this.Name));
-                orientationalConstr.checkOrientationalConstraint(ref target, this);
+                //orientationalConstr.checkOrientationalConstraint(ref target, this);
             }
             if (rotationalConstr != null)
             {
@@ -109,13 +109,13 @@ namespace QTM2Unity
                         rotationalConstr.Constraints.Y)
                     : rotationalConstr.Constraints;
                 Vector3 res;
-                if (rotationalConstr.RotationalConstraints(target.Pos, pos, L1, constraints, out res)) 
+                if (rotationalConstr.RotationalConstraints(target.Pos, this.Pos, L1, constraints, out res)) 
                     {
                         target.Pos = res;
                         RotateTowards(target.Pos - this.Pos);
                         if (orientationalConstr != null && checkRot)
                         {
-                            orientationalConstr.checkOrientationalConstraint(ref target, this);
+                           // orientationalConstr.checkOrientationalConstraint(ref target, this);
                         }
                         return true;
                     }

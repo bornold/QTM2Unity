@@ -368,6 +368,9 @@ namespace QTM2Unity
                 Quaternion rot = Quaternion.FromAxisAngle(axis, angle);
                 res = Vector3.Transform(joint2Target, rot) + jointPos;
 
+                //UnityEngine.Debug.Log("joint2res " + (res - jointPos).Length);
+                //UnityEngine.Debug.Log("joint2Target " + (joint2Target).Length);
+
                 return true;    
             }
             //3.14 end

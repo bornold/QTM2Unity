@@ -38,38 +38,40 @@ namespace QTM2Unity
                     // - first the endEffector
                     // - then the rest of the affected joints
                     Quaternion rotation = QuaternionHelper.getRotation(a, b);
-                    for (int j = numberOfBones - 1; j >= i; j--)
+                    Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i+1].Pos - bones[i].Pos, rotation);
+                    Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : L1;
+
+                    Vector3 res;
+                    if (bones[i].RotationalConstraint.RotationalConstraints(trg, bones[i].Pos, dir, bones[i].RotationalConstraint.Constraints, out res))
                     {
-                        if (j > i)
-                        {
-                            bones[j].Pos = bones[i].Pos + 
-                                OpenTK.Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
-                        }
+                        a = bones[i+1].Pos - bones[i].Pos;
+                        b = res - bones[i].Pos;
+                        rotation = QuaternionHelper.getRotation(a, b);
+                    }
+                    ForwardKinematics(ref bones, rotation, i);
+                    //for (int j = numberOfBones - 1; j >= i; j--)
+                    //{
+                    //    if (j > i)
+                    //    {
+                    //        bones[j].Pos = bones[i].Pos + 
+                    //            OpenTK.Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
+                    //    }
                         
-                        // rotate orientation
-                        bones[j].Rotate(rotation);
-                    }
-                    
-                    // check constraints starting with first affected joint and moving towards end effector
-                    for (int j = i; j < bones.Length; j++)
-                    {
-                        if (j > 0) // TODO not checking root right now, should we?
-                        {
-                            checkOrientationalConstraint(ref bones[j], bones[j - 1]);
-                            //checkRotationalConstraint(ref bones, j);
-                        }
-                    }
+                    //    // rotate orientation
+                    //    bones[j].Rotate(rotation);
+                    //}
                     
                     // Check if we are close enough to target
-                    if ((target.Pos - bones[numberOfBones - 1].Pos).Length <= threshold)
-                    {
-                        return bones;
-                    }
+                    //if ((target.Pos - bones[numberOfBones - 1].Pos).Length <= threshold)
+                    //{
+                    //    return bones;
+                    //}
                 }
                 iter++;
             }
                 return bones;
         }
+
 
         // TODO: move the constraint methods to JointConstraint as static methods
 

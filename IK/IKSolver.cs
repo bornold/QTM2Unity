@@ -19,5 +19,19 @@ namespace QTM2Unity
                 distances[i] = (bones[i].Pos - bones[i + 1].Pos).Length;
             }
         }
+        protected void ForwardKinematics(ref Bone[] bones, Quaternion rotation, int i)
+        {
+            for (int j = bones.Length - 1; j >= i; j--)
+            {
+                if (j > i)
+                {
+                    bones[j].Pos = bones[i].Pos +
+                        OpenTK.Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
+                }
+
+                // rotate orientation
+                bones[j].Rotate(rotation);
+            }
+        }
     }
 }

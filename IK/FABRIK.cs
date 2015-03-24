@@ -13,8 +13,6 @@ namespace QTM2Unity
 
         override public Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1)
         {
-            UnityEngine.Debug.Log("solving chain");
-            foreach (Bone b in bones) UnityEngine.Debug.Log(b.Name + b.Pos);
             // Calculate distances 
             float[] distances;
             getDistances(out distances, ref bones);
