@@ -619,8 +619,8 @@ namespace QTM2Unity
             //////////////////////////////////////////
 
             /////////////// SHOUDLERs ///////////////
-            dic.Add(BipedSkeleton.SHOULDER_L, GetShoulderJoint(chestOrientation,false) + markers[chest]); //neckPos); //Vector3.One);// 
-            dic.Add(BipedSkeleton.SHOULDER_R, GetShoulderJoint(chestOrientation,true) + markers[chest]); //neckPos); // Vector3.One);//
+            dic.Add(BipedSkeleton.SHOULDER_L, pos); //GetShoulderJoint(chestOrientation,false) + markers[chest]); //neckPos);
+            dic.Add(BipedSkeleton.SHOULDER_R, pos);//GetShoulderJoint(chestOrientation,true) + markers[chest]); //neckPos);
             //////////////////////////////
 
             /////////////// UPPER ARMS ///////////////

@@ -35,6 +35,106 @@ namespace QTM2Unity
             this.right = from;
             this.left = to;
         }
+        // TODO: move the constraint methods to JointConstraint as static methods
+
+        // TODO should be private, public for test purposes
+        // TODO maybe this is better in the OrientationalContraint class
+        public void checkOrientationalConstraint(ref Bone b, Bone parent)
+        {
+            if (b.OrientationalConstraint != null) // if there exist a constraint
+            {
+                Vector3 reference = parent.GetUp();
+                Quaternion q = QuaternionHelper.LookAtUp(parent.Pos, b.Pos, b.GetUp());
+                //UnityDebug.DrawRays2(q, parent.Pos, 2f);
+                float z2z = MathHelper.RadiansToDegrees(
+                        Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitZ, q), reference));
+                //UnityEngine.Debug.Log("z2z: " + z2z);
+                float x2z = MathHelper.RadiansToDegrees(
+                        Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitX, q), reference));
+                //UnityEngine.Debug.Log("x2z: " + x2z);
+
+
+                //float angle = Vector3.CalculateAngle(Vector3.UnitZ, parent.GetUp());
+                //Vector3 axis = Vector3.Cross(Vector3.UnitZ, parent.GetUp());
+                //Quaternion rot = Quaternion.FromAxisAngle(axis, angle);
+                //float yc = Mathf.Cos(MathHelper.DegreesToRadians(b.OrientationalConstraint.Right));
+                //float xc = Mathf.Sin(MathHelper.DegreesToRadians(b.OrientationalConstraint.Right));
+                //Vector3 r = new Vector3(-xc, 0, yc);
+                //r = Vector3.Transform(r, rot);
+                //r.Normalize();
+                //UnityDebug.DrawLine(b.Pos, b.Pos + r, UnityEngine.Color.yellow);
+                //yc = Mathf.Cos(MathHelper.DegreesToRadians(b.OrientationalConstraint.Left));
+                //xc = Mathf.Sin(MathHelper.DegreesToRadians(b.OrientationalConstraint.Left));
+                //Vector3 l = new Vector3(xc, 0, yc);
+                //l = Vector3.Transform(l, rot);
+                //l.Normalize();
+                //UnityDebug.DrawLine(b.Pos, b.Pos + l, UnityEngine.Color.cyan);
+                //UnityDebug.DrawLine(Vector3.UnitZ, Vector3.UnitZ + b.GetUp(), UnityEngine.Color.blue);
+
+                Vector3 direction = b.GetDirection();
+                Quaternion rotation;
+                if (x2z >= 90) // Z left of reference
+                {
+                    //UnityEngine.Debug.Log(string.Format("Z left of reference: x2z({0})>90 ", x2z));
+                    float pew = z2z - b.OrientationalConstraint.left;
+                    if (pew > 1f) // angle larger then constraints angle
+                    {
+                        //UnityEngine.Debug.Log(string.Format("outside left constraintspew({0})>1 ", pew));
+                        //UnityEngine.Debug.Log(string.Format("Rotate: {0} degrees ", -pew));
+                        pew = MathHelper.DegreesToRadians(-pew);
+                        rotation = Quaternion.FromAxisAngle(direction, pew);
+                        b.Rotate(rotation);
+                        //UnityDebug.DrawRays2(rotation * b.Orientation, b.Pos, 0.5f);
+                    }
+                    //else
+                    //{
+                    //    UnityEngine.Debug.Log(string.Format("Outside right constriants pew({0})<1 ", pew));
+                    //}
+                }
+                else // Z right of reference
+                {
+                    //UnityEngine.Debug.Log(string.Format("Z right of reference :  x2z({0})<90 ", x2z));
+                    //UnityEngine.Debug.Log(string.Format("b.OrientationalConstraint.right :  {0}", b.OrientationalConstraint.right));
+                    float pew = z2z - b.OrientationalConstraint.right;
+                    if (pew > 1f) // angle larger constraints angle
+                    {
+                        //UnityEngine.Debug.Log(string.Format("Outside right constriants pew({0})>1 ", pew));
+                        pew = MathHelper.DegreesToRadians(pew);
+                        rotation = Quaternion.FromAxisAngle(direction, pew);
+                        b.Rotate(rotation);
+                        //UnityDebug.DrawRays2(rotation * b.Orientation, b.Pos, 0.5f);
+                    }
+                    //else
+                    //{
+                    //    UnityEngine.Debug.Log(string.Format("Inside right constraints pew({0})<1 ", pew));
+                    //}
+                }
+            }
+        }
+
+        // Calculates the angle b is twisted around its direction vector in radians
+        // TODO make private. Only public for testing purposes.
+        public float getTwistAngle(Bone b, Bone parent)
+        {
+            Vector3 direction = b.GetDirection();
+            Vector3 up = b.GetUp();
+            Vector3 right = b.GetRight();
+
+            // construct a reference vector which the twist/orientation will depend on
+            // The reference is the parents up vector projected on the same plane as the 
+            // current bone's up vector
+            Vector3 reference = Vector3Helper.ProjectOnPlane(parent.GetUp(), direction);
+            //UnityEngine.Debug.Log("reference frame: " + reference);
+            //UnityEngine.Debug.Log("up frame: " + up);
+            float twistAngle = Vector3.CalculateAngle(reference, up);
+
+            if (Vector3.CalculateAngle(reference, right) > Mathf.PI / 2) // b is twisted left with respect to parent
+            {
+                twistAngle = -twistAngle;
+            }
+
+            return MathHelper.RadiansToDegrees(twistAngle);
+        }
 
     }
 
@@ -73,23 +173,28 @@ namespace QTM2Unity
 
         public bool RotationalConstraints(Vector3 target, Vector3 jointPos, Vector3 L1, Vector4 constraints, out Vector3 res)
         {
+            //UnityDebug.DrawRay(jointPos, L1);
             Vector3 targetPos = new Vector3(target.X, target.Y, target.Z);
             Vector3 joint2Target = (targetPos - jointPos);
 
             bool behind = false;
             bool reverseCone = false;
             bool sideCone = false;
+            
             //3.1 Find the line equation L1
             //Vector3 L1 = jointPos - parentPos;
             //3.2 Find the projection O of the target t on line L1
+
             Vector3 O = Vector3Helper.Project(joint2Target, L1);
+
             Vector3 OPos = O + jointPos;
-            if (Math.Abs(Vector3.Dot(L1, joint2Target)) < precision)
+
+            if (Math.Abs(Vector3.Dot(L1, joint2Target)) < precision) // target is ortogonal with L1
             {
                 O = Vector3.Normalize(L1) * precision * 10;
                 OPos = O + jointPos;
             }
-            else if (Math.Abs(Vector3.Dot(O, L1) - O.Length * L1.Length) >= precision) // not same direction
+            else if (Math.Abs(Vector3.Dot(O, L1) - O.Length * L1.Length) >= precision) // O not same direction as L1
             {
                 behind = true;
             }
@@ -133,7 +238,7 @@ namespace QTM2Unity
                 q = Q.q4;
                 radius = new Vector2(constraints.Z, constraints.Y);
             }
-//            UnityEngine.Debug.Log(q + " " + radius);
+            //UnityEngine.Debug.Log(q + " " + radius);
             #endregion
             #region check cone
             if (radius.X > 90 && radius.Y > 90) // cone is reversed
@@ -148,7 +253,7 @@ namespace QTM2Unity
                 Quaternion inverRot = Quaternion.Invert(rotation);
                 Vector3 right = Vector3.Transform(Vector3.UnitX, inverRot);
                 Vector3 forward = Vector3.Transform(Vector3.UnitY, inverRot);
-                Vector3 L2 = right;
+                Vector3 L2;
                 switch (q)
                 {
                     case Q.q1:
@@ -168,11 +273,12 @@ namespace QTM2Unity
                         else L2 = forward;
                         break;
                     default:
+                        L2 = right;
                         break;
                 }
                 L2.Normalize();
-                angle = Vector3.CalculateAngle(L2, Vector3.UnitY);
 
+                angle = Vector3.CalculateAngle(L2, Vector3.UnitY);
                 axis = Vector3.Cross(L2, Vector3.UnitY);
                 rotation = Quaternion.FromAxisAngle(axis, angle);
 
@@ -253,8 +359,9 @@ namespace QTM2Unity
                 rotation = Quaternion.Invert(rotation);
                 Vector3 moveTo = Vector3.Transform(newPointV3, rotation);
                 moveTo += OPos;
-                //UnityDebug.CreateEllipse(radiusX, radiusY,  OPos.Convert(), rotation.Convert(), 500, UnityEngine.Color.black);
-                //UnityDebug.DrawLine(target, moveTo);
+                //UnityDebug.CreateIrregularCone3(constraints, jointPos, rotation, 50, 0.5f);
+                //UnityDebug.CreateEllipse(radiusX, radiusY,  OPos.Convert(), rotation.Convert(), 400, UnityEngine.Color.cyan);
+                //UnityDebug.DrawLine(target, moveTo, UnityEngine.Color.magenta);
                 Vector3 vectorToMoveTo = (moveTo - jointPos);
                 axis = Vector3.Cross(joint2Target, vectorToMoveTo);
                 angle = Vector3.CalculateAngle(joint2Target, vectorToMoveTo);

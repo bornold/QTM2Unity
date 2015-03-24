@@ -7,7 +7,7 @@ using OpenTK;
 
 namespace QTM2Unity
 {
-    class Bone : IEquatable<Bone>
+    public class Bone : IEquatable<Bone>
     {
         #region Vars getters and setters
         private bool exists = false;
@@ -93,20 +93,40 @@ namespace QTM2Unity
         {
             rotationalConstr = new RotationalConstraint(constraints.X, constraints.Y, constraints.Z, constraints.W);
         }
+        public bool EnsureConstraints(ref Bone target, Vector3 L1, bool checkRot)
+        {
+            if (orientationalConstr != null && checkRot)
+            {
+                //UnityEngine.Debug.Log(string.Format("orientational constraining {0} with regards to {1}", target.Name, this.Name));
+                orientationalConstr.checkOrientationalConstraint(ref target, this);
+            }
+            if (rotationalConstr != null)
+            {
+                Vector4 constraints = false ?
+                    new Vector4(rotationalConstr.Constraints.Z, 
+                        rotationalConstr.Constraints.W, 
+                        rotationalConstr.Constraints.X, 
+                        rotationalConstr.Constraints.Y)
+                    : rotationalConstr.Constraints;
+                Vector3 res;
+                if (rotationalConstr.RotationalConstraints(target.Pos, pos, L1, constraints, out res)) 
+                    {
+                        target.Pos = res;
+                        RotateTowards(target.Pos - this.Pos);
+                        if (orientationalConstr != null && checkRot)
+                        {
+                            orientationalConstr.checkOrientationalConstraint(ref target, this);
+                        }
+                        return true;
+                    }
+            }
+            return false;
+        }
         #endregion
-        public bool Equals(Bone other)
-        {
-            return name.Equals(other.Name) && orientation.Equals(other.Orientation) && pos.Equals(other.Pos);
-        }
-
-        public string ToString()
-        {
-            return string.Format("{0} at position: {1} with orientation: {2}", name, pos, orientation);
-        }
-
+        // Directions 
+        #region Direction getters
         public Vector3 GetDirection()
         {
-            // The identity quaternion is associated with the direction
             return Vector3.Normalize(Vector3.Transform(Vector3.UnitY, orientation));
         }
 
@@ -119,13 +139,12 @@ namespace QTM2Unity
         {
             return Vector3.Normalize(Vector3.Transform(Vector3.UnitX, orientation));
         }
-
+        #endregion 
         // TODO rotateDegrees, rotateRadians
         // rotates the bone with angle in radians!
         public void Rotate(float angle, Vector3 axis)
         {
-            Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
-            Rotate(rotation);
+            Rotate(Quaternion.FromAxisAngle(axis, angle));
         }
 
         public void Rotate(Quaternion rotation)
@@ -148,9 +167,14 @@ namespace QTM2Unity
                 exists = false;
             }
         }
-        bool IEquatable<Bone>.Equals(Bone other)
+        public bool Equals(Bone other)
         {
-            return this.Name.Equals(other.Name);
+            return name.Equals(other.Name) && orientation.Equals(other.Orientation) && pos.Equals(other.Pos);
+        }
+
+        public string ToString()
+        {
+            return string.Format("{0} at position: {1} with orientation: {2}", name, pos, orientation);
         }
     }
 }
