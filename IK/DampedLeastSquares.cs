@@ -7,8 +7,22 @@ using Debug = UnityEngine.Debug;
 
 namespace QTM2Unity
 {
-    class DampedLeastSquares : IKSolver
+    class DampedLeastSquares : Jacobian
     {
+
+        override protected void calculateDTheta(out float[,] dTheta, ref Vector3[,] J,
+            ref Bone[] bones, ref Bone target)
+        {
+            // dTheta = J.transpose * Inverse(J*J.transpose + lambda^2*I) * e
+            float lambda = 1.1f; 
+            Vector3 e = target.Pos - bones[bones.Length - 1].Pos;
+            Vector3[,] JT = transpose(J);
+            float[,] JJT = mult(J, JT);
+            // Obs: JTT[0,0] only works because we have one end effector only
+            dTheta = mult(mult(JT, (1 / JJT[0,0] * lambda * lambda)), e);
+        }
+
+#if t
         private static float threshold = 0.0001f;
 
        /* override public Bone[] solveBoneChain(Bone[] bones, Vector3 target)
@@ -112,20 +126,22 @@ namespace QTM2Unity
                 //Debug.Log("JJT " + JJT);
                 float[] dTheta = mult(mult(J, (1 / JJT * lambda * lambda)), e);
 
-                //print dTheta
-                /*string s = "";
-                for (int i = 0; i < dTheta.GetLength(0); i++)
-                {
-                    s += " " + dTheta[i];
-                }
-                Debug.Log(s);*/
-
-                // Let's try
+                bool allZero = true;
                 for (int i = 0; i < bones.Length - 1; i++) // go through all joints (not end effector)
                 {
-                    //Debug.Log("Rotate " + bones[i].Name + " " + dTheta[i, 0] + " degrees");
+                    if (dTheta[i] > 0.000001) // good values? TODO
+                        allZero = false;
                     Quaternion q = Quaternion.FromAxisAngle(rotAxis[i], dTheta[i]);
-                    bones[i].Rotate(q);
+                    bones[i].Rotate(q); // Rotate bone i dTheta[i,0] radians around previously calculated axis
+                }
+
+                // if we got (almost) no change in the angles we want to force change to not get stuck
+                if (allZero)
+                {
+                    // rotate end effector 2 degrees
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[bones.Length - 2],
+                        MathHelper.DegreesToRadians(2));
+                    bones[bones.Length - 2].Rotate(q);
                 }
 
                 // set all positions
@@ -317,5 +333,6 @@ namespace QTM2Unity
             }
             return transpose;
         }
+#endif
     }
 }

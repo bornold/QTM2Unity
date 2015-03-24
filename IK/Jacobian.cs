@@ -7,23 +7,8 @@ using Debug = UnityEngine.Debug;
 
 namespace QTM2Unity
 {
-    class JacobianTranspose : Jacobian
+    abstract class Jacobian : IKSolver
     {
-        override protected void calculateDTheta(out float[,] dTheta, ref Vector3[,] J, 
-            ref Bone[] bones, ref Bone target)
-        {
-            Vector3[,] JT = transpose(J);
-            Vector3 e = target.Pos - bones[bones.Length - 1].Pos;
-            float JJT = mult(J, JT)[0, 0];
-
-            // alpha = dot(e, J * JT * e) / dot(J * JT * e, J * JT * e);
-            float alpha = Vector3.Dot(e, JJT * e) / Vector3.Dot(JJT * e, JJT * e);
-
-            dTheta = mult(alpha, mult(JT, e));
-
-        }
-
-#if false
         private static float threshold = 0.001f; // TODO good value?
 
         override public Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1)
@@ -40,35 +25,10 @@ namespace QTM2Unity
             int iter = 0;
             while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 10000)
             {
-                // Create Jacobian matrix J(theta) = (ds[i]/dtheta[j])[ij]
-                // ds[i]/dtheta[j] = v[j] x (s[i]-p[j])
-                for (int i = 0; i < k; i++)
-                {
-                    for (int j = 0; j < bones.Length - 1; j++)
-                    {
-                        Vector3 a = Vector3.Cross(bones[bones.Length - 1].Pos - bones[j].Pos, target.Pos - bones[j].Pos);
-                        // If a is the zero vector the end effector and the target are aligned
-                        // we choose a to be the cross between the bone itself and the vector to the target 
-                        if (a.X == 0 && a.Y == 0 && a.Z == 0)
-                        {
-                            a = Vector3.Cross(bones[j].GetDirection(), target.Pos - bones[j].Pos);
-                        }
-                        a.Normalize();
-                     
-                        rotAxis[i, j] = a;
-                        J[i, j] = Vector3.Cross(a, bones[bones.Length - 1].Pos - bones[j].Pos);
-                    }
-                }
-
-                Vector3[,] JT = transpose(J);
-                Vector3 e = target.Pos - bones[bones.Length - 1].Pos;
-                float JJT = mult(J, JT)[0, 0];
-
-                // alpha = dot(e, J * JT * e) / dot(J * JT * e, J * JT * e);
-                float alpha = Vector3.Dot(e, JJT * e) / Vector3.Dot(JJT * e, JJT * e);
-
-                float[,] dTheta = mult(alpha, mult(JT, e));
-
+                fillJacobian(out J, out rotAxis, ref bones, ref target);
+                float[,] dTheta;
+                calculateDTheta(out dTheta, ref J, ref bones, ref target);
+               
                 bool allZero = true;
                 for (int i = 0; i < bones.Length - 1; i++) // go through all joints (not end effector)
                 {
@@ -79,12 +39,12 @@ namespace QTM2Unity
                 }
 
                 // if we got (almost) no change in the angles we want to force change to not get stuck
-                if (allZero) 
+                if (allZero)
                 {
                     // rotate end effector 1 degree
-                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, bones.Length - 2], 
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, bones.Length - 2],
                         MathHelper.DegreesToRadians(2));
-                    bones[bones.Length-2].Rotate(q);
+                    bones[bones.Length - 2].Rotate(q);
                 }
 
                 // set all positions
@@ -98,7 +58,40 @@ namespace QTM2Unity
             return bones;
         }
 
-        private float[,] add(float[,] m1, float[,] m2)
+        private void fillJacobian(out Vector3[,] jacobian, out Vector3[,] rotAxis, 
+            ref Bone[] bones, ref Bone target)
+        {
+            int k = 1; // only one end effector now
+            jacobian = new Vector3[k, bones.Length - 1];
+            rotAxis = new Vector3[k, bones.Length - 1];
+
+            // Create Jacobian matrix J(theta) = (ds[i]/dtheta[j])[ij]
+            // ds[i]/dtheta[j] = v[j] x (s[i]-p[j])
+            for (int i = 0; i < k; i++)
+            {
+                for (int j = 0; j < bones.Length - 1; j++)
+                {
+                    Vector3 a = Vector3.Cross(bones[bones.Length - 1].Pos - bones[j].Pos, target.Pos - bones[j].Pos);
+                    // If a is the zero vector the end effector and the target are aligned
+                    // we choose a to be the cross between the bone itself and the vector to the target 
+                    if (a.X == 0 && a.Y == 0 && a.Z == 0)
+                    {
+                        a = Vector3.Cross(bones[j].GetDirection(), target.Pos - bones[j].Pos);
+                    }
+                    a.Normalize();
+
+                    rotAxis[i, j] = a;
+                    jacobian[i, j] = Vector3.Cross(a, bones[bones.Length - 1].Pos - bones[j].Pos);
+                }
+            }
+
+        }
+
+        abstract protected void calculateDTheta(out float[,] dTheta, ref Vector3[,] J,
+            ref Bone[] bones, ref Bone target);
+
+        // Helper functions (TODO move these)
+        public float[,] add(float[,] m1, float[,] m2)
         {
             if (m1.GetLength(0) != m2.GetLength(0) && m1.GetLength(1) != m2.GetLength(1))
                 return null; // TODO exception
@@ -114,7 +107,7 @@ namespace QTM2Unity
             return res;
         }
 
-        private Vector3[,] add(Vector3[,] m1, Vector3[,] m2)
+        public Vector3[,] add(Vector3[,] m1, Vector3[,] m2)
         {
             if (m1.GetLength(0) != m2.GetLength(0) && m1.GetLength(1) != m2.GetLength(1))
                 return null; // TODO exception
@@ -130,7 +123,7 @@ namespace QTM2Unity
             return res;
         }
 
-        private float mult(Vector3[] v1, Vector3[] v2)
+        public float mult(Vector3[] v1, Vector3[] v2)
         {
             if (v1.Length != v2.Length)
                 return -1; // TODO exception
@@ -143,7 +136,7 @@ namespace QTM2Unity
             return res;
         }
 
-        private float[,] mult(Vector3[,] m1, Vector3[,] m2)
+        public float[,] mult(Vector3[,] m1, Vector3[,] m2)
         {
             if (m1.GetLength(0) != m2.GetLength(1) || m1.GetLength(1) != m2.GetLength(0))
                 return null; // TODO exception
@@ -166,7 +159,7 @@ namespace QTM2Unity
             return res;
         }
 
-        private float[,] mult(float scalar, float[,] m)
+        public float[,] mult(float scalar, float[,] m)
         {
             float[,] res = new float[m.GetLength(0), m.GetLength(1)];
             for (int i = 0; i < m.GetLength(0) - 1; i++)
@@ -179,7 +172,7 @@ namespace QTM2Unity
             return res;
         }
 
-        private Vector3[] mult(float scalar, Vector3[] v)
+        public Vector3[] mult(float scalar, Vector3[] v)
         {
             Vector3[] res = new Vector3[v.Length];
             for (int i = 0; i < v.Length - 1; i++)
@@ -189,12 +182,12 @@ namespace QTM2Unity
             return res;
         }
 
-        private Vector3[] mult(Vector3[] v, float scalar)
+        public Vector3[] mult(Vector3[] v, float scalar)
         {
             return mult(scalar, v);
         }
 
-        private float[] mult(Vector3[] vArray, Vector3 v)
+        public float[] mult(Vector3[] vArray, Vector3 v)
         {
             float[] res = new float[vArray.Length];
             for (int i = 0; i < vArray.Length; i++)
@@ -204,7 +197,7 @@ namespace QTM2Unity
             return res;
         }
 
-        private Vector3[,] mult(float[,] fs, Vector3 v)
+        public Vector3[,] mult(float[,] fs, Vector3 v)
         {
             Vector3[,] res = new Vector3[fs.GetLength(0), fs.GetLength(1)];
             for (int i = 0; i < fs.GetLength(0); i++)
@@ -217,7 +210,7 @@ namespace QTM2Unity
             return res;
         }
 
-        private Vector3[,] mult(float scalar, Vector3[,] m)
+        public Vector3[,] mult(float scalar, Vector3[,] m)
         {
             Vector3[,] res = new Vector3[m.GetLength(0), m.GetLength(1)];
             for (int i = 0; i < m.GetLength(0) - 1; i++)
@@ -230,12 +223,12 @@ namespace QTM2Unity
             return res;
         }
 
-        private Vector3[,] mult(Vector3[,] m, float scalar)
+        public Vector3[,] mult(Vector3[,] m, float scalar)
         {
             return mult(scalar, m);
         }
 
-        private float[,] mult(Vector3[,] m, Vector3 v)
+        public float[,] mult(Vector3[,] m, Vector3 v)
         {
             float[,] res = new float[m.GetLength(0), m.GetLength(1)];
             for (int i = 0; i < m.GetLength(0); i++)
@@ -248,18 +241,30 @@ namespace QTM2Unity
             return res;
         }
 
-        private Vector3[,] transpose(Vector3[,] J)
+        public Vector3[,] transpose(Vector3[,] m)
         {
-            Vector3[,] transpose = new Vector3[J.GetLength(1), J.GetLength(0)];
-            for (int i = 0; i < J.GetLength(0); i++)
+            Vector3[,] transpose = new Vector3[m.GetLength(1), m.GetLength(0)];
+            for (int i = 0; i < m.GetLength(0); i++)
             {
-                for (int j = 0; j < J.GetLength(1); j++)
+                for (int j = 0; j < m.GetLength(1); j++)
                 {
-                    transpose[j, i] = J[i, j];
+                    transpose[j, i] = m[i, j];
                 }
             }
             return transpose;
         }
-#endif
+
+        public float[,] transpose(float[,] m)
+        {
+            float[,] transpose = new float[m.GetLength(1), m.GetLength(0)];
+            for (int i = 0; i < m.GetLength(0); i++)
+            {
+                for (int j = 0; j < m.GetLength(1); j++)
+                {
+                    transpose[j, i] = m[i, j];
+                }
+            }
+            return transpose;
+        }
     }
 }
