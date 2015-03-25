@@ -10,20 +10,20 @@ namespace QTM2Unity
 {
     class CCD : IKSolver
     {
-       
+
         private static float threshold = 0.0001f; // TODO define a good default threshold value 
-                                // This depends on where the position is defined on the end effector
+        // This depends on where the position is defined on the end effector
         private static int numberOfIterations = 50; // TODO what's a good value?
 
         // And what happens when we don't have a position for some joint?
         // Probably don't want to handle here
 
         // Note: The end effector is assumed to be the last element in bones
-        override public Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1)
+        override public Bone[] solveBoneChain(Bone[] bones, Bone target, Quaternion pRot)
         {
             int numberOfBones = bones.Length;
             int iter = 0;
-            while ((target.Pos - (bones[numberOfBones-1].Pos)).Length > threshold
+            while ((target.Pos - (bones[numberOfBones - 1].Pos)).Length > threshold
                 && iter < numberOfIterations)
             {
                 // for each bone, starting with the one closest to the end effector 
@@ -31,20 +31,20 @@ namespace QTM2Unity
                 for (int i = numberOfBones - 2; i >= 0; i--)
                 {
                     // Get the vectors between the points
-                    Vector3 a = bones[numberOfBones-1].Pos - bones[i].Pos;
+                    Vector3 a = bones[numberOfBones - 1].Pos - bones[i].Pos;
                     Vector3 b = target.Pos - bones[i].Pos;
-
+                    Quaternion rotation;
                     // Make a rotation quaternion and rotate 
                     // - first the endEffector
                     // - then the rest of the affected joints
-                    Quaternion rotation = QuaternionHelper.getRotation(a, b);
-                    Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i+1].Pos - bones[i].Pos, rotation);
-                    Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : L1;
 
+                    rotation = (a.Length == 0 || b.Length == 0) ? rotation = Quaternion.Identity : rotation = QuaternionHelper.getRotation(a, b);
+                    Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
+                    Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : Vector3.Transform(Vector3.UnitY, pRot);
                     Vector3 res;
                     if (bones[i].RotationalConstraint.RotationalConstraints(trg, bones[i].Pos, dir, bones[i].RotationalConstraint.Constraints, out res))
                     {
-                        a = bones[i+1].Pos - bones[i].Pos;
+                        a = bones[i + 1].Pos - bones[i].Pos;
                         b = res - bones[i].Pos;
                         rotation = QuaternionHelper.getRotation(a, b);
                     }
@@ -56,11 +56,11 @@ namespace QTM2Unity
                     //        bones[j].Pos = bones[i].Pos + 
                     //            OpenTK.Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
                     //    }
-                        
+
                     //    // rotate orientation
                     //    bones[j].Rotate(rotation);
                     //}
-                    
+
                     // Check if we are close enough to target
                     //if ((target.Pos - bones[numberOfBones - 1].Pos).Length <= threshold)
                     //{
@@ -69,67 +69,11 @@ namespace QTM2Unity
                 }
                 iter++;
             }
-                return bones;
+            return bones;
         }
 
 
-        // TODO: move the constraint methods to JointConstraint as static methods
-
-        // TODO should be private, public for test purposes
-        // TODO maybe this is better in the OrientationalContraint class
-        public void checkOrientationalConstraint(ref Bone b, Bone parent)
-        {
-            if (b.OrientationalConstraint != null) // if there exist a constraint
-            {
-                Vector3 direction = b.GetDirection();
-                float twistAngle = getTwistAngle(b, parent);
-
-                float from = b.OrientationalConstraint.Right;
-                float to = b.OrientationalConstraint.Left;
-
-                if (!(twistAngle >= from && twistAngle <= to)) // not inside constraints
-                {
-                    // rotate the bone around its direction vector to be inside
-                    // the constraints (rotate it from its current angle to from or to)
-                    // TODO rotating the right directio? (-/+)
-                    if (twistAngle < from) // TODO add some precision (so it doesn't need to rotate eg 0,000324)
-                    {
-                        // rotate clockwise
-                        /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name + 
-                            " " + (twistAngle - from) + " clockwise around itself.");*/
-                        b.Rotate(Math.Abs(MathHelper.DegreesToRadians(twistAngle - from)), direction);
-                    }
-                    else if (twistAngle > to)
-                    {
-                        // rotate anticlockwise
-                        /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name +
-                            " " + (twistAngle - to) + " anticlockwise around itself.");*/
-                        b.Rotate(-Math.Abs(MathHelper.DegreesToRadians(twistAngle - to)), direction);
-                    }
-                }
-            }
-        }
-
-        // Calculates the angle b is twisted around its direction vector in radians
-        // TODO make private. Only public for testing purposes.
-        public float getTwistAngle(Bone b, Bone parent)
-        {
-            Vector3 direction = b.GetDirection();
-            Vector3 up = b.GetUp();
-            Vector3 right = b.GetRight();
-
-            // construct a reference vector which the twist/orientation will depend on
-            // The reference is the parents up vector projected on the same plane as the 
-            // current bone's up vector
-            Vector3 reference = Vector3Helper.ProjectOnPlane(parent.GetUp(), direction);
-
-            float twistAngle = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(reference, up));
-
-            if (Vector3.CalculateAngle(reference, right) > Mathf.PI/2) // b is twisted left with respect to parent
-                return -twistAngle;
-
-            return twistAngle;
-        }
+      
 
         // TODO should not be public. Or should probably not be in this class even..
 #if false

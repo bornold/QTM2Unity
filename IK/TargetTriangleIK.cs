@@ -9,26 +9,14 @@ namespace QTM2Unity
 {
     class TargetTriangleIK : IKSolver
     {
-        private void ForwardKinematics(ref Bone[] bones, Quaternion rotation, int numberOfBones, int i)
-        {
-            for (int j = i; j < numberOfBones; j++)
-            {
-                if (j > i)
-                {
-                    bones[j].Pos = bones[i].Pos +
-                        Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
-                }
-                bones[j].Rotate(rotation);
-            }
-        }
         private void RotateTowards(ref Bone[] bones, Vector3 toRotate, Vector3 towards, int numberOfBones, int i)
         {
             float angle = Vector3.CalculateAngle(toRotate, towards);
             Vector3 axis = Vector3.Cross(toRotate, towards);
             Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
-            ForwardKinematics(ref bones, rotation, numberOfBones, i);
+            ForwardKinematics(ref bones, rotation, i);
         }
-        public override Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1)
+        public override Bone[] solveBoneChain(Bone[] bones, Bone target, Quaternion pRot)
         {
             int numberOfBones = bones.Length;
             for (int i = 0; i < numberOfBones - 1; i++)
@@ -47,7 +35,7 @@ namespace QTM2Unity
                 {
                     //aVector = cVector;
                     //UnityEngine.Debug.Log(string.Format("A triangle cannot be formed: (C:{2} >= A:{0} + B:{1})", a, b, c));
-                    ForwardKinematics(ref bones, QuaternionHelper.RotationBetween(aVector, cVector), numberOfBones, i);
+                    ForwardKinematics(ref bones, QuaternionHelper.RotationBetween(aVector, cVector), i);
                 }
                 else if (c < Math.Abs(a-b)) 
                 {
@@ -55,11 +43,11 @@ namespace QTM2Unity
                     //UnityEngine.Debug.Log(string.Format("A triangle cannot be formed 2: (C:{2} < |A:{0} - B:{1}|)", a, b, c));
                     if (b == 0)
                     {
-                        ForwardKinematics(ref bones, QuaternionHelper.RotationBetween(aVector, cVector), numberOfBones, i);
+                        ForwardKinematics(ref bones, QuaternionHelper.RotationBetween(aVector, cVector), i);
                     }
                     else
                     {
-                        ForwardKinematics(ref bones, QuaternionHelper.RotationBetween(aVector, -cVector), numberOfBones, i);
+                        ForwardKinematics(ref bones, QuaternionHelper.RotationBetween(aVector, -cVector), i);
                     }
                 }
                 else
@@ -90,7 +78,7 @@ namespace QTM2Unity
                     UnityDebug.DrawVector(bones[i].Pos, rotationVector);
                     if (omegaRotAngle > 0)
                     {
-                        ForwardKinematics(ref bones, Quaternion.FromAxisAngle(rotationVector, omegaRotAngle), numberOfBones, i);
+                        ForwardKinematics(ref bones, Quaternion.FromAxisAngle(rotationVector, omegaRotAngle), i);
                     }
                 }
             }

@@ -11,7 +11,7 @@ namespace QTM2Unity
     {
         private static float threshold = 0.001f; // TODO good value?
 
-        override public Bone[] solveBoneChain(Bone[] bones, Bone target, Vector3 L1)
+        override public Bone[] solveBoneChain(Bone[] bones, Bone target, Quaternion pRot)
         {
             // Calculate the distances
             float[] distances;
@@ -54,7 +54,7 @@ namespace QTM2Unity
                 }
                 iter++;
             }
-            Debug.Log("Iterations " + iter);
+            //Debug.Log("Iterations " + iter);
             return bones;
         }
 

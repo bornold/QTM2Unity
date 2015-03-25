@@ -6,14 +6,6 @@ using OpenTK;
 
 namespace QTM2Unity
 {
-        // TODO
-        // What kinds of constraints do we have?
-
-        // Orientational: The twist around the bones direction vector
-        // described by rotor, or maybe an angle around direction vector?
-        // like a range. from angle to angle?
-
-
     public class OrientationalConstraint
     {
         // An orientational constraint is the twist of the bone around its own direction vector
@@ -35,10 +27,6 @@ namespace QTM2Unity
             this.right = from;
             this.left = to;
         }
-        // TODO: move the constraint methods to JointConstraint as static methods
-
-        // TODO should be private, public for test purposes
-        // TODO maybe this is better in the OrientationalContraint class
         public void checkOrientationalConstraint(ref Bone b, Bone parent)
         {
             if (b.OrientationalConstraint != null) // if there exist a constraint
@@ -112,6 +100,43 @@ namespace QTM2Unity
             }
         }
 
+        // TODO: move the constraint methods to JointConstraint as static methods
+
+        // TODO should be private, public for test purposes
+        // TODO maybe this is better in the OrientationalContraint class
+        public void checkOrientationalConstraint2(ref Bone b, Bone parent)
+        {
+            if (b.OrientationalConstraint != null) // if there exist a constraint
+            {
+                Vector3 direction = b.GetDirection();
+                float twistAngle = getTwistAngle(b, parent);
+
+                float from = b.OrientationalConstraint.Right;
+                float to = b.OrientationalConstraint.Left;
+
+                if (!(twistAngle >= from && twistAngle <= to)) // not inside constraints
+                {
+                    // rotate the bone around its direction vector to be inside
+                    // the constraints (rotate it from its current angle to from or to)
+                    // TODO rotating the right directio? (-/+)
+                    if (twistAngle < from) // TODO add some precision (so it doesn't need to rotate eg 0,000324)
+                    {
+                        // rotate clockwise
+                        /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name + 
+                            " " + (twistAngle - from) + " clockwise around itself.");*/
+                        b.Rotate(Math.Abs(MathHelper.DegreesToRadians(twistAngle - from)), direction);
+                    }
+                    else if (twistAngle > to)
+                    {
+                        // rotate anticlockwise
+                        /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name +
+                            " " + (twistAngle - to) + " anticlockwise around itself.");*/
+                        b.Rotate(-Math.Abs(MathHelper.DegreesToRadians(twistAngle - to)), direction);
+                    }
+                }
+            }
+        }
+
         // Calculates the angle b is twisted around its direction vector in radians
         // TODO make private. Only public for testing purposes.
         public float getTwistAngle(Bone b, Bone parent)
@@ -124,18 +149,14 @@ namespace QTM2Unity
             // The reference is the parents up vector projected on the same plane as the 
             // current bone's up vector
             Vector3 reference = Vector3Helper.ProjectOnPlane(parent.GetUp(), direction);
-            //UnityEngine.Debug.Log("reference frame: " + reference);
-            //UnityEngine.Debug.Log("up frame: " + up);
-            float twistAngle = Vector3.CalculateAngle(reference, up);
+
+            float twistAngle = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(reference, up));
 
             if (Vector3.CalculateAngle(reference, right) > Mathf.PI / 2) // b is twisted left with respect to parent
-            {
-                twistAngle = -twistAngle;
-            }
+                return -twistAngle;
 
-            return MathHelper.RadiansToDegrees(twistAngle);
+            return twistAngle;
         }
-
     }
 
     public class RotationalConstraint
@@ -154,7 +175,7 @@ namespace QTM2Unity
         private float right, up, left, down;
         public Vector4 Constraints
         {
-            get { return new Vector4(right,up,left,down); }
+            get { return new Vector4(right, up, left, down); }
         }
         public RotationalConstraint(float _right, float _up, float _left, float _down)
         {
@@ -173,6 +194,7 @@ namespace QTM2Unity
 
         public bool RotationalConstraints(Vector3 target, Vector3 jointPos, Vector3 L1, Vector4 constraints, out Vector3 res)
         {
+
             //UnityDebug.DrawRay(jointPos, L1);
             Vector3 targetPos = new Vector3(target.X, target.Y, target.Z);
             Vector3 joint2Target = (targetPos - jointPos);
@@ -180,7 +202,7 @@ namespace QTM2Unity
             bool behind = false;
             bool reverseCone = false;
             bool sideCone = false;
-            
+
             //3.1 Find the line equation L1
             //Vector3 L1 = jointPos - parentPos;
             //3.2 Find the projection O of the target t on line L1
@@ -193,6 +215,7 @@ namespace QTM2Unity
             {
                 O = Vector3.Normalize(L1) * precision * 10;
                 OPos = O + jointPos;
+
             }
             else if (Math.Abs(Vector3.Dot(O, L1) - O.Length * L1.Length) >= precision) // O not same direction as L1
             {
@@ -283,7 +306,7 @@ namespace QTM2Unity
                 rotation = Quaternion.FromAxisAngle(axis, angle);
 
                 TRotated = Vector3.Transform(joint2Target, rotation);
-                target2D = new Vector2(TRotated.X,TRotated.Z);
+                target2D = new Vector2(TRotated.X, TRotated.Z);
                 O = Vector3Helper.Project(joint2Target, L2);
 
                 OPos = O + jointPos;
@@ -313,8 +336,10 @@ namespace QTM2Unity
                 radius.X = Math.Min(90 - precision, radius.X); // clamp it so if 90 -> 89.999, 
                 radius.Y = Math.Min(90 - precision, radius.Y);
             }
+
             radius.X = Mathf.Clamp(radius.X, precision, 90 - precision);  // clamp it so if <=0 -> 0.001, >=90 -> 89.999
             radius.Y = Mathf.Clamp(radius.Y, precision, 90 - precision);
+
             //3.7 Find the conic section which is associated with
             //that quadrant using the distances qj = Stanhj, where
             //j = 1,..,4
@@ -326,14 +351,14 @@ namespace QTM2Unity
             //section or not
             bool inside = (target2D.X * target2D.X) / (radiusX * radiusX) +
                 (target2D.Y * target2D.Y) / (radiusY * radiusY) <= 1 + precision;
-            
+
             //3.9 if within the conic section then         
-//            UnityEngine.Debug.Log(" inside: " + inside + " reverseCone: " + reverseCone + " behind: " + behind + " sidecone: " + sideCone);
-            if (   
-                   ( inside && !reverseCone && !behind)
-                || ( inside &&  reverseCone && !behind)
-                || (!inside &&  reverseCone &&  behind)
-                || (!inside &&  reverseCone && !behind)
+            //UnityEngine.Debug.Log(" inside: " + inside + " reverseCone: " + reverseCone + " behind: " + behind + " sidecone: " + sideCone);
+            if (
+                   (inside && !reverseCone && !behind)
+                || (inside && reverseCone && !behind)
+                || (!inside && reverseCone && behind)
+                || (!inside && reverseCone && !behind)
                 || (inside && !reverseCone && behind && sideCone)
                )
             {
@@ -345,11 +370,10 @@ namespace QTM2Unity
             else
             {
 
-                //3.12 Find the nearest point on that conic section
-                //from the target
+                //3.12 Find the nearest point on that conic section from the target
                 Vector2 newPoint = NearestPoint(radiusX, radiusY, target2D, q, reverseCone);
 
-                Vector3 newPointV3 = new Vector3(newPoint.X,0.0f,newPoint.Y);
+                Vector3 newPointV3 = new Vector3(newPoint.X, 0.0f, newPoint.Y);
                 //UnityDebug.CreateEllipse(radiusX, radiusY, 500, UnityEngine.Color.black);
                 //UnityDebug.DrawLine(new Vector3(target2D.X,0,target2D.Y), newPointV3);
 
@@ -371,7 +395,7 @@ namespace QTM2Unity
                 //UnityEngine.Debug.Log("joint2res " + (res - jointPos).Length);
                 //UnityEngine.Debug.Log("joint2Target " + (joint2Target).Length);
 
-                return true;    
+                return true;
             }
             //3.14 end
         }
@@ -380,7 +404,7 @@ namespace QTM2Unity
             Vector2 newPoint;
             float xRad, yRad, pX, pY;
 
-            if (radiusX >= radiusY )//^ reverseCone)
+            if (radiusX >= radiusY)//^ reverseCone)
             {
                 xRad = Math.Abs(radiusX);
                 yRad = Math.Abs(radiusY);

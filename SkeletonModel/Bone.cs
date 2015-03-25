@@ -9,7 +9,7 @@ namespace QTM2Unity
 {
     public class Bone : IEquatable<Bone>
     {
-        #region Vars getters and setters
+        #region Name, pos, rot and constraints getters and setters
         private bool exists = false;
         public bool Exists
         {
@@ -26,12 +26,12 @@ namespace QTM2Unity
         public Vector3 Pos
         {
             get { return pos; }
-            set { 
+            set
+            {
                 pos = value;
                 FlagExists();
             }
         }
-
         private Quaternion orientation;
         public Quaternion Orientation
         {
@@ -39,35 +39,37 @@ namespace QTM2Unity
             set { orientation = value; }
         }
         #endregion
+
+        #if true
         #region Constructors
         public Bone(string name)
         {
             this.name = name;
         }
 
-        public Bone(string name, Vector3 position) 
+        public Bone(string name, Vector3 position)
             : this(name)
         {
             pos = position;
             FlagExists();
         }
 
-        public Bone(string name, Vector3 position, Quaternion orientation) 
-            : this (name, position)
+        public Bone(string name, Vector3 position, Quaternion orientation)
+            : this(name, position)
         {
             this.orientation = orientation;
         }
-        public Bone(string name, Vector3 position, Quaternion orientation, 
-            float constraintRight,float constraintUp, float constraintLeft, float constraintDown)
+        public Bone(string name, Vector3 position, Quaternion orientation,
+            float constraintRight, float constraintUp, float constraintLeft, float constraintDown)
             : this(name, position, orientation)
         {
             SetRotationalConstraint(constraintRight, constraintUp, constraintLeft, constraintDown);
         }
         public Bone(string name, Vector3 position, Quaternion orientation, Vector4 constriants)
-            : this(name, position, orientation, constriants.X, constriants.Y, constriants.Z, constriants.W) 
+            : this(name, position, orientation, constriants.X, constriants.Y, constriants.Z, constriants.W)
         { }
-#endregion
-#region Orientational constraints
+        #endregion
+        #region Orientational constraints
         private OrientationalConstraint orientationalConstr;
         public OrientationalConstraint OrientationalConstraint
         {
@@ -97,32 +99,32 @@ namespace QTM2Unity
         {
             if (orientationalConstr != null && checkRot)
             {
-                //UnityEngine.Debug.Log(string.Format("orientational constraining {0} with regards to {1}", target.Name, this.Name));
-                //orientationalConstr.checkOrientationalConstraint(ref target, this);
+                orientationalConstr.checkOrientationalConstraint(ref target, this);
             }
             if (rotationalConstr != null)
             {
                 Vector4 constraints = false ?
-                    new Vector4(rotationalConstr.Constraints.Z, 
-                        rotationalConstr.Constraints.W, 
-                        rotationalConstr.Constraints.X, 
+                    new Vector4(rotationalConstr.Constraints.Z,
+                        rotationalConstr.Constraints.W,
+                        rotationalConstr.Constraints.X,
                         rotationalConstr.Constraints.Y)
                     : rotationalConstr.Constraints;
                 Vector3 res;
-                if (rotationalConstr.RotationalConstraints(target.Pos, this.Pos, L1, constraints, out res)) 
+                if (rotationalConstr.RotationalConstraints(target.Pos, this.Pos, L1, constraints, out res))
+                {
+                    target.Pos = res;
+                    RotateTowards(target.Pos - this.Pos);
+                    if (orientationalConstr != null && checkRot)
                     {
-                        target.Pos = res;
-                        RotateTowards(target.Pos - this.Pos);
-                        if (orientationalConstr != null && checkRot)
-                        {
-                           // orientationalConstr.checkOrientationalConstraint(ref target, this);
-                        }
-                        return true;
+                        orientationalConstr.checkOrientationalConstraint(ref target, this);
                     }
+                    return true;
+                }
             }
             return false;
         }
         #endregion
+        #endif
         // Directions 
         #region Direction getters
         public Vector3 GetDirection()
@@ -139,9 +141,8 @@ namespace QTM2Unity
         {
             return Vector3.Normalize(Vector3.Transform(Vector3.UnitX, orientation));
         }
-        #endregion 
-        // TODO rotateDegrees, rotateRadians
-        // rotates the bone with angle in radians!
+        #endregion
+        #region rotation methods
         public void Rotate(float angle, Vector3 axis)
         {
             Rotate(Quaternion.FromAxisAngle(axis, angle));
@@ -158,7 +159,7 @@ namespace QTM2Unity
             Vector3 axis = Vector3.Cross(GetDirection(), v);
             Rotate(angle, axis);
         }
-
+        #endregion
         private void FlagExists()
         {
             exists = true;
