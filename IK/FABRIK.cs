@@ -11,17 +11,17 @@ namespace QTM2Unity
         private static float threshold = 0.001f; // TODO define a good default threshold value
         // Place in IKSolver instead?
 
-        override public Bone[] solveBoneChain(Bone[] bones, Bone target, Quaternion pRot)
+        override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             // Calculate distances 
             float[] distances;
-            getDistances(out distances, ref bones);
+            GetDistances(out distances, ref bones);
 
             double dist = Math.Abs((bones[0].Pos - target.Pos).Length);
             if (dist > distances.Sum()) // the target is unreachable
             {
                 //UnityEngine.Debug.Log("target unreachable");
-                return targetUnreachable(ref distances, bones, target.Pos, pRot);
+                return TargetUnreachable(ref distances, bones, target.Pos, parent);
             }
 
             // The target is reachable
@@ -31,16 +31,16 @@ namespace QTM2Unity
             while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iterations++ < 25)
             {
                 // Forward reaching
-                forwardReaching(ref bones, ref distances, target);
+                ForwardReaching(ref bones, ref distances, target);
 
                 // Backward reaching
-                backwardReaching(ref bones, ref distances, root, pRot);
+                BackwardReaching(ref bones, ref distances, root, parent);
             }
 
             return bones;
         }
 
-        private Bone[] targetUnreachable(ref float[] distances, Bone[] bones, Vector3 target, Quaternion pRot)
+        private Bone[] TargetUnreachable(ref float[] distances, Bone[] bones, Vector3 target, Bone parent)
         {
             for (int i = 0; i < distances.Length; i++)
             {
@@ -52,15 +52,16 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
+                Constraint.CheckOrientationalConstraint(ref bones[i], (i > 0) ? bones[i-1] : parent);
                 Vector3 dir = (i > 0) ? 
                     bones[i].Pos - bones[i - 1].Pos : 
-                    Vector3.Transform(Vector3.UnitY, pRot);
-                bones[i].EnsureConstraints(ref bones[i + 1], dir, true);
+                    Vector3.Transform(Vector3.UnitY, parent.Orientation);
+               EnsureOrientationalConstraints(ref bones[i + 1],  ref bones[i], dir);
             }
             return bones;
         }
 
-        private void forwardReaching(ref Bone[] bones, ref float[] distances, Bone target)
+        private void ForwardReaching(ref Bone[] bones, ref float[] distances, Bone target)
         {
             bones[bones.Length - 1].Pos = target.Pos;
             bones[bones.Length - 1].Orientation = target.Orientation;
@@ -75,12 +76,14 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                bones[i + 1].EnsureConstraints(ref bones[i], -bones[i + 1].GetDirection(), (i > 0));
+                //TODO Constraints rotConstraints in forward reaching phase?
+                //Constraint.CheckOrientationalConstraint(ref bones[i], bones[i-1]);
+                EnsureOrientationalConstraints(ref bones[i], ref bones[i + 1], -bones[i + 1].GetDirection());
 
             }
         }
 
-        private void backwardReaching(ref Bone[] bones, ref float[] distances, Vector3 root, Quaternion pRot)
+        private void BackwardReaching(ref Bone[] bones, ref float[] distances, Vector3 root, Bone parent)
         {
             bones[0].Pos = root;
             for (int i = 0; i < bones.Length - 1; i++)
@@ -94,10 +97,25 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : Vector3.Transform(Vector3.UnitY, pRot);
-                bones[i].EnsureConstraints(ref bones[i + 1], dir, (i + 1 < bones.Length - 1));
+                Constraint.CheckOrientationalConstraint(ref bones[i], (i > 0 ) ? bones[i-1] : parent);
+                Vector3 dir = (i > 0) ? 
+                    bones[i].Pos - bones[i - 1].Pos : 
+                    Vector3.Transform(Vector3.UnitY, parent.Orientation);
+                EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], dir);
 
             }
+        }
+        private bool EnsureOrientationalConstraints(ref Bone target, ref Bone parent, Vector3 L1)
+        {
+            Vector3 res;
+            if (Constraint.CheckRotationalConstraints(target.Pos, parent.Pos, L1, parent.Constraints, out res))
+            {
+                target.Pos = res;
+                parent.RotateTowards(target.Pos - parent.Pos);
+                return true;
+            }
+
+            return false;
         }
     }
 }

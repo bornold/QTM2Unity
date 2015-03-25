@@ -19,7 +19,7 @@ namespace QTM2Unity
         // Probably don't want to handle here
 
         // Note: The end effector is assumed to be the last element in bones
-        override public Bone[] solveBoneChain(Bone[] bones, Bone target, Quaternion pRot)
+        override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             int numberOfBones = bones.Length;
             int iter = 0;
@@ -40,9 +40,11 @@ namespace QTM2Unity
 
                     rotation = (a.Length == 0 || b.Length == 0) ? rotation = Quaternion.Identity : rotation = QuaternionHelper.getRotation(a, b);
                     Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
-                    Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : Vector3.Transform(Vector3.UnitY, pRot);
+                    Vector3 dir = (i > 0) ? 
+                        bones[i].Pos - bones[i - 1].Pos : 
+                        Vector3.Transform(Vector3.UnitY, parent.Orientation);
                     Vector3 res;
-                    if (bones[i].RotationalConstraint.RotationalConstraints(trg, bones[i].Pos, dir, bones[i].RotationalConstraint.Constraints, out res))
+                    if (Constraint.CheckRotationalConstraints(trg, bones[i].Pos, dir, bones[i].Constraints, out res))
                     {
                         a = bones[i + 1].Pos - bones[i].Pos;
                         b = res - bones[i].Pos;

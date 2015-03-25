@@ -16,7 +16,7 @@ namespace QTM2Unity
             Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
             ForwardKinematics(ref bones, rotation, i);
         }
-        public override Bone[] solveBoneChain(Bone[] bones, Bone target, Quaternion pRot)
+        public override Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             int numberOfBones = bones.Length;
             for (int i = 0; i < numberOfBones - 1; i++)

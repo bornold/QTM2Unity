@@ -24,8 +24,7 @@ namespace QTM2Unity
                 b = (TreeNode<Bone>)it.Current;
                 if (!b.Data.Exists) // Possition of joint no knowned, Solve with IK
                 {
-                    Quaternion parentRotation = b.Parent.Data.Orientation;
-                    foreach (Bone a in MissingJoint(b, iks, parentRotation, ref it)) skeleton[a.Name] = a;
+                    foreach (Bone a in MissingJoint(b, iks, b.Parent.Data, ref it)) skeleton[a.Name] = a;
                 }
             }
             lastSkel = skeleton;
@@ -33,7 +32,7 @@ namespace QTM2Unity
         }
 
 
-        private List<Bone> MissingJoint(TreeNode<Bone> b, IKSolver iks, Quaternion pRot, ref IEnumerator it)
+        private List<Bone> MissingJoint(TreeNode<Bone> b, IKSolver iks, Bone parent, ref IEnumerator it)
         {
             Bone root = lastSkel[b.Parent.Data.Name]; // last frames' parent is root in solution
             Bone missing = lastSkel[b.Data.Name]; // this node that is missing
@@ -50,7 +49,7 @@ namespace QTM2Unity
                 if (b.Data.Exists) // target found! it the last in list
                 {
                     Bone target = b.Data;
-                    missingChain = iks.solveBoneChain(missingChain.ToArray(), target, pRot).ToList(); // solve with IK
+                    missingChain = iks.SolveBoneChain(missingChain.ToArray(), target, parent).ToList(); // solve with IK
                     break;
                 }
             }

@@ -11,11 +11,11 @@ namespace QTM2Unity
     {
         private static float threshold = 0.001f; // TODO good value?
 
-        override public Bone[] solveBoneChain(Bone[] bones, Bone target, Quaternion pRot)
+        override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             // Calculate the distances
             float[] distances;
-            getDistances(out distances, ref bones);
+            GetDistances(out distances, ref bones);
 
             // J[rows][columns]
             int k = 1; // only one end effector now

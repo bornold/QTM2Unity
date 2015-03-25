@@ -8,10 +8,10 @@ namespace QTM2Unity
 {
     abstract class IKSolver
     {
-        abstract public Bone[] solveBoneChain(Bone[] bones, Bone target, Quaternion pRot);
+        abstract public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent);
 
         // TODO probably better if we just keep length in bones... oor is it...
-        protected void getDistances(out float[] distances, ref Bone[] bones)
+        protected void GetDistances(out float[] distances, ref Bone[] bones)
         {
             distances = new float[bones.Length - 1];
             for (int i = 0; i < distances.Length; i++)

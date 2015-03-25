@@ -242,7 +242,7 @@ namespace QTM2Unity
 
         public void runCCD()
         {
-            bones = ccd.solveBoneChain(bones, target, OpenTK.Quaternion.Identity);
+            bones = ccd.SolveBoneChain(bones, target, new Bone("",OpenTK.Vector3.Zero, OpenTK.Quaternion.Identity));
 
             //CCD.checkOrientationalConstraint(ref bones[1], bones[0]);
             //CCD.checkOrientationalConstraint(ref bones[2], bones[1]);
@@ -254,19 +254,19 @@ namespace QTM2Unity
 
         public void runFABRIK()
         {
-            bones = fabrik.solveBoneChain(bones, target, OpenTK.Quaternion.Identity);
+            bones = fabrik.SolveBoneChain(bones, target, new Bone("", OpenTK.Vector3.Zero, OpenTK.Quaternion.Identity));
             updateJoints();
         }
 
         public void runDLS()
         {
-            bones = dls.solveBoneChain(bones, target, OpenTK.Quaternion.Identity);
+            bones = dls.SolveBoneChain(bones, target, new Bone("", OpenTK.Vector3.Zero, OpenTK.Quaternion.Identity));
             updateJoints();
         }
 
         public void runTranspose()
         {
-            bones = jtr.solveBoneChain(bones, target, OpenTK.Quaternion.Identity);
+            bones = jtr.SolveBoneChain(bones, target, new Bone("", OpenTK.Vector3.Zero, OpenTK.Quaternion.Identity));
             updateJoints();
         }
     }

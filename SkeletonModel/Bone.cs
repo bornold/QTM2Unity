@@ -38,9 +38,49 @@ namespace QTM2Unity
             get { return orientation; }
             set { orientation = value; }
         }
+        #region constraints getters and setters
+                // An orientational constraint is the twist of the bone around its own direction vector
+        // with respect to its parent
+        // It is defined as a range betwen angles [right,left]
+        private float rightTwist;
+        public float RightTwist
+        {
+            get { return rightTwist; }
+        }
+        private float leftTwist;
+        public float LeftTwist
+        {
+            get { return leftTwist; }
+        }
+
+        public void SetOrientationalConstraints(float left, float right)
+        {
+            this.leftTwist = left;
+            this.rightTwist = right;
+        }
+
+        private float right, up, left, down;
+        public Vector4 Constraints
+        {
+            get { return new Vector4(right, up, left, down); }
+        }
+        public void SetRotationalConstraints(float _right, float _up, float _left, float _down)
+        {
+            this.rightTwist = _right;
+            this.up = _up;
+            this.leftTwist = _left;
+            this.down = _down;
+        }
+        public void SetRotationalConstraints(Vector4 givenConstraints)
+        {
+            this.right = givenConstraints.X;
+            this.up = givenConstraints.Y;
+            this.left = givenConstraints.Z;
+            this.down = givenConstraints.W;
+        }
+        #endregion
         #endregion
 
-        #if true
         #region Constructors
         public Bone(string name)
         {
@@ -63,30 +103,27 @@ namespace QTM2Unity
             float constraintRight, float constraintUp, float constraintLeft, float constraintDown)
             : this(name, position, orientation)
         {
-            SetRotationalConstraint(constraintRight, constraintUp, constraintLeft, constraintDown);
+            SetRotationalConstraints(constraintRight, constraintUp, constraintLeft, constraintDown);
         }
         public Bone(string name, Vector3 position, Quaternion orientation, Vector4 constriants)
             : this(name, position, orientation, constriants.X, constriants.Y, constriants.Z, constriants.W)
         { }
         #endregion
-        #region Orientational constraints
-        private OrientationalConstraint orientationalConstr;
-        public OrientationalConstraint OrientationalConstraint
+#if flase
+        private Constraint orientationalConstr;
+        public Constraint OrientationalConstraint
         {
             get { return orientationalConstr; }
         }
         public void setOrientationalConstraint(float from, float to)
         {
-            orientationalConstr = new OrientationalConstraint(from, to);
+            orientationalConstr = new Constraint(from, to);
         }
-
         private RotationalConstraint rotationalConstr;
         public RotationalConstraint RotationalConstraint
         {
             get { return rotationalConstr; }
         }
-        #endregion
-        #region RotationalConstraints
         public void SetRotationalConstraint(float right, float up, float left, float down)
         {
             rotationalConstr = new RotationalConstraint(right, up, left, down);
@@ -97,34 +134,25 @@ namespace QTM2Unity
         }
         public bool EnsureConstraints(ref Bone target, Vector3 L1, bool checkRot)
         {
-            if (orientationalConstr != null && checkRot)
+             if (checkRot)
             {
-                orientationalConstr.checkOrientationalConstraint(ref target, this);
-            }
-            if (rotationalConstr != null)
+                Constraint.CheckOrientationalConstraint(ref target, this, this.leftTwist,this.rightTwist);
+            }         
+            Vector3 res;
+            if (Constraint.CheckRotationalConstraints(target.Pos, this.Pos, L1, Constraints, out res))
             {
-                Vector4 constraints = false ?
-                    new Vector4(rotationalConstr.Constraints.Z,
-                        rotationalConstr.Constraints.W,
-                        rotationalConstr.Constraints.X,
-                        rotationalConstr.Constraints.Y)
-                    : rotationalConstr.Constraints;
-                Vector3 res;
-                if (rotationalConstr.RotationalConstraints(target.Pos, this.Pos, L1, constraints, out res))
+                target.Pos = res;
+                RotateTowards(target.Pos - this.Pos);
+                if (checkRot)
                 {
-                    target.Pos = res;
-                    RotateTowards(target.Pos - this.Pos);
-                    if (orientationalConstr != null && checkRot)
-                    {
-                        orientationalConstr.checkOrientationalConstraint(ref target, this);
-                    }
-                    return true;
+                    Constraint.CheckOrientationalConstraint(ref target, this, this.leftTwist,this.rightTwist);
                 }
+                return true;
             }
+            
             return false;
         }
-        #endregion
-        #endif
+#endif
         // Directions 
         #region Direction getters
         public Vector3 GetDirection()

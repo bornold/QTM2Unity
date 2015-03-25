@@ -79,7 +79,8 @@ public class IKChainTest : MonoBehaviour {
             {
                 _target = target;
                 if (bones.Any(t => t.Pos.IsNaN())) { UnityEngine.Debug.LogError(bones.Find(t => t.Pos.IsNaN()).ToString()); }
-                bones = solver.solveBoneChain(bones.ToArray(), target, OpenTK.Quaternion.Identity).ToList();
+                Bone grandpa = new Bone("grandpa", new OpenTK.Vector3(0, -1, 0), OpenTK.Quaternion.Identity);
+                bones = solver.SolveBoneChain(bones.ToArray(), target, grandpa).ToList();
             }
         }
         Debug.DrawLine(Vector3.zero, -Vector3.up * boneLength, UnityEngine.Color.white);
@@ -95,11 +96,11 @@ public class IKChainTest : MonoBehaviour {
             {
                 UnityDebug.DrawRays(curr.Orientation, curr.Pos, boneLength);
                 UnityDebug.DrawLine(curr.Pos, curr.Pos + (curr.Pos - prev.Pos), UnityEngine.Color.black);
-                if (showconstraints && curr.RotationalConstraint != null    )
+                if (showconstraints && curr.Constraints != null    )
                 {
                     var rot = (curr == prev) ? OpenTK.Quaternion.Identity : QuaternionHelper.RotationBetween(OpenTK.Vector3.UnitY,prev.GetDirection());
                     UnityDebug.CreateIrregularCone3(
-                        curr.RotationalConstraint.Constraints,
+                        curr.Constraints,
                         curr.Pos,
                         rot,
                         conResolution,
@@ -126,14 +127,18 @@ public class IKChainTest : MonoBehaviour {
                 qwist = new OpenTK.Quaternion(OpenTK.Vector3.UnitY, OpenTK.MathHelper.DegreesToRadians(twist));
             qwist.Normalize();
             Bone b = new Bone("Bone " + i.ToString(), new OpenTK.Vector3(0f, (float)i * boneLength, 0f), qwist);
-            b.SetRotationalConstraint(constraints.Convert());
+            b.SetRotationalConstraints(constraints.Convert());
+            b.SetOrientationalConstraints(twistConstraints.x, twistConstraints.y);
+
             twist += jointTwistDiffrence;
             newBones.Add(b);
         }
         qwist = new OpenTK.Quaternion(OpenTK.Vector3.UnitY, OpenTK.MathHelper.DegreesToRadians(twist));
         qwist.Normalize();
         Bone c = new Bone("endeffector", new OpenTK.Vector3(0f, _chains * boneLength, 0f),qwist);
-        c.SetRotationalConstraint(constraints.Convert());
+        c.SetRotationalConstraints(constraints.Convert());
+        c.SetOrientationalConstraints(twistConstraints.x, twistConstraints.y);
+
         newBones.Add(c);
 
         return newBones;
@@ -143,12 +148,8 @@ public class IKChainTest : MonoBehaviour {
         _constraints = constraints;
         foreach (Bone b in bones)
         {
-            b.SetRotationalConstraint(constraints.Convert());
-            b.setOrientationalConstraint(twistConstraints.x,twistConstraints.y);
+            b.SetRotationalConstraints(constraints.Convert());
+            b.SetOrientationalConstraints(twistConstraints.x, twistConstraints.y);
         }
-    }
-    void OnDrawGizmos()
-    {
-       // Gizmos.DrawCube(bones[bones.Count-1].Pos.Convert(),Vector3.one/4f);
     }
 }

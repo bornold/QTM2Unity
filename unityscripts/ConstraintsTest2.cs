@@ -76,7 +76,7 @@ namespace QTM2Unity
                 parentPos = transform.Search("ParentJoint").position.Convert();
             }   
             if (spin) targ = UpdateTarget(targ, parentPos, jointPos);
-            RotationalConstraint strains = new RotationalConstraint(constr);
+            
             Vector3 res;
             OpenTK.Vector3 L1 = jointPos - parentPos;
             float angle = Vector3.CalculateAngle(L1, Vector3.UnitY);
@@ -100,7 +100,7 @@ namespace QTM2Unity
                         (float)(targ - jointPos).Length
                         );
             }
-            if (strains.RotationalConstraints(targ, jointPos, L1, constr, out res)) targ = res;
+            if (Constraint.CheckRotationalConstraints(targ, jointPos, L1, constr, out res)) targ = res;
             if (debug)
             {
                 UnityDebug.DrawLine(jointPos, res, UnityEngine.Color.cyan);

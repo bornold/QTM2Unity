@@ -1,145 +1,118 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using OpenTK;
 
 namespace QTM2Unity
 {
-    public class OrientationalConstraint
+    public static class Constraint
     {
         // An orientational constraint is the twist of the bone around its own direction vector
         // with respect to its parent
         // It is defined as a range betwen angles [right,left]
-        private float right;
-        public float Right
+        public static void CheckOrientationalConstraint(ref Bone b, Bone parent)
         {
-            get { return right; }
-        }
-        private float left;
-        public float Left
-        {
-            get { return left; }
-        }
+            Vector3 reference = parent.GetUp();
+            Quaternion q = QuaternionHelper.LookAtUp(parent.Pos, b.Pos, b.GetUp());
+            //UnityDebug.DrawRays2(q, parent.Pos, 2f);
+            float z2z = MathHelper.RadiansToDegrees(
+                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitZ, q), reference));
+            //UnityEngine.Debug.Log("z2z: " + z2z);
+            float x2z = MathHelper.RadiansToDegrees(
+                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitX, q), reference));
+            //UnityEngine.Debug.Log("x2z: " + x2z);
 
-        public OrientationalConstraint(float from, float to)
-        {
-            this.right = from;
-            this.left = to;
-        }
-        public void checkOrientationalConstraint(ref Bone b, Bone parent)
-        {
-            if (b.OrientationalConstraint != null) // if there exist a constraint
+
+            //float angle = Vector3.CalculateAngle(Vector3.UnitZ, parent.GetUp());
+            //Vector3 axis = Vector3.Cross(Vector3.UnitZ, parent.GetUp());
+            //Quaternion rot = Quaternion.FromAxisAngle(axis, angle);
+            //float yc = Mathf.Cos(MathHelper.DegreesToRadians(b.OrientationalConstraint.Right));
+            //float xc = Mathf.Sin(MathHelper.DegreesToRadians(b.OrientationalConstraint.Right));
+            //Vector3 r = new Vector3(-xc, 0, yc);
+            //r = Vector3.Transform(r, rot);
+            //r.Normalize();
+            //UnityDebug.DrawLine(b.Pos, b.Pos + r, UnityEngine.Color.yellow);
+            //yc = Mathf.Cos(MathHelper.DegreesToRadians(b.OrientationalConstraint.Left));
+            //xc = Mathf.Sin(MathHelper.DegreesToRadians(b.OrientationalConstraint.Left));
+            //Vector3 l = new Vector3(xc, 0, yc);
+            //l = Vector3.Transform(l, rot);
+            //l.Normalize();
+            //UnityDebug.DrawLine(b.Pos, b.Pos + l, UnityEngine.Color.cyan);
+            //UnityDebug.DrawLine(Vector3.UnitZ, Vector3.UnitZ + b.GetUp(), UnityEngine.Color.blue);
+
+            Vector3 direction = b.GetDirection();
+            Quaternion rotation;
+            if (x2z >= 90) // Z left of reference
             {
-                Vector3 reference = parent.GetUp();
-                Quaternion q = QuaternionHelper.LookAtUp(parent.Pos, b.Pos, b.GetUp());
-                //UnityDebug.DrawRays2(q, parent.Pos, 2f);
-                float z2z = MathHelper.RadiansToDegrees(
-                        Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitZ, q), reference));
-                //UnityEngine.Debug.Log("z2z: " + z2z);
-                float x2z = MathHelper.RadiansToDegrees(
-                        Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitX, q), reference));
-                //UnityEngine.Debug.Log("x2z: " + x2z);
-
-
-                //float angle = Vector3.CalculateAngle(Vector3.UnitZ, parent.GetUp());
-                //Vector3 axis = Vector3.Cross(Vector3.UnitZ, parent.GetUp());
-                //Quaternion rot = Quaternion.FromAxisAngle(axis, angle);
-                //float yc = Mathf.Cos(MathHelper.DegreesToRadians(b.OrientationalConstraint.Right));
-                //float xc = Mathf.Sin(MathHelper.DegreesToRadians(b.OrientationalConstraint.Right));
-                //Vector3 r = new Vector3(-xc, 0, yc);
-                //r = Vector3.Transform(r, rot);
-                //r.Normalize();
-                //UnityDebug.DrawLine(b.Pos, b.Pos + r, UnityEngine.Color.yellow);
-                //yc = Mathf.Cos(MathHelper.DegreesToRadians(b.OrientationalConstraint.Left));
-                //xc = Mathf.Sin(MathHelper.DegreesToRadians(b.OrientationalConstraint.Left));
-                //Vector3 l = new Vector3(xc, 0, yc);
-                //l = Vector3.Transform(l, rot);
-                //l.Normalize();
-                //UnityDebug.DrawLine(b.Pos, b.Pos + l, UnityEngine.Color.cyan);
-                //UnityDebug.DrawLine(Vector3.UnitZ, Vector3.UnitZ + b.GetUp(), UnityEngine.Color.blue);
-
-                Vector3 direction = b.GetDirection();
-                Quaternion rotation;
-                if (x2z >= 90) // Z left of reference
+                //UnityEngine.Debug.Log(string.Format("Z left of reference: x2z({0})>90 ", x2z));
+                float pew = z2z - b.LeftTwist;
+                if (pew > 1f) // angle larger then constraints angle
                 {
-                    //UnityEngine.Debug.Log(string.Format("Z left of reference: x2z({0})>90 ", x2z));
-                    float pew = z2z - b.OrientationalConstraint.left;
-                    if (pew > 1f) // angle larger then constraints angle
-                    {
-                        //UnityEngine.Debug.Log(string.Format("outside left constraintspew({0})>1 ", pew));
-                        //UnityEngine.Debug.Log(string.Format("Rotate: {0} degrees ", -pew));
-                        pew = MathHelper.DegreesToRadians(-pew);
-                        rotation = Quaternion.FromAxisAngle(direction, pew);
-                        b.Rotate(rotation);
-                        //UnityDebug.DrawRays2(rotation * b.Orientation, b.Pos, 0.5f);
-                    }
-                    //else
-                    //{
-                    //    UnityEngine.Debug.Log(string.Format("Outside right constriants pew({0})<1 ", pew));
-                    //}
+                    //UnityEngine.Debug.Log(string.Format("outside left constraintspew({0})>1 ", pew));
+                    //UnityEngine.Debug.Log(string.Format("Rotate: {0} degrees ", -pew));
+                    pew = MathHelper.DegreesToRadians(-pew);
+                    rotation = Quaternion.FromAxisAngle(direction, pew);
+                    b.Rotate(rotation);
+                    //UnityDebug.DrawRays2(rotation * b.Orientation, b.Pos, 0.5f);
                 }
-                else // Z right of reference
+                //else
+                //{
+                //    UnityEngine.Debug.Log(string.Format("Outside right constriants pew({0})<1 ", pew));
+                //}
+            }
+            else // Z right of reference
+            {
+                //UnityEngine.Debug.Log(string.Format("Z right of reference :  x2z({0})<90 ", x2z));
+                //UnityEngine.Debug.Log(string.Format("b.OrientationalConstraint.right :  {0}", b.OrientationalConstraint.right));
+                float pew = z2z - b.RightTwist;
+                if (pew > 1f) // angle larger constraints angle
                 {
-                    //UnityEngine.Debug.Log(string.Format("Z right of reference :  x2z({0})<90 ", x2z));
-                    //UnityEngine.Debug.Log(string.Format("b.OrientationalConstraint.right :  {0}", b.OrientationalConstraint.right));
-                    float pew = z2z - b.OrientationalConstraint.right;
-                    if (pew > 1f) // angle larger constraints angle
-                    {
-                        //UnityEngine.Debug.Log(string.Format("Outside right constriants pew({0})>1 ", pew));
-                        pew = MathHelper.DegreesToRadians(pew);
-                        rotation = Quaternion.FromAxisAngle(direction, pew);
-                        b.Rotate(rotation);
-                        //UnityDebug.DrawRays2(rotation * b.Orientation, b.Pos, 0.5f);
-                    }
-                    //else
-                    //{
-                    //    UnityEngine.Debug.Log(string.Format("Inside right constraints pew({0})<1 ", pew));
-                    //}
+                    //UnityEngine.Debug.Log(string.Format("Outside right constriants pew({0})>1 ", pew));
+                    pew = MathHelper.DegreesToRadians(pew);
+                    rotation = Quaternion.FromAxisAngle(direction, pew);
+                    b.Rotate(rotation);
+                    //UnityDebug.DrawRays2(rotation * b.Orientation, b.Pos, 0.5f);
                 }
+                //else
+                //{
+                //    UnityEngine.Debug.Log(string.Format("Inside right constraints pew({0})<1 ", pew));
+                //}
             }
         }
 
-        // TODO: move the constraint methods to JointConstraint as static methods
-
-        // TODO should be private, public for test purposes
-        // TODO maybe this is better in the OrientationalContraint class
-        public void checkOrientationalConstraint2(ref Bone b, Bone parent)
+        public static void CheckOrientationalConstraint2(ref Bone b, Bone parent, float Left, float Right)
         {
-            if (b.OrientationalConstraint != null) // if there exist a constraint
+
+            Vector3 direction = b.GetDirection();
+            float twistAngle = GetTwistAngle(b, parent);
+
+            float from = Right;
+            float to = Left;
+
+            if (!(twistAngle >= from && twistAngle <= to)) // not inside constraints
             {
-                Vector3 direction = b.GetDirection();
-                float twistAngle = getTwistAngle(b, parent);
-
-                float from = b.OrientationalConstraint.Right;
-                float to = b.OrientationalConstraint.Left;
-
-                if (!(twistAngle >= from && twistAngle <= to)) // not inside constraints
+                // rotate the bone around its direction vector to be inside
+                // the constraints (rotate it from its current angle to from or to)
+                // TODO rotating the right directio? (-/+)
+                if (twistAngle < from) // TODO add some precision (so it doesn't need to rotate eg 0,000324)
                 {
-                    // rotate the bone around its direction vector to be inside
-                    // the constraints (rotate it from its current angle to from or to)
-                    // TODO rotating the right directio? (-/+)
-                    if (twistAngle < from) // TODO add some precision (so it doesn't need to rotate eg 0,000324)
-                    {
-                        // rotate clockwise
-                        /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name + 
-                            " " + (twistAngle - from) + " clockwise around itself.");*/
-                        b.Rotate(Math.Abs(MathHelper.DegreesToRadians(twistAngle - from)), direction);
-                    }
-                    else if (twistAngle > to)
-                    {
-                        // rotate anticlockwise
-                        /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name +
-                            " " + (twistAngle - to) + " anticlockwise around itself.");*/
-                        b.Rotate(-Math.Abs(MathHelper.DegreesToRadians(twistAngle - to)), direction);
-                    }
+                    // rotate clockwise
+                    /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name + 
+                        " " + (twistAngle - from) + " clockwise around itself.");*/
+                    b.Rotate(Math.Abs(MathHelper.DegreesToRadians(twistAngle - from)), direction);
+                }
+                else if (twistAngle > to)
+                {
+                    // rotate anticlockwise
+                    /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name +
+                        " " + (twistAngle - to) + " anticlockwise around itself.");*/
+                    b.Rotate(-Math.Abs(MathHelper.DegreesToRadians(twistAngle - to)), direction);
                 }
             }
+
         }
 
         // Calculates the angle b is twisted around its direction vector in radians
         // TODO make private. Only public for testing purposes.
-        public float getTwistAngle(Bone b, Bone parent)
+        public static float GetTwistAngle(Bone b, Bone parent)
         {
             Vector3 direction = b.GetDirection();
             Vector3 up = b.GetUp();
@@ -157,12 +130,9 @@ namespace QTM2Unity
 
             return twistAngle;
         }
-    }
 
-    public class RotationalConstraint
-    {
         private enum Q { q1, q2, q3, q4 };
-        private float precision = 0.001f;
+        private static float precision = 0.001f;
         // A constraint modeled as an irregular cone
         // The direction vector is the direction the cone is opening up at
         // The four angles define the shape of the cone
@@ -170,6 +140,7 @@ namespace QTM2Unity
         // angle 1 is the angle to the parent's down
         // angle 2 is the angle to the parent's left
         // angle 3 is the angle to the parent's up
+#if false
         Func<Vector3> directionMethod;
         Func<Vector3> rightMethod;
         private float right, up, left, down;
@@ -191,8 +162,8 @@ namespace QTM2Unity
             this.left = givenConstraints.Z;
             this.down = givenConstraints.W;
         }
-
-        public bool RotationalConstraints(Vector3 target, Vector3 jointPos, Vector3 L1, Vector4 constraints, out Vector3 res)
+#endif
+        public static bool CheckRotationalConstraints(Vector3 target, Vector3 jointPos, Vector3 L1, Vector4 constraints, out Vector3 res)
         {
 
             //UnityDebug.DrawRay(jointPos, L1);
@@ -399,7 +370,7 @@ namespace QTM2Unity
             }
             //3.14 end
         }
-        private Vector2 NearestPoint(float radiusX, float radiusY, Vector2 target2D, Q q, bool reverseCone)
+        private static Vector2 NearestPoint(float radiusX, float radiusY, Vector2 target2D, Q q, bool reverseCone)
         {
             Vector2 newPoint;
             float xRad, yRad, pX, pY;
