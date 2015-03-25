@@ -73,7 +73,24 @@ namespace QTM2Unity
         }
 
 
-      
+        public float getTwistAngle(Bone b, Bone parent)
+        {
+            Vector3 direction = b.GetDirection();
+            Vector3 up = b.GetUp();
+            Vector3 right = b.GetRight();
+
+            // construct a reference vector which the twist/orientation will depend on
+            // The reference is the parents up vector projected on the same plane as the 
+            // current bone's up vector
+            Vector3 reference = Vector3Helper.ProjectOnPlane(parent.GetUp(), direction);
+
+            float twistAngle = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(reference, up));
+
+            if (Vector3.CalculateAngle(reference, right) > Mathf.PI / 2) // b is twisted left with respect to parent
+                return -twistAngle;
+
+            return twistAngle;
+        }
 
         // TODO should not be public. Or should probably not be in this class even..
 #if false
