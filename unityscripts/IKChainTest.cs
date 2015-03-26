@@ -50,6 +50,7 @@ public class IKChainTest : MonoBehaviour {
         {
             newConstraints();
         }
+        Bone grandpa = new Bone("grandpa", new OpenTK.Vector3(0, -1, 0), OpenTK.Quaternion.Identity);
         Vector3 last = bones[bones.Count-1].Pos.Convert();
         if ((last - this.gameObject.transform.position).magnitude > 0.01 )
         {
@@ -79,12 +80,11 @@ public class IKChainTest : MonoBehaviour {
             {
                 _target = target;
                 if (bones.Any(t => t.Pos.IsNaN())) { UnityEngine.Debug.LogError(bones.Find(t => t.Pos.IsNaN()).ToString()); }
-                Bone grandpa = new Bone("grandpa", new OpenTK.Vector3(0, -1, 0), OpenTK.Quaternion.Identity);
                 bones = solver.SolveBoneChain(bones.ToArray(), target, grandpa).ToList();
             }
         }
-        Debug.DrawLine(Vector3.zero, -Vector3.up * boneLength, UnityEngine.Color.white);
         Debug.DrawLine(Vector3.zero, Vector3.up * boneLength, UnityEngine.Color.black);
+        UnityDebug.DrawRays(grandpa.Orientation, grandpa.Pos, boneLength);
 
         Bone prev = bones[0];
         foreach (Bone curr in bones)
@@ -98,11 +98,12 @@ public class IKChainTest : MonoBehaviour {
                 UnityDebug.DrawLine(curr.Pos, curr.Pos + (curr.Pos - prev.Pos), UnityEngine.Color.black);
                 if (showconstraints && curr.Constraints != null    )
                 {
-                    var rot = (curr == prev) ? OpenTK.Quaternion.Identity : QuaternionHelper.RotationBetween(OpenTK.Vector3.UnitY,prev.GetDirection());
+                    var L1 = (prev == curr) ? OpenTK.Vector3.UnitY : (curr.Pos - prev.Pos);
                     UnityDebug.CreateIrregularCone3(
                         curr.Constraints,
                         curr.Pos,
-                        rot,
+                        L1,
+                        curr.Orientation,
                         conResolution,
                         boneLength * coneScale    
                         );
@@ -146,6 +147,8 @@ public class IKChainTest : MonoBehaviour {
     private void newConstraints()
     {
         _constraints = constraints;
+        _twistConstraints = twistConstraints;
+        Debug.Log("constraints updated");
         foreach (Bone b in bones)
         {
             b.SetRotationalConstraints(constraints.Convert());

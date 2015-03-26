@@ -8,10 +8,10 @@ namespace QTM2Unity
         // An orientational constraint is the twist of the bone around its own direction vector
         // with respect to its parent
         // It is defined as a range betwen angles [right,left]
-        public static void CheckOrientationalConstraint(ref Bone b, Bone parent)
+        public static bool CheckOrientationalConstraint(Bone b, Bone refer, out Quaternion rotation)
         {
-            Vector3 reference = parent.GetUp();
-            Quaternion q = QuaternionHelper.LookAtUp(parent.Pos, b.Pos, b.GetUp());
+            Vector3 reference = refer.GetUp();
+            Quaternion q = QuaternionHelper.LookAtUp(refer.Pos, b.Pos, b.GetUp());
             //UnityDebug.DrawRays2(q, parent.Pos, 2f);
             float z2z = MathHelper.RadiansToDegrees(
                     Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitZ, q), reference));
@@ -39,7 +39,6 @@ namespace QTM2Unity
             //UnityDebug.DrawLine(Vector3.UnitZ, Vector3.UnitZ + b.GetUp(), UnityEngine.Color.blue);
 
             Vector3 direction = b.GetDirection();
-            Quaternion rotation;
             if (x2z >= 90) // Z left of reference
             {
                 //UnityEngine.Debug.Log(string.Format("Z left of reference: x2z({0})>90 ", x2z));
@@ -49,8 +48,8 @@ namespace QTM2Unity
                     //UnityEngine.Debug.Log(string.Format("outside left constraintspew({0})>1 ", pew));
                     //UnityEngine.Debug.Log(string.Format("Rotate: {0} degrees ", -pew));
                     pew = MathHelper.DegreesToRadians(-pew);
-                    rotation = Quaternion.FromAxisAngle(direction, pew);
-                    b.Rotate(rotation);
+                    rotation = Quaternion.FromAxisAngle(direction, pew); ;
+                    return true;
                     //UnityDebug.DrawRays2(rotation * b.Orientation, b.Pos, 0.5f);
                 }
                 //else
@@ -68,7 +67,7 @@ namespace QTM2Unity
                     //UnityEngine.Debug.Log(string.Format("Outside right constriants pew({0})>1 ", pew));
                     pew = MathHelper.DegreesToRadians(pew);
                     rotation = Quaternion.FromAxisAngle(direction, pew);
-                    b.Rotate(rotation);
+                    return  true;
                     //UnityDebug.DrawRays2(rotation * b.Orientation, b.Pos, 0.5f);
                 }
                 //else
@@ -76,6 +75,8 @@ namespace QTM2Unity
                 //    UnityEngine.Debug.Log(string.Format("Inside right constraints pew({0})<1 ", pew));
                 //}
             }
+            rotation = b.Orientation;
+            return false;
         }
 
         public static void CheckOrientationalConstraint2(ref Bone b, Bone parent, float Left, float Right)
@@ -163,10 +164,10 @@ namespace QTM2Unity
             this.down = givenConstraints.W;
         }
 #endif
-        public static bool CheckRotationalConstraints(Vector3 target, Vector3 jointPos, Vector3 L1, Vector4 constraints, out Vector3 res)
+        public static bool CheckRotationalConstraints(Bone joint, Vector3 target, Vector3 L1, out Vector3 res)
         {
-
-            //UnityDebug.DrawRay(jointPos, L1);
+            Vector3 jointPos = joint.Pos;
+            Vector4 constraints = joint.Constraints;
             Vector3 targetPos = new Vector3(target.X, target.Y, target.Z);
             Vector3 joint2Target = (targetPos - jointPos);
 
@@ -199,9 +200,31 @@ namespace QTM2Unity
             //3.4 Map the target (rotate and translate) in such a
             //way that O is now located at the axis origin and oriented
             //according to the x and y-axis ) Now it is a 2D simplified problem
+
+            /*
+                    Vector3 reference = refer.GetUp();
+                    Quaternion q = QuaternionHelper.LookAtUp(refer.Pos, b.Pos, b.GetUp());
+                    
+                    float z2z = MathHelper.RadiansToDegrees(
+                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitZ, q), reference));
+             */
+
             float angle = Vector3.CalculateAngle(L1, Vector3.UnitY);
             Vector3 axis = Vector3.Cross(L1, Vector3.UnitY);
             Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
+
+            angle = Vector3.CalculateAngle(joint.GetDirection(), Vector3.UnitY);
+            axis = Vector3.Cross(joint.GetDirection(), Vector3.UnitY);
+            Quaternion what = Quaternion.FromAxisAngle(axis, angle);
+
+            Vector3 xxx = Vector3.Transform(joint.GetRight(), what);
+
+            float twist = Vector3.CalculateAngle(Vector3.UnitX, xxx);
+
+            //UnityEngine.Debug.Log(MathHelper.RadiansToDegrees(test));
+
+            rotation = rotation * Quaternion.Invert(Quaternion.FromAxisAngle(L1, twist)) ;
+            
             Vector3 TRotated = Vector3.Transform(joint2Target, rotation);
             Vector2 target2D = new Vector2(TRotated.X, TRotated.Z);
 

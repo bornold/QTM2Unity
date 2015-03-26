@@ -44,13 +44,19 @@ namespace QTM2Unity
                         bones[i].Pos - bones[i - 1].Pos : 
                         Vector3.Transform(Vector3.UnitY, parent.Orientation);
                     Vector3 res;
-                    if (Constraint.CheckRotationalConstraints(trg, bones[i].Pos, dir, bones[i].Constraints, out res))
+                    if (Constraint.CheckRotationalConstraints(bones[i], trg, dir, out res))
                     {
                         a = bones[i + 1].Pos - bones[i].Pos;
                         b = res - bones[i].Pos;
                         rotation = QuaternionHelper.getRotation(a, b);
                     }
                     ForwardKinematics(ref bones, rotation, i);
+
+                    Quaternion rotation2;
+                    if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation2))
+                    {
+                        ForwardKinematics(ref bones, rotation2, i);
+                    }
                     //for (int j = numberOfBones - 1; j >= i; j--)
                     //{
                     //    if (j > i)

@@ -179,9 +179,9 @@ namespace QTM2Unity
             }
         }
 
-        public static void CreateIrregularCone3(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Quaternion rot, int resolution, float scale)
+        public static void CreateIrregularCone3(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 L1, OpenTK.Quaternion rot, int resolution, float scale)
         {
-            OpenTK.Vector3 L1 = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
+            //L1 = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
             L1.Normalize();
             List<OpenTK.Vector3> positions = new List<OpenTK.Vector3>();
             positions.AddRange(GetQuarter(strains.X, strains.Y, top, L1, rot, resolution, 1, scale));

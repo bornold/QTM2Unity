@@ -52,7 +52,11 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Constraint.CheckOrientationalConstraint(ref bones[i], (i > 0) ? bones[i-1] : parent);
+                Quaternion rotation;
+                if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation))
+                {
+                    bones[i].Rotate(rotation);
+                }
                 Vector3 dir = (i > 0) ? 
                     bones[i].Pos - bones[i - 1].Pos : 
                     Vector3.Transform(Vector3.UnitY, parent.Orientation);
@@ -76,8 +80,11 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                //TODO Constraints rotConstraints in forward reaching phase?
-                //Constraint.CheckOrientationalConstraint(ref bones[i], bones[i-1]);
+                Quaternion rotation;
+                if (Constraint.CheckOrientationalConstraint(bones[i], bones[i + 1], out rotation))
+                {
+                    bones[i].Rotate(rotation);
+                }
                 EnsureOrientationalConstraints(ref bones[i], ref bones[i + 1], -bones[i + 1].GetDirection());
 
             }
@@ -97,7 +104,11 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Constraint.CheckOrientationalConstraint(ref bones[i], (i > 0 ) ? bones[i-1] : parent);
+                Quaternion rotation;
+                if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation))
+                {
+                    bones[i].Rotate(rotation);
+                }
                 Vector3 dir = (i > 0) ? 
                     bones[i].Pos - bones[i - 1].Pos : 
                     Vector3.Transform(Vector3.UnitY, parent.Orientation);
@@ -108,7 +119,7 @@ namespace QTM2Unity
         private bool EnsureOrientationalConstraints(ref Bone target, ref Bone parent, Vector3 L1)
         {
             Vector3 res;
-            if (Constraint.CheckRotationalConstraints(target.Pos, parent.Pos, L1, parent.Constraints, out res))
+            if (Constraint.CheckRotationalConstraints(parent, target.Pos, L1, out res))
             {
                 target.Pos = res;
                 parent.RotateTowards(target.Pos - parent.Pos);

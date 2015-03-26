@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections;
-using System.Linq;
-using System.Text;
 using OpenTK;
 
 namespace QTM2Unity
@@ -63,6 +59,7 @@ namespace QTM2Unity
         public Vector4 Constraints
         {
             get { return new Vector4(right, up, left, down); }
+            set { right = value.X; up = value.Y; left = value.Z; down = value.W; }
         }
         public void SetRotationalConstraints(float _right, float _up, float _left, float _down)
         {
