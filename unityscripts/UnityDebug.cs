@@ -22,19 +22,19 @@ namespace QTM2Unity
         {
             DrawRays(rot, cv(pos), scale);
         }
-        public static void DrawRays2(OpenTK.Quaternion rot, Vector3 pos, float scale)
+        public static void DrawRays2(Quaternion rot, Vector3 pos, float scale)
         {
 
-            OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
-            OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
-            OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot);
+            OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot.Convert());
+            OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot.Convert());
+            OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot.Convert());
             Debug.DrawRay(pos, cv(up) * scale, Color.yellow);
             Debug.DrawRay(pos, cv(right) * scale, Color.magenta);
             Debug.DrawRay(pos, cv(forward) * scale, Color.cyan);
         }
         public static void DrawRays2(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale)
         {
-            DrawRays2(rot, cv(pos), scale);
+            DrawRays2(rot.Convert(), pos.Convert(), scale);
         }
         public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos)
         {

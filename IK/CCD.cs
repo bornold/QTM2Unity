@@ -40,9 +40,7 @@ namespace QTM2Unity
 
                     rotation = (a.Length == 0 || b.Length == 0) ? rotation = Quaternion.Identity : rotation = QuaternionHelper.getRotation(a, b);
                     Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
-                    Vector3 dir = (i > 0) ? 
-                        bones[i].Pos - bones[i - 1].Pos : 
-                        Vector3.Transform(Vector3.UnitY, parent.Orientation);
+                    Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
                     Vector3 res;
                     if (Constraint.CheckRotationalConstraints(bones[i], trg, dir, out res))
                     {
@@ -52,28 +50,12 @@ namespace QTM2Unity
                     }
                     ForwardKinematics(ref bones, rotation, i);
 
-                    Quaternion rotation2;
+                    Quaternion rotation2 = Quaternion.Identity;
                     if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation2))
                     {
+                        //bones[i].Rotate(rotation2);
                         ForwardKinematics(ref bones, rotation2, i);
                     }
-                    //for (int j = numberOfBones - 1; j >= i; j--)
-                    //{
-                    //    if (j > i)
-                    //    {
-                    //        bones[j].Pos = bones[i].Pos + 
-                    //            OpenTK.Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
-                    //    }
-
-                    //    // rotate orientation
-                    //    bones[j].Rotate(rotation);
-                    //}
-
-                    // Check if we are close enough to target
-                    //if ((target.Pos - bones[numberOfBones - 1].Pos).Length <= threshold)
-                    //{
-                    //    return bones;
-                    //}
                 }
                 iter++;
             }

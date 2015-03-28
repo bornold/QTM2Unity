@@ -52,8 +52,8 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Quaternion rotation;
-                if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation))
+                Quaternion rotation = Quaternion.Identity;
+                if ( Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation))
                 {
                     bones[i].Rotate(rotation);
                 }
@@ -80,8 +80,8 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Quaternion rotation;
-                if (Constraint.CheckOrientationalConstraint(bones[i], bones[i + 1], out rotation))
+                Quaternion rotation = Quaternion.Identity;
+                if ( Constraint.CheckOrientationalConstraint(bones[i], bones[i + 1], out rotation))
                 {
                     bones[i].Rotate(rotation);
                 }
@@ -104,8 +104,8 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Quaternion rotation;
-                if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation))
+                Quaternion rotation = Quaternion.Identity;
+                if ( Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation))
                 {
                     bones[i].Rotate(rotation);
                 }

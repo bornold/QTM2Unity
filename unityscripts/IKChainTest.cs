@@ -11,7 +11,9 @@ public class IKChainTest : MonoBehaviour {
     private float _boneLength;
     public IKS IK = IKS.fabrik;
     public float coneScale = 0.5f;
-    public bool showconstraints = true;
+    public bool showConstraints = true;
+    public bool showOrientation = true;
+
     public int conResolution = 50;
     public float targetScale = 0.5f;
     public Vector4 constraints = new Vector4(20, 30, 20, 30);
@@ -94,16 +96,17 @@ public class IKChainTest : MonoBehaviour {
 
             if (curr != bones[bones.Count -1])
             {
-                UnityDebug.DrawRays(curr.Orientation, curr.Pos, boneLength);
-                UnityDebug.DrawLine(curr.Pos, curr.Pos + (curr.Pos - prev.Pos), UnityEngine.Color.black);
-                if (showconstraints && curr.Constraints != null    )
+                if (showOrientation) UnityDebug.DrawRays(curr.Orientation, curr.Pos, boneLength);
+                if (showConstraints && curr.Constraints != null    )
                 {
+                    OpenTK.Quaternion rot = (prev == curr) ? OpenTK.Quaternion.Identity : curr.Orientation;
+                    UnityDebug.DrawLine(curr.Pos, curr.Pos + (curr.Pos - prev.Pos), UnityEngine.Color.black);
                     var L1 = (prev == curr) ? OpenTK.Vector3.UnitY : (curr.Pos - prev.Pos);
                     UnityDebug.CreateIrregularCone3(
                         curr.Constraints,
                         curr.Pos,
                         L1,
-                        curr.Orientation,
+                        rot,
                         conResolution,
                         boneLength * coneScale    
                         );
