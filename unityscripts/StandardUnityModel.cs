@@ -34,6 +34,9 @@ namespace QTM2Unity
         public BipedSkeleton skeleton;
         public bool showRotationTrace = false;
         public bool showSkeleton = false;
+
+
+        public OpenTK.Vector3 goPos;
         // Use this for initialization
         public override void StartNext()
         {
@@ -47,6 +50,7 @@ namespace QTM2Unity
             List<LabeledMarker> markerData = rtClient.Markers;
             if (markerData == null && markerData.Count == 0) return;
             if (joints == null || skeleton == null || !hips || !handRight) StartNext();
+            goPos = this.transform.position.Convert();
         }
 
         public void SetAll()
@@ -140,11 +144,11 @@ namespace QTM2Unity
                 foreach (TreeNode<Bone> b in skeleton)
                 {
                     if (showRotationTrace)
-                        UnityDebug.DrawRays(b.Data.Orientation, cv(b.Data.Pos) + this.transform.position);
+                        UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos.Convert() + this.transform.position);
                     if (showSkeleton)
                         foreach (TreeNode<Bone> b1 in b.Children)
                         {
-                            UnityDebug.DrawLine(b.Data.Pos + UnityDebug.cv(this.transform.position), b1.Data.Pos + UnityDebug.cv(this.transform.position));
+                            UnityDebug.DrawLine(b.Data.Pos + goPos, b1.Data.Pos + goPos);
                         }
                 }
             }

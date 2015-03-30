@@ -29,5 +29,5 @@ namespace QTM2Unity
             SetAll();
         }
     }
-    public enum IK { CCD, TT, FABRIK}
+    public enum IK { CCD, TT, FABRIK, TRANSPOSE, DLS}
 }

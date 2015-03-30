@@ -8,8 +8,6 @@ namespace QTM2Unity
 {
     class IKApplier
     {
-        CCD ccd = new CCD(); // CCD for now
-
         BipedSkeleton lastSkel;
         public BipedSkeleton ApplyIK(BipedSkeleton skeleton, IKSolver iks)
         {
@@ -22,9 +20,9 @@ namespace QTM2Unity
             while (it.MoveNext())
             {
                 b = (TreeNode<Bone>)it.Current;
-                if (!b.Data.Exists) // Possition of joint no knowned, Solve with IK
+                if (!b.Data.Exists  && !b.Parent.IsRoot) // Possition of joint no knowned, Solve with IK
                 {
-                    foreach (Bone a in MissingJoint(b, iks, b.Parent.Data, ref it)) skeleton[a.Name] = a;
+                    foreach (Bone a in MissingJoint(b, iks, b.Parent.Parent.Data, ref it)) skeleton[a.Name] = a;
                 }
             }
             lastSkel = skeleton;

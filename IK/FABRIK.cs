@@ -20,7 +20,6 @@ namespace QTM2Unity
             double dist = Math.Abs((bones[0].Pos - target.Pos).Length);
             if (dist > distances.Sum()) // the target is unreachable
             {
-                //UnityEngine.Debug.Log("target unreachable");
                 return TargetUnreachable(ref distances, bones, target.Pos, parent);
             }
 
@@ -52,15 +51,10 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Quaternion rotation = Quaternion.Identity;
-                if ( Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation))
-                {
-                    bones[i].Rotate(rotation);
-                }
-                Vector3 dir = (i > 0) ? 
-                    bones[i].Pos - bones[i - 1].Pos : 
-                    Vector3.Transform(Vector3.UnitY, parent.Orientation);
-               EnsureOrientationalConstraints(ref bones[i + 1],  ref bones[i], dir);
+                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
+                EnsureRotationalConstraints(ref bones[i], ref prevBone);
+                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
+                EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], dir);
             }
             return bones;
         }
@@ -80,11 +74,7 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Quaternion rotation = Quaternion.Identity;
-                if ( Constraint.CheckOrientationalConstraint(bones[i], bones[i + 1], out rotation))
-                {
-                    bones[i].Rotate(rotation);
-                }
+                EnsureRotationalConstraints(ref bones[i], ref bones[i + 1]);
                 EnsureOrientationalConstraints(ref bones[i], ref bones[i + 1], -bones[i + 1].GetDirection());
 
             }
@@ -104,28 +94,38 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                Quaternion rotation = Quaternion.Identity;
-                if ( Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation))
-                {
-                    bones[i].Rotate(rotation);
-                }
-                Vector3 dir = (i > 0) ? 
-                    bones[i].Pos - bones[i - 1].Pos : 
-                    Vector3.Transform(Vector3.UnitY, parent.Orientation);
+                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
+                EnsureRotationalConstraints(ref bones[i], ref prevBone);
+                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
+                if (dir.IsNaN()) UnityEngine.Debug.Log(parent.Orientation);
                 EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], dir);
-
             }
         }
-        private bool EnsureOrientationalConstraints(ref Bone target, ref Bone parent, Vector3 L1)
+        private bool EnsureOrientationalConstraints(ref Bone target, ref Bone reference, Vector3 L1)
         {
-            Vector3 res;
-            if (Constraint.CheckRotationalConstraints(parent, target.Pos, L1, out res))
+            if (!reference.Constraints.Xyz.IsNaN())
             {
-                target.Pos = res;
-                parent.RotateTowards(target.Pos - parent.Pos);
-                return true;
+                Vector3 res;
+                if (Constraint.CheckRotationalConstraints(reference, target.Pos, L1, out res))
+                {
+                    target.Pos = res;
+                    reference.RotateTowards(target.Pos - reference.Pos);
+                    return true;
+                }
             }
-
+            return false;
+        }
+        private bool EnsureRotationalConstraints(ref Bone target, ref Bone reference)
+        {
+            if (target.LeftTwist != null && target.RightTwist != null)
+            {
+                Quaternion rotation = Quaternion.Identity;
+                if (Constraint.CheckOrientationalConstraint(target, reference, out rotation))
+                {
+                    target.Rotate(rotation);
+                    return true;
+                }
+            }
             return false;
         }
     }

@@ -39,22 +39,27 @@ namespace QTM2Unity
                     // - then the rest of the affected joints
 
                     rotation = (a.Length == 0 || b.Length == 0) ? rotation = Quaternion.Identity : rotation = QuaternionHelper.getRotation(a, b);
-                    Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
-                    Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
-                    Vector3 res;
-                    if (Constraint.CheckRotationalConstraints(bones[i], trg, dir, out res))
+                    if (bones[i].Constraints.Xyz.IsNaN())
                     {
-                        a = bones[i + 1].Pos - bones[i].Pos;
-                        b = res - bones[i].Pos;
-                        rotation = QuaternionHelper.getRotation(a, b);
+                        Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
+                        Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
+                        Vector3 res;
+                        if (Constraint.CheckRotationalConstraints(bones[i], trg, dir, out res))
+                        {
+                            a = bones[i + 1].Pos - bones[i].Pos;
+                            b = res - bones[i].Pos;
+                            rotation = QuaternionHelper.getRotation(a, b);
+                        }
                     }
                     ForwardKinematics(ref bones, rotation, i);
-
-                    Quaternion rotation2 = Quaternion.Identity;
-                    if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation2))
+                    if (bones[i].LeftTwist != null && bones[i].RightTwist != null)
                     {
-                        //bones[i].Rotate(rotation2);
-                        ForwardKinematics(ref bones, rotation2, i);
+                        Quaternion rotation2 = Quaternion.Identity;
+                        if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation2))
+                        {
+                            //bones[i].Rotate(rotation2);
+                            ForwardKinematics(ref bones, rotation2, i);
+                        }
                     }
                 }
                 iter++;

@@ -1,9 +1,8 @@
-﻿using UnityEngine;
-namespace QTM2Unity
+﻿namespace QTM2Unity
 {
     public static class Extensions
     {
-        public static Transform Search(this Transform target, string name)
+        public static UnityEngine.Transform Search(this UnityEngine.Transform target, string name)
         {
             if (target.name == name) return target;
 
@@ -15,29 +14,37 @@ namespace QTM2Unity
             }
             return null;
         }
-        public static Vector3 Convert(this OpenTK.Vector3 v)
+        public static UnityEngine.Vector3 Convert(this OpenTK.Vector3 v)
         {
-            return new Vector3(v.X, v.Y, v.Z);
+            return new UnityEngine.Vector3(v.X, v.Y, v.Z);
         }
-        public static OpenTK.Vector3 Convert(this Vector3 v)
+        public static OpenTK.Vector3 Convert(this UnityEngine.Vector3 v)
         {
             return new OpenTK.Vector3(v.x, v.y, v.z);
         }
-        public static Quaternion Convert(this OpenTK.Quaternion q)
+        public static UnityEngine.Quaternion Convert(this OpenTK.Quaternion q)
         {
-            return new Quaternion(q.X, q.Y, q.Z, q.W);
+            return new UnityEngine.Quaternion(q.X, q.Y, q.Z, q.W);
         }
-        public static OpenTK.Quaternion Convert(this Quaternion q)
+        public static OpenTK.Quaternion Convert(this UnityEngine.Quaternion q)
         {
             return new OpenTK.Quaternion(q.x, q.y, q.z, q.w);
         }
-        public static Vector4 Convert(this OpenTK.Vector4 v)
+        public static UnityEngine.Vector4 Convert(this OpenTK.Vector4 v)
         {
-            return new Vector4(v.X, v.Y, v.Z, v.W);
+            return new UnityEngine.Vector4(v.X, v.Y, v.Z, v.W);
         }
-        public static OpenTK.Vector4 Convert(this Vector4 v)
+        public static OpenTK.Vector4 Convert(this UnityEngine.Vector4 v)
         {
             return new OpenTK.Vector4(v.x, v.y, v.z, v.w);
+        }
+        public static UnityEngine.Vector2 Convert(this OpenTK.Vector2 v)
+        {
+            return new UnityEngine.Vector2(v.X, v.Y);
+        }
+        public static OpenTK.Vector2 Convert(this UnityEngine.Vector2 v)
+        {
+            return new OpenTK.Vector2(v.x, v.y);
         }
     }
 }

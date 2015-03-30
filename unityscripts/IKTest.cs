@@ -30,13 +30,21 @@ namespace QTM2Unity
             {
                 skeleton = ikApplier.ApplyIK(skeleton, new CCD());
             }
-            else if (ik == IK.TT)
+            else if (ik == IK.FABRIK)
             {
-                skeleton = ikApplier.ApplyIK(skeleton, new TargetTriangleIK());
+                skeleton = ikApplier.ApplyIK(skeleton, new FABRIK());
+            }
+            else if (ik == IK.TRANSPOSE)
+            {
+                skeleton = ikApplier.ApplyIK(skeleton, new JacobianTranspose());
+            }
+            else if (ik == IK.DLS)
+            {
+                skeleton = ikApplier.ApplyIK(skeleton, new DampedLeastSquares());
             }
             else
             {
-                skeleton = ikApplier.ApplyIK(skeleton, new FABRIK());
+                skeleton = ikApplier.ApplyIK(skeleton, new TargetTriangleIK());
             }
         }
         void OnDrawGizmos()

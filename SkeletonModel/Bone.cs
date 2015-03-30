@@ -54,6 +54,11 @@ namespace QTM2Unity
             this.leftTwist = left;
             this.rightTwist = right;
         }
+        public void SetOrientationalConstraints(Vector2 twist)
+        {
+            this.leftTwist = twist.X;
+            this.rightTwist = twist.Y;
+        }
 
         private float right, up, left, down;
         public Vector4 Constraints
