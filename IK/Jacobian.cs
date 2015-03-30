@@ -28,7 +28,7 @@ namespace QTM2Unity
                 fillJacobian(out J, out rotAxis, ref bones, ref target);
                 float[,] dTheta;
                 calculateDTheta(out dTheta, ref J, ref bones, ref target);
-               
+
                 bool allZero = true;
                 for (int i = 0; i < bones.Length - 1; i++) // go through all joints (not end effector)
                 {
@@ -41,7 +41,7 @@ namespace QTM2Unity
                 // if we got (almost) no change in the angles we want to force change to not get stuck
                 if (allZero)
                 {
-                    // rotate end effector 1 degree
+                    // rotate end effector 2 degrees
                     Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, bones.Length - 2],
                         MathHelper.DegreesToRadians(2));
                     bones[bones.Length - 2].Rotate(q);
@@ -54,11 +54,76 @@ namespace QTM2Unity
                 }
                 iter++;
             }
-            //Debug.Log("Iterations " + iter);
+            Debug.Log("Iterations " + iter);
             return bones;
         }
 
-        private void fillJacobian(out Vector3[,] jacobian, out Vector3[,] rotAxis, 
+        public void solveMultipleChains(ref TreeNode<Bone> root, ref Bone[] targets)
+        {
+            // Calculate the distances
+            float[] distances;
+            getDistances(out distances, ref root);
+
+            Bone[] endEffectors = getEndEffectors(ref root);
+            Bone[] bones = getNodes(ref root);
+
+            // J[rows][columns]
+            int k = endEffectors.Length; // only one end effector now
+            int n = bones.Length;
+            Vector3[,] J = new Vector3[k, n];
+            Vector3[,] rotAxis = new Vector3[k, n];
+
+            int iter = 0;
+            while (!targetReached(ref endEffectors, ref targets) && iter < 10000)
+            {
+                Vector3[] positions = getPositions(ref bones, ref endEffectors); // TEST
+                fillJacobian(out J, out rotAxis, ref root, ref endEffectors, ref targets);
+                float[] dTheta;
+                calculateDTheta(out dTheta, ref J, ref endEffectors, ref targets);
+
+                bool allZero = true;
+                for (int i = 0; i < n; i++) // go through all joints (not end effector)
+                {
+                    if (dTheta[i] > 0.000001) // good values? TODO
+                        allZero = false;
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, i], dTheta[i]); // TODO rotationaxis?
+                    bones[i].Rotate(q); // Rotate bone i dTheta[i] radians around previously calculated axis
+                }
+
+                // if we got (almost) no change in the angles we want to force change to not get stuck
+                if (allZero)
+                {
+                    // rotate end effector 2 degrees
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, bones.Length - 1],
+                        MathHelper.DegreesToRadians(2));
+                    bones[bones.Length - 1].Rotate(q);
+                }
+
+                // set all positions
+                IEnumerator<TreeNode<Bone>> it = root.GetEnumerator();
+                int index = 0;
+                while (it.MoveNext())
+                {
+                    foreach (var c in it.Current.Children)
+                    {
+                        c.Data.Pos = it.Current.Data.Pos + distances[index] * it.Current.Data.GetDirection();
+                        index++;
+                    }
+                }
+
+                // TEST
+                Vector3[] newPositions = getPositions(ref bones, ref endEffectors);
+
+                if (equalPositions(ref positions, ref newPositions, 0.01f))
+                    Debug.Log(iter);
+                if (iter == 500 || iter == 999)
+                    Debug.Log("wololo");
+                iter++;
+            }
+            Debug.Log("Iterations " + iter);
+        }
+
+        private void fillJacobian(out Vector3[,] jacobian, out Vector3[,] rotAxis,
             ref Bone[] bones, ref Bone target)
         {
             int k = 1; // only one end effector now
@@ -84,11 +149,129 @@ namespace QTM2Unity
                     jacobian[i, j] = Vector3.Cross(a, bones[bones.Length - 1].Pos - bones[j].Pos);
                 }
             }
+        }
+
+
+        private void fillJacobian(out Vector3[,] jacobian, out Vector3[,] rotAxis,
+            ref TreeNode<Bone> root, ref Bone[] endEffectors, ref Bone[] targets)
+        {
+            int k = targets.Length;
+            int n = root.Count() - k;
+            jacobian = new Vector3[k, n];
+            rotAxis = new Vector3[k, n];
+
+            Bone[] bones = getNodes(ref root);
+
+            IEnumerator<TreeNode<Bone>> it = root.GetEnumerator();
+            // Create Jacobian matrix J(theta) = (ds[i]/dtheta[j])[ij]
+            // ds[i]/dtheta[j] = v[j] x (s[i]-p[j])
+            for (int i = 0; i < k; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    Vector3 a = Vector3.Cross(endEffectors[i].Pos - bones[j].Pos, targets[i].Pos - bones[j].Pos);
+                    // If a is the zero vector the end effector and the target are aligned
+                    // we choose a to be the cross between the bone itself and the vector to the target 
+                    if (a.X == 0 && a.Y == 0 && a.Z == 0)
+                    {
+                        //a = Vector3.Cross(bones[j].GetDirection(), targets[i].Pos - bones[j].Pos);
+                        a = bones[j].GetRight(); // a; TODO, fix correct rotation axis
+                    }
+                    a.Normalize();
+
+                    rotAxis[i, j] = a;
+                    jacobian[i, j] = Vector3.Cross(a, endEffectors[i].Pos - bones[j].Pos);
+                }
+            }
 
         }
 
         abstract protected void calculateDTheta(out float[,] dTheta, ref Vector3[,] J,
             ref Bone[] bones, ref Bone target);
+
+        abstract protected void calculateDTheta(out float[] dTheta, ref Vector3[,] J,
+            ref Bone[] endEffectors, ref Bone[] targets);
+
+        private void getDistances(out float[] distances, ref TreeNode<Bone> root)
+        {
+            distances = new float[root.Count() - 1]; // TODO will this be correct?
+            IEnumerator<TreeNode<Bone>> it = root.GetEnumerator();
+            int i = 0;
+            while (it.MoveNext())
+            {
+                foreach (var c in it.Current.Children)
+                {
+                    distances[i] = (c.Data.Pos - it.Current.Data.Pos).Length;
+                    i++;
+                }
+            }
+        }
+
+        private Bone[] getEndEffectors(ref TreeNode<Bone> root)
+        {
+            List<Bone> res = new List<Bone>();
+            IEnumerator<TreeNode<Bone>> it = root.GetEnumerator();
+            while (it.MoveNext())
+            {
+                if (it.Current.IsLeaf)
+                    res.Add(it.Current.Data);
+            }
+            return res.ToArray(); // TODO send back the list and use that instead of an array
+        }
+
+        private Bone[] getNodes(ref TreeNode<Bone> root)
+        {
+            List<Bone> res = new List<Bone>();
+            IEnumerator<TreeNode<Bone>> it = root.GetEnumerator();
+            while (it.MoveNext())
+            {
+                if (!it.Current.IsLeaf)
+                    res.Add(it.Current.Data);
+            }
+            return res.ToArray(); // TODO send back the list and use that instead of an array
+        }
+
+        private Vector3[] getPositions(ref Bone[] bones, ref Bone[] endEffectors)
+        {
+            Vector3[] res = new Vector3[bones.Length + endEffectors.Length];
+            for (int i = 0; i < bones.Length; i++)
+            {
+                res[i] = bones[i].Pos;
+            }
+            for (int i = 0; i < endEffectors.Length; i++)
+            {
+                res[bones.Length + i] = endEffectors[i].Pos;
+            }
+            return res;
+        }
+
+        private bool equalPositions(ref Vector3[] v1, ref Vector3[] v2, float precision)
+        {
+            if (v1.Length != v2.Length)
+                return false;
+
+            for (int i = 0; i < v1.Length; i++)
+            {
+                if (!(Math.Abs(v1[i].X - v2[i].X) < precision && Math.Abs(v1[i].Y - v2[i].Y) < precision
+                    && Math.Abs(v1[i].Z - v2[i].Z) < precision))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool targetReached(ref Bone[] endEffectors, ref Bone[] targets)
+        {
+            if (endEffectors.Length != targets.Length)
+                return false; // TODO exception?
+
+            for (int i = 0; i < endEffectors.Length; i++)
+            {
+                if ((endEffectors[i].Pos - targets[i].Pos).Length > threshold)
+                    return false;
+            }
+            return true;
+        }
 
         // Helper functions (TODO move these)
         public float[,] add(float[,] m1, float[,] m2)
@@ -119,6 +302,44 @@ namespace QTM2Unity
                 {
                     res[i, j] = m1[i, j] + m2[i, j];
                 }
+            }
+            return res;
+        }
+
+        public Vector3[] mult(float[,] m, Vector3[] v)
+        {
+            // #columns in matrix must equal #rows in vector
+            if (v.Length != m.GetLength(1))
+                return null; // TODO exception
+
+            Vector3[] res = new Vector3[m.GetLength(0)];
+            for (int i = 0; i < m.GetLength(0); i++)
+            {
+                Vector3 entry = Vector3.Zero;
+                for (int j = 0; j < m.GetLength(1); j++)
+                {
+                    entry = Vector3.Add(entry, m[i, j] * v[j]);
+                }
+                res[i] = entry;
+            }
+            return res;
+        }
+
+        public float[] mult(Vector3[,] m, Vector3[] v)
+        {
+            // #columns in matrix must equal #rows in vector
+            if (v.Length != m.GetLength(1))
+                return null; // TODO exception
+
+            float[] res = new float[m.GetLength(0)];
+            for (int i = 0; i < m.GetLength(0); i++)
+            {
+                float entry = 0;
+                for (int j = 0; j < m.GetLength(1); j++)
+                {
+                    entry = entry + Vector3.Dot(m[i, j], v[j]);
+                }
+                res[i] = entry;
             }
             return res;
         }
@@ -168,6 +389,16 @@ namespace QTM2Unity
                 {
                     res[i, j] = scalar * m[i, j];
                 }
+            }
+            return res;
+        }
+
+        public float[] mult(float scalar, float[] v)
+        {
+            float[] res = new float[v.Length];
+            for (int i = 0; i < v.Length; i++)
+            {
+                res[i] = scalar * v[i];
             }
             return res;
         }
