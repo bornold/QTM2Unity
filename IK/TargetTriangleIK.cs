@@ -63,7 +63,6 @@ namespace QTM2Unity
                         rotationVector = Vector3.Cross(aVector, cVector);
 
                     }
-                    UnityDebug.DrawVector(bones[i].Pos, rotationVector);
                     if (omegaRotAngle > 0)
                     {
                         ForwardKinematics(ref bones, Quaternion.FromAxisAngle(rotationVector, omegaRotAngle), i);

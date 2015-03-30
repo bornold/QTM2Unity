@@ -39,7 +39,7 @@ namespace QTM2Unity
                     // - then the rest of the affected joints
 
                     rotation = (a.Length == 0 || b.Length == 0) ? rotation = Quaternion.Identity : rotation = QuaternionHelper.getRotation(a, b);
-                    if (bones[i].Constraints.Xyz.IsNaN())
+                    if (!bones[i].Constraints.Xyz.IsNaN())
                     {
                         Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
                         Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();

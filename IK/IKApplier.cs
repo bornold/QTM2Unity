@@ -17,12 +17,42 @@ namespace QTM2Unity
             //TODO ATTENTION! 
             //Root and all of roots children MUST have set possition
             TreeNode<Bone> b;
+
             while (it.MoveNext())
             {
                 b = (TreeNode<Bone>)it.Current;
-                if (!b.Data.Exists  && !b.Parent.IsRoot) // Possition of joint no knowned, Solve with IK
+                if (!b.Data.Exists ) // Possition of joint no knowned, Solve with IK
                 {
-                    foreach (Bone a in MissingJoint(b, iks, b.Parent.Parent.Data, ref it)) skeleton[a.Name] = a;
+///////////////////////////////////////////////FUCK UGLY AND TEMPORARY//////////////////////////////////////////////////////////////
+                    Bone referenceBone;
+                    if (b.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_L) 
+                        || b.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_R))
+                    {
+                        referenceBone = new Bone(
+                            "",
+                            b.Parent.Parent.Data.Pos,
+                            b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationX(MathHelper.Pi));
+                    }
+                    else if (b.Data.Name.Equals(BipedSkeleton.SHOULDER_R))
+                    {
+                        referenceBone = new Bone(
+                            "",
+                            b.Parent.Data.Pos,
+                            b.Parent.Data.Orientation * QuaternionHelper.RotationZ(-OpenTK.MathHelper.PiOver2));
+                    }
+                    else if (b.Data.Name.Equals(BipedSkeleton.SHOULDER_L))
+                    {
+                        referenceBone = new Bone(
+                            "",
+                            b.Parent.Data.Pos,
+                            b.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.PiOver2));
+                    }
+                    else
+                    {
+                        referenceBone = b.Parent.Parent.Data;
+                    }
+///////////////////////////////////////////////FUCK UGLY AND TEMPORARY END//////////////////////////////////////////////////////////////
+                    foreach (Bone a in MissingJoint(b, iks, referenceBone, ref it)) skeleton[a.Name] = a;
                 }
             }
             lastSkel = skeleton;

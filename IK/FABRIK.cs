@@ -97,7 +97,6 @@ namespace QTM2Unity
                 Bone prevBone = (i > 0) ? bones[i - 1] : parent;
                 EnsureRotationalConstraints(ref bones[i], ref prevBone);
                 Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
-                if (dir.IsNaN()) UnityEngine.Debug.Log(parent.Orientation);
                 EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], dir);
             }
         }
@@ -117,7 +116,7 @@ namespace QTM2Unity
         }
         private bool EnsureRotationalConstraints(ref Bone target, ref Bone reference)
         {
-            if (target.LeftTwist != null && target.RightTwist != null)
+            if (false && target.LeftTwist != null && target.RightTwist != null)
             {
                 Quaternion rotation = Quaternion.Identity;
                 if (Constraint.CheckOrientationalConstraint(target, reference, out rotation))
