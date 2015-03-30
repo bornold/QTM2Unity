@@ -18,8 +18,8 @@ namespace QTM2Unity
         private Bone[] bones = new Bone[4];
         private GameObject[] joints;
 
-        //private OpenTK.Vector3 target = new OpenTK.Vector3(5, 2, 0);//(7, 2, 0); //unreachable //(5, 4, -1);
-        private Bone target = new Bone("target", new OpenTK.Vector3(4, 4, -1), OpenTK.Quaternion.Identity);
+        //private OpenTK.Vector3 target = new OpenTK.Vector3(5, 2, 0);//(7, 2, 0); //unreachable //(5, 4, -1);(3,2,0)
+        private Bone target = new Bone("target", new OpenTK.Vector3(-1, -1, -1), OpenTK.Quaternion.Identity);
 
         private float markerScale = 0.3f;
 
@@ -52,12 +52,12 @@ namespace QTM2Unity
             //bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
 
             //Constraints
-           /* foreach (Bone b in bones)
-            {
-                b.setOrientationalConstraint(10, 45);
-            }
-            bones[1].SetRotationalConstraint(45f, 45f, 45f, 45f);
-            bones[2].SetRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);*/
+            /* foreach (Bone b in bones)
+             {
+                 b.setOrientationalConstraint(10, 45);
+             }
+             bones[1].SetRotationalConstraint(45f, 45f, 45f, 45f);
+             bones[2].SetRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);*/
             //bones[3].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
         }
 
@@ -242,7 +242,7 @@ namespace QTM2Unity
 
         public void runCCD()
         {
-            bones = ccd.SolveBoneChain(bones, target, new Bone("",OpenTK.Vector3.Zero, OpenTK.Quaternion.Identity));
+            bones = ccd.SolveBoneChain(bones, target, null);
 
             //CCD.checkOrientationalConstraint(ref bones[1], bones[0]);
             //CCD.checkOrientationalConstraint(ref bones[2], bones[1]);
@@ -254,19 +254,19 @@ namespace QTM2Unity
 
         public void runFABRIK()
         {
-            bones = fabrik.SolveBoneChain(bones, target, new Bone("", OpenTK.Vector3.Zero, OpenTK.Quaternion.Identity));
+            bones = fabrik.SolveBoneChain(bones, target, null);
             updateJoints();
         }
 
         public void runDLS()
         {
-            bones = dls.SolveBoneChain(bones, target, new Bone("", OpenTK.Vector3.Zero, OpenTK.Quaternion.Identity));
+            bones = dls.SolveBoneChain(bones, target, null);
             updateJoints();
         }
 
         public void runTranspose()
         {
-            bones = jtr.SolveBoneChain(bones, target, new Bone("", OpenTK.Vector3.Zero, OpenTK.Quaternion.Identity));
+            bones = jtr.SolveBoneChain(bones, target, null);
             updateJoints();
         }
     }
