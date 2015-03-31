@@ -6,12 +6,12 @@ namespace QTM2Unity
     class JointLocalization
     {
         #region varible necessary to estimate joints
-        public float height = 150; // cm
-        public float mass = 40; 
         public float marker2SpineDist = 0.05f; // m
         public float midHead2HeadJoint = 0.05f; // m
         public float spineLength = 0.05f; // m
 
+        public float height = 150; // cm
+        public float mass = 40; 
         //Max width and depth
         private float chestDepth = 50; //mm
         private float shoulderWidth = 50; // mm
@@ -146,17 +146,26 @@ namespace QTM2Unity
             #endregion
             return new BipedSkeleton(root);
         }
-
+        private int frames = 1;
         private void BodyData()
         {
             // set chest depth
             var tmp = (markers[chest] - markers[neck]).Length * 1000; // to mm
-            chestDepth = tmp > chestDepth && tmp < 500 ? tmp : chestDepth; // half a meter in chest depth? fatty...
+            if (!float.IsNaN(tmp) && tmp < 500)
+            {
+                chestDepth = (chestDepth * frames + tmp)  / (frames + 1);
+            }
+            //chestDepth = tmp > chestDepth && tmp < 500 ? tmp : chestDepth; // half a meter in chest depth? fatty...
 
             // set shoulder width
             tmp = (markers[leftShoulder] - markers[rightShoulder]).Length * 500; // to mm half the width
-            shoulderWidth = tmp > shoulderWidth && tmp < 500 ? tmp : shoulderWidth; // Half a meter in shoulder widht? Hello andrwe the giant
+            if (!float.IsNaN(tmp) && tmp < 500)
+            {
+                shoulderWidth = (shoulderWidth * frames + tmp) / (frames + 1);
+            }
+           // shoulderWidth = tmp > shoulderWidth && tmp < 500 ? tmp : shoulderWidth; // Half a meter in shoulder widht? Hello andrwe the giant
 
+            // height and mass
             tmp = (
                     (markers[rightAnkle] - markers[rightOuterKnee]).Length +
                     (markers[rightOuterKnee] - RIAS).Length +
@@ -164,11 +173,17 @@ namespace QTM2Unity
                     (markers[spine] - markers[neck]).Length +
                     (markers[neck] - markers[head]).Length
                   ) * 100; // cm
-            if (tmp > height && tmp < 250) // I have never heard of anyone as tall as 250cm
+            if (!float.IsNaN(tmp) && tmp < 250)
             {
-                height = tmp;
+                height = (height * frames + tmp) / (frames + 1);
                 mass = (height / 100) * (height / 100) * BMI; // BMI
+
             }
+            //if (tmp > height && tmp < 250) // I have never heard of anyone as tall as 250cm
+            //{
+            //    height = tmp;
+            //    mass = (height / 100) * (height / 100) * BMI; // BMI
+            //}
         }
         #region Joint orientation 
         private Quaternion HipOrientation()
@@ -466,8 +481,8 @@ namespace QTM2Unity
         {
             Vector3 pos = joints[BipedSkeleton.FOOT_R];
             Vector3 up = joints[BipedSkeleton.LOWERLEG_R] - pos;
-            Quaternion rot = QuaternionHelper.LookAtUp(markers[rightHeel], markers[rightFoot], up);
-            //Quaternion rot = QuaternionHelper.LookAtUp(pos, markers[rightFoot], up);
+            //Quaternion rot = QuaternionHelper.LookAtUp(markers[rightHeel], markers[rightFoot], up);
+            Quaternion rot = QuaternionHelper.LookAtUp(pos, markers[rightFoot], up);
             return new Bone(BipedSkeleton.FOOT_R, pos, rot);
         }
         private Bone GetFootLeft()
@@ -583,10 +598,19 @@ namespace QTM2Unity
             /*
                 Offset med z axel från ryggbas orientering med y axel roterad så TV12 mot TV2
              */
-            pos = markers[spine];
-            target = markers[neck];
+            if (markers[neck].IsNaN())
+            {
+                pos = markers[bodyBase];
+                target = markers[spine];
+            }
+            else
+            {
+                pos = markers[spine];
+                target = markers[neck];
+            }
             front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, pelvisfront));
             front.Normalize();
+            pos = markers[spine];
             pos += front * marker2SpineDist;
             dic.Add(BipedSkeleton.SPINE1, pos);
             //////////////////////////////////////////
@@ -595,7 +619,9 @@ namespace QTM2Unity
             back = markers[neck];
             front = markers[chest];
             forward = Vector3.Transform(Vector3.UnitZ, chestOrientation);
-            Vector3 neckPos = back + forward * marker2SpineDist; ;
+            Vector3 neckPos = back.IsNaN() ? 
+                front - forward * ((chestDepth/1000) - marker2SpineDist)
+                : back + forward * marker2SpineDist;
             dic.Add(BipedSkeleton.SPINE3, neckPos);
             //////////////////////////////////////////
 
@@ -603,7 +629,7 @@ namespace QTM2Unity
             front = markers[head];
             right = markers[rightHead];
             left = markers[leftHead];
-            Vector3 headPos = Vector3Helper.MidPoint(left, right, front);
+            Vector3 headPos = Vector3Helper.MidPoint(left, right);
             //Move head position down
             Vector3 down = -Vector3.Transform(Vector3.UnitY, HeadOrientation());
             down.Normalize();
@@ -714,8 +740,8 @@ namespace QTM2Unity
         private Vector3 GetShoulderJoint(Quaternion chestOrientation, bool isRightShoulder)
         {
             float y = 0,
-                  x = isRightShoulder ? 50 : -50,
-                  z = -chestDepth / 2;
+                  x = isRightShoulder ? 25 : -25,
+                  z = -(chestDepth - marker2SpineDist);
             Vector3 res = new Vector3(x, y, z) / 1000;
             res = QuaternionHelper.Rotate(chestOrientation, res);
             return res;

@@ -8,30 +8,30 @@ namespace QTM2Unity
     class ConstTest : RT
     {
         public bool showConstraints = true;
-        public float coneSize = 0.1f;
+        public float coneSize = 0.05f;
         public int coneRes = 50;
         public bool showRotationTrace;
         public float markerScale = 0.01f;
         public IK ik = IK.CCD;
 
-        public Vector4 Femur = new Vector4(60, 60, 60, 160);
-        public Vector2 FemurTwist = new Vector2(90, 90);
-        public Vector4 Knee = new Vector4(5, 5, 5, 160);
-        public Vector2 KneeTwist = new Vector2(90, 90);
-        public Vector4 Ankle = new Vector4(40, 110, 20, 10);
-        public Vector2 AnkleTwist = new Vector2(90, 90);
+        public Vector4 Femur = new Vector4(60, 30, 60, 160);
+        public Vector2 FemurTwist = new Vector2(20, 20);
+        public Vector4 Knee = new Vector4(10, 10, 10, 160);
+        public Vector2 KneeTwist = new Vector2(45, 45);
+        public Vector4 Ankle = new Vector4(40, 175, 40, 40);
+        public Vector2 AnkleTwist = new Vector2(45, 45);
         public Vector4 Spine = new Vector4(20, 20, 20, 20);
-        public Vector2 SpineTwist = new Vector2(90, 90);
+        public Vector2 SpineTwist = new Vector2(45, 45);
         public Vector4 Neck = new Vector4(60, 60, 60, 60);
         public Vector2 NeckTwist = new Vector2(90, 90);
         public Vector4 KeyBone = new Vector4(40, 40, 40, 40);
-        public Vector2 KeyBoneTwist = new Vector2(90, 90);
+        public Vector2 KeyBoneTwist = new Vector2(0, 0);
         public Vector4 Shoulder = new Vector4(160, 85, 50, 85);
-        public Vector2 ShoulderTwist = new Vector2(90, 90);
+        public Vector2 ShoulderTwist = new Vector2(20, 20);
         public Vector4 Elbow = new Vector4(5, 5, 150, 5);
-        public Vector2 ElbowTwist = new Vector2(90, 90);
+        public Vector2 ElbowTwist = new Vector2(180, 180);
         public Vector4 Wrist = new Vector4(60, 60, 60, 60);
-        public Vector2 WristTwist = new Vector2(90, 90);
+        public Vector2 WristTwist = new Vector2(10, 10);
 
         private JointLocalization joints;
         private BipedSkeleton skeleton;
@@ -91,14 +91,14 @@ namespace QTM2Unity
                     }
                     if (showConstraints)
                     {
-                        if (!b.IsRoot)
+                        if (!b.IsRoot && b.Data.Constraints != OpenTK.Vector4.Zero)
                         {
                             Bone referenceBone;
                             if (   b.Data.Name.Equals(BipedSkeleton.UPPERLEG_L)
                                 || b.Data.Name.Equals(BipedSkeleton.UPPERLEG_R))
                             {
-                                OpenTK.Quaternion happy = b.Parent.Data.Orientation * QuaternionHelper.RotationX(OpenTK.MathHelper.Pi);
-                                //UnityDebug.DrawRays2(happy, b.Parent.Data.Pos + thisPos.Convert(), 3f);
+                                OpenTK.Quaternion happy = b.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.Pi);
+                                //UnityDebug.DrawRays(happy, b.Parent.Data.Pos + thisPos.Convert(), 3f);
                                 referenceBone = new Bone(
                                     "",
                                     b.Parent.Data.Pos,
@@ -125,7 +125,9 @@ namespace QTM2Unity
                             }
                             Bone c = b.Data;
                             OpenTK.Vector3 L1 = referenceBone.GetDirection();
-                            UnityDebug.CreateIrregularCone3(c.Constraints, c.Pos + thisPos.Convert(), L1, referenceBone.Orientation, coneRes, coneSize);
+                            OpenTK.Vector3 pos = c.Pos + thisPos.Convert();
+                            UnityDebug.DrawLine(pos, pos + L1 * 0.2f, UnityEngine.Color.black);
+                            UnityDebug.CreateIrregularCone3(c.Constraints, pos, L1, referenceBone.Orientation, coneRes, coneSize);
                         }
                     }
                 }

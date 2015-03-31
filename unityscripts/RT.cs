@@ -41,7 +41,7 @@ namespace QTM2Unity
         protected void drawRays(OpenTK.Quaternion rot, Vector3 pos)
         {
             pos += this.transform.position;
-            UnityDebug.DrawRays(rot, pos);
+            UnityDebug.DrawRays(rot, pos, traceScale);
         }
         protected void drawLine(OpenTK.Vector3 start, OpenTK.Vector3 end)
         {

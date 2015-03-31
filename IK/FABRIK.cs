@@ -27,7 +27,7 @@ namespace QTM2Unity
             Vector3 root = bones[0].Pos;
             int iterations = 0;
             bones[bones.Length - 1].Orientation = target.Orientation;
-            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iterations++ < 25)
+            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iterations++ < 500)
             {
                 // Forward reaching
                 ForwardReaching(ref bones, ref distances, target);
@@ -62,7 +62,7 @@ namespace QTM2Unity
         private void ForwardReaching(ref Bone[] bones, ref float[] distances, Bone target)
         {
             bones[bones.Length - 1].Pos = target.Pos;
-            bones[bones.Length - 1].Orientation = target.Orientation;
+            bones[bones.Length - 1].Orientation = target.Orientation; //TODO if bone is endeffector, we should not look at orient constraints 
             for (int i = bones.Length - 2; i >= 0; i--)
             {
                 // Position
@@ -102,7 +102,7 @@ namespace QTM2Unity
         }
         private bool EnsureOrientationalConstraints(ref Bone target, ref Bone reference, Vector3 L1)
         {
-            if (!reference.Constraints.Xyz.IsNaN())
+            if (reference.Constraints != Vector4.Zero)
             {
                 Vector3 res;
                 if (Constraint.CheckRotationalConstraints(reference, target.Pos, L1, out res))
@@ -116,7 +116,7 @@ namespace QTM2Unity
         }
         private bool EnsureRotationalConstraints(ref Bone target, ref Bone reference)
         {
-            if (false && target.LeftTwist != null && target.RightTwist != null)
+            if (target.LeftTwist > 0 && target.RightTwist > 0)
             {
                 Quaternion rotation = Quaternion.Identity;
                 if (Constraint.CheckOrientationalConstraint(target, reference, out rotation))

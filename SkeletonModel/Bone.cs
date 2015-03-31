@@ -38,12 +38,12 @@ namespace QTM2Unity
                 // An orientational constraint is the twist of the bone around its own direction vector
         // with respect to its parent
         // It is defined as a range betwen angles [right,left]
-        private float rightTwist;
+        private float rightTwist = -1;
         public float RightTwist
         {
             get { return rightTwist; }
         }
-        private float leftTwist;
+        private float leftTwist = -1;
         public float LeftTwist
         {
             get { return leftTwist; }

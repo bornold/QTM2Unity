@@ -23,7 +23,7 @@ namespace QTM2Unity
             Vector3[,] rotAxis = new Vector3[k, bones.Length - 1];
 
             int iter = 0;
-            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 10000)
+            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 1000)
             {
                 fillJacobian(out J, out rotAxis, ref bones, ref target);
                 float[,] dTheta;
@@ -54,7 +54,7 @@ namespace QTM2Unity
                 }
                 iter++;
             }
-            Debug.Log("Iterations " + iter);
+            //Debug.Log("Iterations " + iter);
             return bones;
         }
 

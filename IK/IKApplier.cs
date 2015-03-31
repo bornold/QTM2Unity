@@ -23,6 +23,7 @@ namespace QTM2Unity
                 b = (TreeNode<Bone>)it.Current;
                 if (!b.Data.Exists ) // Possition of joint no knowned, Solve with IK
                 {
+                    //UnityEngine.Debug.Log(b.Data.Name + "is missing");
 ///////////////////////////////////////////////FUCK UGLY AND TEMPORARY//////////////////////////////////////////////////////////////
                     Bone referenceBone;
                     if (b.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_L) 
@@ -31,21 +32,21 @@ namespace QTM2Unity
                         referenceBone = new Bone(
                             "",
                             b.Parent.Parent.Data.Pos,
-                            b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationX(MathHelper.Pi));
+                            b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(MathHelper.Pi));
                     }
-                    else if (b.Data.Name.Equals(BipedSkeleton.SHOULDER_R))
+                    else if (b.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_R))
                     {
                         referenceBone = new Bone(
                             "",
                             b.Parent.Data.Pos,
                             b.Parent.Data.Orientation * QuaternionHelper.RotationZ(-OpenTK.MathHelper.PiOver2));
                     }
-                    else if (b.Data.Name.Equals(BipedSkeleton.SHOULDER_L))
+                    else if (b.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_L))
                     {
                         referenceBone = new Bone(
                             "",
-                            b.Parent.Data.Pos,
-                            b.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.PiOver2));
+                            b.Parent.Parent.Data.
+                            b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.PiOver2));
                     }
                     else
                     {

@@ -13,7 +13,7 @@ namespace QTM2Unity
 
         private static float threshold = 0.0001f; // TODO define a good default threshold value 
         // This depends on where the position is defined on the end effector
-        private static int numberOfIterations = 50; // TODO what's a good value?
+        private static int numberOfIterations = 500; // TODO what's a good value?
 
         // And what happens when we don't have a position for some joint?
         // Probably don't want to handle here
@@ -39,20 +39,23 @@ namespace QTM2Unity
                     // - then the rest of the affected joints
 
                     rotation = (a.Length == 0 || b.Length == 0) ? rotation = Quaternion.Identity : rotation = QuaternionHelper.getRotation(a, b);
-                    if (!bones[i].Constraints.Xyz.IsNaN())
+                    if (bones[i].Constraints != Vector4.Zero)
                     {
+
                         Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
                         Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
                         Vector3 res;
+                        Vector3 cpo = new Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z);
                         if (Constraint.CheckRotationalConstraints(bones[i], trg, dir, out res))
                         {
+                            Vector3 cpo2 = new Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z);
                             a = bones[i + 1].Pos - bones[i].Pos;
                             b = res - bones[i].Pos;
                             rotation = QuaternionHelper.getRotation(a, b);
                         }
                     }
                     ForwardKinematics(ref bones, rotation, i);
-                    if (bones[i].LeftTwist != null && bones[i].RightTwist != null)
+                    if (bones[i].LeftTwist > 0 && bones[i].RightTwist > 0)
                     {
                         Quaternion rotation2 = Quaternion.Identity;
                         if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation2))
