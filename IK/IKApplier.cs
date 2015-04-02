@@ -45,7 +45,7 @@ namespace QTM2Unity
                     {
                         referenceBone = new Bone(
                             "",
-                            b.Parent.Parent.Data.
+                            b.Parent.Data.Pos,
                             b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.PiOver2));
                     }
                     else

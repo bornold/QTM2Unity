@@ -101,7 +101,7 @@ namespace QTM2Unity
         }
 
         private enum Q { q1, q2, q3, q4 };
-        private static float precision = 0.1f;
+        private static float precision = 0.01f;
         // A constraint modeled as an irregular cone
         // The direction vector is the direction the cone is opening up at
 
@@ -115,7 +115,7 @@ namespace QTM2Unity
             bool behind = false;
             bool reverseCone = false;
             bool sideCone = false;
-
+            bool some90 = false;
             //3.1 Find the line equation L1
             //Vector3 L1 = jointPos - parentPos;
             //3.2 Find the projection O of the target t on line L1
@@ -126,16 +126,23 @@ namespace QTM2Unity
 
             if (Math.Abs(Vector3.Dot(L1, joint2Target)) < precision) // target is ortogonal with L1
             {
-                O = Vector3.Normalize(L1) * precision * 10;
+                O = Vector3.Normalize(L1) * precision;
                 OPos = O + jointPos;
             }
             else if (Math.Abs(Vector3.Dot(O, L1) - O.Length * L1.Length) >= precision) // O not same direction as L1
             {
                 behind = true;
+                some90 = constraints.X > 90 || constraints.Y > 90 || constraints.Z > 90 || constraints.W > 90;
             }
 
+            //if (some90) UnityEngine.Debug.Log("we are behind and some angle is over 90");
             //3.3 Find the distance between the point O and the joint position
             float S = (OPos - jointPos).Length;
+            //UnityEngine.Debug.Log("O: " + O);
+            //UnityEngine.Debug.Log("S: " + S);
+            //UnityEngine.Debug.Log("OPos: " + OPos);
+            //UnityEngine.Debug.Log("jointPos: " + jointPos);
+            //UnityEngine.Debug.Log("first S: " + S);
 
             //3.4 Map the target (rotate and translate) in such a
             //way that O is now located at the axis origin and oriented
@@ -196,8 +203,10 @@ namespace QTM2Unity
             }
             else if (behind && radius.X <= 90 && radius.Y <= 90) // target behind and cone i front
             {
-                O = -O;
+                //O = -O;
+                O = -Vector3.Normalize(O) * precision;
                 OPos = O + jointPos;
+                S = (OPos - jointPos).Length;
             }
             else if (behind && (radius.X > 90 || radius.Y > 90)) // has one angle > 90, other not, very speciall case
             {
@@ -255,7 +264,7 @@ namespace QTM2Unity
             //3.7 Find the conic section which is associated with
             //that quadrant using the distances qj = Stanhj, where
             //j = 1,..,4
-            if (S < precision) S = precision;
+            //if (S < precision) S = precision;
             float radiusX = S * Mathf.Tan(MathHelper.DegreesToRadians(radius.X));
             float radiusY = S * Mathf.Tan(MathHelper.DegreesToRadians(radius.Y));
             
@@ -263,13 +272,27 @@ namespace QTM2Unity
             bool inside = (target2D.X * target2D.X) / (radiusX * radiusX) +
                 (target2D.Y * target2D.Y) / (radiusY * radiusY) <= 1 + precision;
 
-            //UnityEngine.Debug.Log("radius.X: " + radius.X);
-            //UnityEngine.Debug.Log("radius.Y: " + radius.Y);
+            //UnityEngine.Debug.Log("degree X: " + radius.X);
+            //UnityEngine.Debug.Log("degree Y: " + radius.Y);
+            //UnityEngine.Debug.Log("m x: " + radiusX);
+            //UnityEngine.Debug.Log("m y: " + radiusY);
             //UnityEngine.Debug.Log("target2D.X: " + target2D.X);
             //UnityEngine.Debug.Log("target2D.Y: " + target2D.Y);
-            //UnityEngine.Debug.Log("S: " + S);
-            //UnityEngine.Debug.Log(" inside: " + inside + " reverseCone: " + reverseCone + " behind: " + behind + " sidecone: " + sideCone);
-            
+            //UnityEngine.Debug.Log("used S: " + S);
+            //UnityEngine.Debug.Log("used O: " + O);
+            //UnityEngine.Debug.Log(
+            //    " inside: " + inside +
+            //    " behind: " + behind +
+            //    " reverseCone: " + reverseCone +
+            //    " sidecone: " + sideCone +
+            //    " some90: " + some90);
+
+            //UnityEngine.Debug.Log(" inside: " + inside);
+            //UnityEngine.Debug.Log(" behind: " + behind);
+            //UnityEngine.Debug.Log(" reverseCone: " + reverseCone);
+            //UnityEngine.Debug.Log(" sidecone: " + sideCone);
+            //UnityEngine.Debug.Log(" some90: " + some90);
+
             //3.9 if within the conic section then         
             if (
                    (inside && !reverseCone && !behind)
@@ -305,8 +328,7 @@ namespace QTM2Unity
 
                 //UnityDebug.CreateEllipse(radiusX, radiusY, OPos.Convert(), rotation.Convert(), 400, UnityEngine.Color.cyan);
                 //UnityDebug.DrawLine(targetPos, moveTo, UnityEngine.Color.magenta);
-                //UnityEngine.Debug.Log("joint2res " + (res - jointPos).Length);
-                //UnityEngine.Debug.Log("joint2Target " + (joint2Target).Length);
+                //if (res.IsNaN()) UnityEngine.Debug.LogError("jointPos " + jointPos + "constraints " + constraints + " L1 " + L1 + " targetPos " + targetPos);
 
                 return true;
             }

@@ -146,14 +146,17 @@ namespace QTM2Unity
             #endregion
             return new BipedSkeleton(root);
         }
-        private int frames = 1;
+        private uint chestsFrames = 1;
+        private uint shoulderFrames = 1;
+        private uint heightFrames = 1;
         private void BodyData()
         {
             // set chest depth
             var tmp = (markers[chest] - markers[neck]).Length * 1000; // to mm
             if (!float.IsNaN(tmp) && tmp < 500)
             {
-                chestDepth = (chestDepth * frames + tmp)  / (frames + 1);
+                chestDepth = (chestDepth * chestsFrames + tmp) / (chestsFrames + 1);
+                chestsFrames++;
             }
             //chestDepth = tmp > chestDepth && tmp < 500 ? tmp : chestDepth; // half a meter in chest depth? fatty...
 
@@ -161,7 +164,8 @@ namespace QTM2Unity
             tmp = (markers[leftShoulder] - markers[rightShoulder]).Length * 500; // to mm half the width
             if (!float.IsNaN(tmp) && tmp < 500)
             {
-                shoulderWidth = (shoulderWidth * frames + tmp) / (frames + 1);
+                shoulderWidth = (shoulderWidth * shoulderFrames + tmp) / (shoulderFrames + 1);
+                shoulderFrames++;
             }
            // shoulderWidth = tmp > shoulderWidth && tmp < 500 ? tmp : shoulderWidth; // Half a meter in shoulder widht? Hello andrwe the giant
 
@@ -175,9 +179,9 @@ namespace QTM2Unity
                   ) * 100; // cm
             if (!float.IsNaN(tmp) && tmp < 250)
             {
-                height = (height * frames + tmp) / (frames + 1);
+                height = (height * heightFrames + tmp) / (heightFrames + 1);
                 mass = (height / 100) * (height / 100) * BMI; // BMI
-
+                heightFrames++;
             }
             //if (tmp > height && tmp < 250) // I have never heard of anyone as tall as 250cm
             //{
@@ -292,48 +296,53 @@ namespace QTM2Unity
             Vector3 chestPos = markers[chest];
             Vector3 rightShoulderPos = markers[rightShoulder];
             Vector3 leftShoulderPos = markers[leftShoulder];
-            Vector3 front, up, right;
-
+            Vector3 backspinePos = markers[spine];
+            Vector3 Zaxis, Yaxis, Xaxis;
             Vector3 mid;
 
             if (!chestPos.IsNaN() && !neckPos.IsNaN() && !rightShoulderPos.IsNaN() && !leftShoulderPos.IsNaN())
             {
-                front = chestPos - neckPos;
-                right = rightShoulderPos - leftShoulderPos;
-                return QuaternionHelper.GetOrientationFromZX(front, right);
+                Zaxis = chestPos - neckPos;
+                Xaxis = rightShoulderPos - leftShoulderPos;
+                return QuaternionHelper.GetOrientationFromZX(Zaxis, Xaxis);
             }
 
             if (!chestPos.IsNaN() && !neckPos.IsNaN())
             {
                 mid = Vector3Helper.MidPoint(chestPos,neckPos);
-                front = chestPos - neckPos;
+                Zaxis = chestPos - neckPos;
                 if (!rightShoulderPos.IsNaN())
                 {
-                    right = rightShoulderPos - mid;
-                    return QuaternionHelper.GetOrientationFromZX(front, right);
+                    Xaxis = rightShoulderPos - mid;
+                    return QuaternionHelper.GetOrientationFromZX(Zaxis, Xaxis);
                 }
                 if (!leftShoulderPos.IsNaN())
                 {
-                    right = mid - leftShoulderPos;
-                    return QuaternionHelper.GetOrientationFromZX(front, right);
+                    Xaxis = mid - leftShoulderPos;
+                    return QuaternionHelper.GetOrientationFromZX(Zaxis, Xaxis);
                 }
             }
             if (!rightShoulderPos.IsNaN() && !leftShoulderPos.IsNaN())
             {
-                right = rightShoulderPos - leftShoulderPos;
+                Xaxis = rightShoulderPos - leftShoulderPos;
                 mid = Vector3Helper.MidPoint(rightShoulderPos, leftShoulderPos); 
                 if (!chestPos.IsNaN() )
                 {
-                    front = chestPos - mid;
-                    return QuaternionHelper.GetOrientationFromZX(front, right);
+                    Zaxis = chestPos - mid;
+                    return QuaternionHelper.GetOrientationFromZX(Zaxis, Xaxis);
                 }
                 if (!neckPos.IsNaN())
                 {
-                    front = mid - neckPos;
-                    return QuaternionHelper.GetOrientationFromZX(front, right);
+                    Zaxis = mid - neckPos;
+                    return QuaternionHelper.GetOrientationFromZX(Zaxis, Xaxis);
+                }
+                if (!backspinePos.IsNaN())
+                {
+                    Yaxis = mid - backspinePos;
+                    return QuaternionHelper.GetOrientationFromYX(Xaxis, Xaxis);
                 }
             }
-            return QuaternionHelper.GetOrientationFromZX((chestPos - neckPos), (rightShoulderPos - leftShoulderPos));
+            return Quaternion.Identity;
         }
 
         private Vector3 ArmForwardOrientationLeft()
@@ -361,7 +370,7 @@ namespace QTM2Unity
         private Vector3 KneeOrientationRight()
         {
             Vector3 upper = joints[BipedSkeleton.UPPERLEG_R];
-            Vector3 lower = markers[rightAnkle];
+            Vector3 lower = markers[rightHeel];
             Vector3 forward = joints[BipedSkeleton.LOWERLEG_R];
             Vector3 mid = Vector3Helper.MidPoint(upper, lower);
             return forward - mid;
@@ -371,7 +380,7 @@ namespace QTM2Unity
         {
 
             Vector3 upper = joints[BipedSkeleton.UPPERLEG_L];
-            Vector3 lower = markers[leftAnkle]; 
+            Vector3 lower = markers[rightHeel]; 
             Vector3 forward = joints[BipedSkeleton.LOWERLEG_L];
             Vector3 mid = Vector3Helper.MidPoint(upper, lower);
             Vector3 vec = forward - mid;
@@ -645,8 +654,8 @@ namespace QTM2Unity
             //////////////////////////////////////////
 
             /////////////// SHOUDLERs ///////////////
-            dic.Add(BipedSkeleton.SHOULDER_L, GetShoulderJoint(chestOrientation,false) + markers[chest]); //neckPos);
-            dic.Add(BipedSkeleton.SHOULDER_R, GetShoulderJoint(chestOrientation,true) + markers[chest]); //neckPos);
+            dic.Add(BipedSkeleton.SHOULDER_L, GetShoulderJoint(chestOrientation,false)); //neckPos);
+            dic.Add(BipedSkeleton.SHOULDER_R, GetShoulderJoint(chestOrientation,true)); //neckPos);
             //////////////////////////////
 
             /////////////// UPPER ARMS ///////////////
@@ -739,12 +748,13 @@ namespace QTM2Unity
         }
         private Vector3 GetShoulderJoint(Quaternion chestOrientation, bool isRightShoulder)
         {
+            bool neckGone = markers[neck].IsNaN();
             float y = 0,
                   x = isRightShoulder ? 25 : -25,
-                  z = -(chestDepth - marker2SpineDist);
+                  z = neckGone ? - (chestDepth - marker2SpineDist) : marker2SpineDist;
             Vector3 res = new Vector3(x, y, z) / 1000;
             res = QuaternionHelper.Rotate(chestOrientation, res);
-            return res;
+            return res + (neckGone ? markers[chest] : markers[neck]);
         }
 
 
@@ -832,6 +842,7 @@ namespace QTM2Unity
             if (!isRightAnkle) Vector3.Multiply(ref trans, ref negateY, out trans);
             Vector3 ankle = Vector3.TransformVector(trans, R) + M2;
             return ankle;
+            //return isRightAnkle ? markers[rightHeel] : markers[leftHeel];
         }
 
         #endregion

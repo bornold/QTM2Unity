@@ -137,7 +137,7 @@ namespace QTM2Unity
             handLeft = transform.Search("LeftHand");
             handRight = transform.Search("RightHand");
         }
-        void OnDrawGizmos()
+        public void OnDrawGizmos()
         {
             if (skeleton != null )
             {
@@ -146,10 +146,13 @@ namespace QTM2Unity
                     if (showRotationTrace)
                         UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos.Convert() + this.transform.position);
                     if (showSkeleton)
+                    {
                         foreach (TreeNode<Bone> b1 in b.Children)
                         {
                             UnityDebug.DrawLine(b.Data.Pos + goPos, b1.Data.Pos + goPos);
                         }
+
+                    }
                 }
             }
         }

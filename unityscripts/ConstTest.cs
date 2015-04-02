@@ -14,8 +14,8 @@ namespace QTM2Unity
         public float markerScale = 0.01f;
         public IK ik = IK.CCD;
 
-        public Vector4 Femur = new Vector4(60, 30, 60, 160);
-        public Vector2 FemurTwist = new Vector2(20, 20);
+        public Vector4 Femur = new Vector4(60, 160, 60, 60);
+        public Vector2 FemurTwist = new Vector2(45, 45);
         public Vector4 Knee = new Vector4(10, 10, 10, 160);
         public Vector2 KneeTwist = new Vector2(45, 45);
         public Vector4 Ankle = new Vector4(40, 175, 40, 40);
@@ -24,12 +24,12 @@ namespace QTM2Unity
         public Vector2 SpineTwist = new Vector2(45, 45);
         public Vector4 Neck = new Vector4(60, 60, 60, 60);
         public Vector2 NeckTwist = new Vector2(90, 90);
-        public Vector4 KeyBone = new Vector4(40, 40, 40, 40);
+        public Vector4 KeyBone = new Vector4(60, 40, 60, 20);
         public Vector2 KeyBoneTwist = new Vector2(0, 0);
-        public Vector4 Shoulder = new Vector4(160, 85, 50, 85);
-        public Vector2 ShoulderTwist = new Vector2(20, 20);
-        public Vector4 Elbow = new Vector4(5, 5, 150, 5);
-        public Vector2 ElbowTwist = new Vector2(180, 180);
+        public Vector4 Shoulder = new Vector4(110, 110, 110, 110);
+        public Vector2 ShoulderTwist = new Vector2(90, 90);
+        public Vector4 Elbow = new Vector4(30, 160, 30, 30);
+        public Vector2 ElbowTwist = new Vector2(90, 180);
         public Vector4 Wrist = new Vector4(60, 60, 60, 60);
         public Vector2 WristTwist = new Vector2(10, 10);
 
