@@ -49,7 +49,7 @@ namespace QTM2Unity
             bones[3].RotateTowards(pos3 - pos2);
 
             for (int i = 0; i < bones.Length - 2; i++)
-                bones[i].Rotate(OpenTK.Quaternion.FromAxisAngle(bones[i].GetDirection(), -UnityEngine.Mathf.PI / 2));
+                bones[i].Rotate(OpenTK.Quaternion.FromAxisAngle(bones[i].GetYAxis(), -UnityEngine.Mathf.PI / 2));
 
             root = new TreeNode<Bone>(bones[0]);
             root.AddChild(bones[1]).AddChild(bones[3]).AddChild(bones[4]);
@@ -140,17 +140,17 @@ namespace QTM2Unity
                 // draw orientations
                 Gizmos.color = Color.cyan; // direction
                 var pos = new UnityEngine.Vector3(b.Pos.X, b.Pos.Y, b.Pos.Z);
-                OpenTK.Vector3 d = b.GetDirection();
+                OpenTK.Vector3 d = b.GetYAxis();
                 var direction = new UnityEngine.Vector3(d.X, d.Y, d.Z);
                 Gizmos.DrawRay(pos, direction);
 
                 Gizmos.color = Color.magenta; // up
-                OpenTK.Vector3 u = b.GetUp();
+                OpenTK.Vector3 u = b.GetZAxis();
                 var up = new UnityEngine.Vector3(u.X, u.Y, u.Z);
                 Gizmos.DrawRay(pos, up);
 
                 Gizmos.color = Color.green; // right
-                OpenTK.Vector3 r = b.GetRight();
+                OpenTK.Vector3 r = b.GetXAxis();
                 var right = new UnityEngine.Vector3(r.X, r.Y, r.Z);
                 Gizmos.DrawRay(pos, right);
 

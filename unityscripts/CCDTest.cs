@@ -19,7 +19,7 @@ namespace QTM2Unity
         private GameObject[] joints;
 
         //private OpenTK.Vector3 target = new OpenTK.Vector3(5, 2, 0);//(7, 2, 0); //unreachable //(5, 4, -1);(3,2,0)
-        private Bone target = new Bone("target", new OpenTK.Vector3(-1, -1, -1), OpenTK.Quaternion.Identity);
+        private Bone target = new Bone("target", new OpenTK.Vector3(3, 2, 1), OpenTK.Quaternion.Identity);
 
         private float markerScale = 0.3f;
 
@@ -32,7 +32,7 @@ namespace QTM2Unity
 
             OpenTK.Quaternion rot0 = OpenTK.Quaternion.FromAxisAngle(new OpenTK.Vector3(0, 1, 0),
                 MathHelper.DegreesToRadians(-90));
-            OpenTK.Quaternion rot2 = QuaternionHelper.getRotation((pos2 - pos1), (pos3 - pos2)) * rot0;
+            OpenTK.Quaternion rot2 = QuaternionHelper.GetRotationBetween((pos2 - pos1), (pos3 - pos2)) * rot0;
 
             /*target = OpenTK.Vector3.Transform(pos3 - pos2,
                 OpenTK.Quaternion.FromAxisAngle(OpenTK.Vector3.Cross(pos3-pos2, pos2-pos1), 
@@ -48,17 +48,11 @@ namespace QTM2Unity
             bones[2].RotateTowards(pos3 - pos2);
 
             for (int i = 0; i < bones.Length - 2; i++)
-                bones[i].Rotate(OpenTK.Quaternion.FromAxisAngle(bones[i].GetDirection(), -UnityEngine.Mathf.PI / 2));
-            //bones[3].rotate(OpenTK.Quaternion.FromAxisAngle(bones[3].getDirection(), UnityEngine.Mathf.PI / 4));
-
+                bones[i].Rotate(OpenTK.Quaternion.FromAxisAngle(bones[i].GetYAxis(), -UnityEngine.Mathf.PI / 2));
+            
             //Constraints
-            /* foreach (Bone b in bones)
-             {
-                 b.setOrientationalConstraint(10, 45);
-             }
-             bones[1].SetRotationalConstraint(45f, 45f, 45f, 45f);
-             bones[2].SetRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);*/
-            //bones[3].setRotationalConstraint(0.5f, 0.5f, 0.5f, 0.5f);
+            bones[1].SetOrientationalConstraints(40f, 40f);
+            bones[2].SetOrientationalConstraints(40f, 40f);
         }
 
         private void drawJoints()
@@ -99,11 +93,11 @@ namespace QTM2Unity
             }
 
             //Rotation around direction?
-            for (int i = 1; i < bones.Length; i++)
+            /*for (int i = 1; i < bones.Length; i++)
             {
                 Debug.Log(bones[i].Name + " angle around dir: "
                     + ccd.getTwistAngle(bones[i], bones[i - 1]));
-            }
+            }*/
         }
 
         private void updateJoints()
@@ -136,16 +130,12 @@ namespace QTM2Unity
                 + (joints[joints.Length - 1].transform.localPosition
                 - new UnityEngine.Vector3(target.Pos.X, target.Pos.Y, target.Pos.Z)).magnitude);
 
-            /*CCD.checkOrientationalConstraint(ref bones[1], bones[0]);
-            CCD.checkOrientationalConstraint(ref bones[2], bones[1]);
-            CCD.checkOrientationalConstraint(ref bones[3], bones[2]);*/
-
             //Rotation around direction?
-            for (int i = 1; i < bones.Length; i++)
+            /*for (int i = 1; i < bones.Length; i++)
             {
                 Debug.Log(bones[i].Name + " angle around dir: "
                     + ccd.getTwistAngle(bones[i], bones[i - 1]));
-            }
+            }*/
 
         }
 
@@ -166,17 +156,17 @@ namespace QTM2Unity
                 // draw orientations
                 Gizmos.color = Color.cyan; // direction
                 var pos = new UnityEngine.Vector3(b.Pos.X, b.Pos.Y, b.Pos.Z);
-                OpenTK.Vector3 d = b.GetDirection();
+                OpenTK.Vector3 d = b.GetYAxis();
                 var direction = new UnityEngine.Vector3(d.X, d.Y, d.Z);
                 Gizmos.DrawRay(pos, direction);
 
                 Gizmos.color = Color.magenta; // up
-                OpenTK.Vector3 u = b.GetUp();
+                OpenTK.Vector3 u = b.GetZAxis();
                 var up = new UnityEngine.Vector3(u.X, u.Y, u.Z);
                 Gizmos.DrawRay(pos, up);
 
                 Gizmos.color = Color.green; // right
-                OpenTK.Vector3 r = b.GetRight();
+                OpenTK.Vector3 r = b.GetXAxis();
                 var right = new UnityEngine.Vector3(r.X, r.Y, r.Z);
                 Gizmos.DrawRay(pos, right);
 
@@ -193,16 +183,29 @@ namespace QTM2Unity
             Gizmos.color = Color.blue;
             Gizmos.DrawSphere(new UnityEngine.Vector3(target.Pos.X, target.Pos.Y, target.Pos.Z), 0.1f);
 
-            // draw reference vector
-            /*Gizmos.color = Color.yellow;
+            // draw reference vector and constraints
             for (int i = 1; i < bones.Length; i++)
             {
+                Gizmos.color = Color.yellow;
                 OpenTK.Vector3 reference = 
-                    Vector3Helper.ProjectOnPlane(bones[i-1].getUp(), bones[i].getDirection());
+                    Vector3Helper.ProjectOnPlane(bones[i-1].GetZAxis(), bones[i].GetYAxis());
 
                 Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
                     new UnityEngine.Vector3(reference.X, reference.Y, reference.Z));
-            }*/
+
+                // The constraint limits
+                Gizmos.color = Color.blue;
+                OpenTK.Vector3 rightLimit = OpenTK.Vector3.Transform(reference,
+                    OpenTK.Quaternion.FromAxisAngle(bones[i].GetYAxis(), MathHelper.DegreesToRadians(bones[i].EndTwistLimit)));
+                Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
+                    new UnityEngine.Vector3(rightLimit.X, rightLimit.Y, rightLimit.Z));
+
+                OpenTK.Vector3 leftLimit = OpenTK.Vector3.Transform(reference,
+                    OpenTK.Quaternion.FromAxisAngle(bones[i].GetYAxis(), -MathHelper.DegreesToRadians(bones[i].StartTwistLimit)));
+                Gizmos.DrawRay(new UnityEngine.Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z),
+                    new UnityEngine.Vector3(leftLimit.X, leftLimit.Y, leftLimit.Z));
+            }
+
             /* Gizmos.color = Color.red;
              Gizmos.DrawRay(UnityEngine.Vector3.zero, new UnityEngine.Vector3(parentUp.X, parentUp.Y, parentUp.Z));*/
 

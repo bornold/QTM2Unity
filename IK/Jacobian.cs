@@ -23,7 +23,7 @@ namespace QTM2Unity
             Vector3[,] rotAxis = new Vector3[k, bones.Length - 1];
 
             int iter = 0;
-            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 1000)
+            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 10000)
             {
                 fillJacobian(out J, out rotAxis, ref bones, ref target);
                 float[,] dTheta;
@@ -50,11 +50,11 @@ namespace QTM2Unity
                 // set all positions
                 for (int i = 1; i < bones.Length; i++)
                 {
-                    bones[i].Pos = bones[i - 1].Pos + distances[i - 1] * bones[i - 1].GetDirection();
+                    bones[i].Pos = bones[i - 1].Pos + distances[i - 1] * bones[i - 1].GetYAxis();
                 }
                 iter++;
             }
-            //Debug.Log("Iterations " + iter);
+            Debug.Log("Iterations " + iter);
             return bones;
         }
 
@@ -106,7 +106,7 @@ namespace QTM2Unity
                 {
                     foreach (var c in it.Current.Children)
                     {
-                        c.Data.Pos = it.Current.Data.Pos + distances[index] * it.Current.Data.GetDirection();
+                        c.Data.Pos = it.Current.Data.Pos + distances[index] * it.Current.Data.GetYAxis();
                         index++;
                     }
                 }
@@ -141,7 +141,7 @@ namespace QTM2Unity
                     // we choose a to be the cross between the bone itself and the vector to the target 
                     if (a.X == 0 && a.Y == 0 && a.Z == 0)
                     {
-                        a = Vector3.Cross(bones[j].GetDirection(), target.Pos - bones[j].Pos);
+                        a = Vector3.Cross(bones[j].GetYAxis(), target.Pos - bones[j].Pos);
                     }
                     a.Normalize();
 
@@ -175,7 +175,7 @@ namespace QTM2Unity
                     if (a.X == 0 && a.Y == 0 && a.Z == 0)
                     {
                         //a = Vector3.Cross(bones[j].GetDirection(), targets[i].Pos - bones[j].Pos);
-                        a = bones[j].GetRight(); // a; TODO, fix correct rotation axis
+                        a = bones[j].GetXAxis(); // a; TODO, fix correct rotation axis
                     }
                     a.Normalize();
 

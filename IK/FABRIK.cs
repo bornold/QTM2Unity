@@ -53,7 +53,7 @@ namespace QTM2Unity
                 // Constraints
                 Bone prevBone = (i > 0) ? bones[i - 1] : parent;
                 EnsureRotationalConstraints(ref bones[i], ref prevBone);
-                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
+                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetYAxis();
                 EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], dir);
             }
             return bones;
@@ -62,7 +62,7 @@ namespace QTM2Unity
         private void ForwardReaching(ref Bone[] bones, ref float[] distances, Bone target)
         {
             bones[bones.Length - 1].Pos = target.Pos;
-            bones[bones.Length - 1].Orientation = target.Orientation; //TODO if bone is endeffector, we should not look at orient constraints 
+            bones[bones.Length - 1].Orientation = target.Orientation; //TODO if bone is endeffector, we should not look at orient constraints
             for (int i = bones.Length - 2; i >= 0; i--)
             {
                 // Position
@@ -75,7 +75,7 @@ namespace QTM2Unity
 
                 // Constraints
                 EnsureRotationalConstraints(ref bones[i], ref bones[i + 1]);
-                EnsureOrientationalConstraints(ref bones[i], ref bones[i + 1], -bones[i + 1].GetDirection());
+                EnsureOrientationalConstraints(ref bones[i], ref bones[i + 1], -bones[i + 1].GetYAxis());
 
             }
         }
@@ -96,7 +96,8 @@ namespace QTM2Unity
                 // Constraints
                 Bone prevBone = (i > 0) ? bones[i - 1] : parent;
                 EnsureRotationalConstraints(ref bones[i], ref prevBone);
-                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetDirection();
+                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetYAxis();
+                //if (dir.IsNaN()) UnityEngine.Debug.Log(parent.Orientation);
                 EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], dir);
             }
         }
@@ -116,7 +117,7 @@ namespace QTM2Unity
         }
         private bool EnsureRotationalConstraints(ref Bone target, ref Bone reference)
         {
-            if (target.LeftTwist > 0 && target.RightTwist > 0)
+            if (target.StartTwistLimit > 0 && target.EndTwistLimit > 0)
             {
                 Quaternion rotation = Quaternion.Identity;
                 if (Constraint.CheckOrientationalConstraint(target, reference, out rotation))

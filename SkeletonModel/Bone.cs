@@ -35,29 +35,32 @@ namespace QTM2Unity
             set { orientation = value; }
         }
         #region constraints getters and setters
-                // An orientational constraint is the twist of the bone around its own direction vector
+
+        // An orientational constraint is the twist of the bone around its own direction vector
         // with respect to its parent
-        // It is defined as a range betwen angles [right,left]
-        private float rightTwist = -1;
-        public float RightTwist
+        // It is defined as an allowed range betwen angles [start,end]
+        // where start != end && 0 < start, end <= 360
+        // If both start and end is 0 no twist constraint exist
+        private float startTwistLimit = -1;
+        public float StartTwistLimit
         {
-            get { return rightTwist; }
+            get { return startTwistLimit; }
         }
-        private float leftTwist = -1;
-        public float LeftTwist
+        private float endTwistLimit = -1;
+        public float EndTwistLimit
         {
-            get { return leftTwist; }
+            get { return endTwistLimit; }
         }
 
-        public void SetOrientationalConstraints(float left, float right)
+        public void SetOrientationalConstraints(float startAngle, float endAngle)
         {
-            this.leftTwist = left;
-            this.rightTwist = right;
+            this.startTwistLimit = startAngle;
+            this.endTwistLimit = endAngle;
         }
         public void SetOrientationalConstraints(Vector2 twist)
         {
-            this.leftTwist = twist.X;
-            this.rightTwist = twist.Y;
+            this.startTwistLimit = twist.X;
+            this.endTwistLimit = twist.Y;
         }
 
         private float right, up, left, down;
@@ -68,9 +71,9 @@ namespace QTM2Unity
         }
         public void SetRotationalConstraints(float _right, float _up, float _left, float _down)
         {
-            this.rightTwist = _right;
+            this.endTwistLimit = _right;
             this.up = _up;
-            this.leftTwist = _left;
+            this.startTwistLimit = _left;
             this.down = _down;
         }
         public void SetRotationalConstraints(Vector4 givenConstraints)
@@ -87,6 +90,8 @@ namespace QTM2Unity
         public Bone(string name)
         {
             this.name = name;
+            startTwistLimit = 0;
+            endTwistLimit = 0;
         }
 
         public Bone(string name, Vector3 position)
@@ -157,17 +162,17 @@ namespace QTM2Unity
 #endif
         // Directions 
         #region Direction getters
-        public Vector3 GetDirection()
+        public Vector3 GetYAxis()
         {
             return Vector3.Normalize(Vector3.Transform(Vector3.UnitY, orientation));
         }
 
-        public Vector3 GetUp()
+        public Vector3 GetZAxis()
         {
             return Vector3.Normalize(Vector3.Transform(Vector3.UnitZ, orientation));
         }
 
-        public Vector3 GetRight()
+        public Vector3 GetXAxis()
         {
             return Vector3.Normalize(Vector3.Transform(Vector3.UnitX, orientation));
         }
@@ -185,9 +190,12 @@ namespace QTM2Unity
 
         public void RotateTowards(Vector3 v)
         {
-            float angle = Vector3.CalculateAngle(GetDirection(), v);
-            Vector3 axis = Vector3.Cross(GetDirection(), v);
-            Rotate(angle, axis);
+            Quaternion rot = QuaternionHelper.GetRotationBetween(GetYAxis(), v);
+            Rotate(rot);
+
+            /*float angle = Vector3.CalculateAngle(GetYAxis(), v);
+            Vector3 axis = Vector3.Cross(GetYAxis(), v);
+            Rotate(angle, axis);*/
         }
         #endregion
         private void FlagExists()

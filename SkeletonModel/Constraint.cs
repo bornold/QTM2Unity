@@ -1,5 +1,6 @@
 ﻿using System;
 using OpenTK;
+using Debug = UnityEngine.Debug;
 
 namespace QTM2Unity
 {
@@ -7,71 +8,34 @@ namespace QTM2Unity
     {
         // An orientational constraint is the twist of the bone around its own direction vector
         // with respect to its parent
-        // It is defined as a range betwen angles [right,left]
-        public static bool CheckOrientationalConstraint(Bone b, Bone refer, out Quaternion rotation)
+        // It is defined as an allowed range betwen angles [start,end]
+        // where start != end && 0 < start, end <= 360
+        // If both start and end is 0 no twist constraint exist
+        public static bool CheckOrientationalConstraint(Bone b, Bone refBone, out Quaternion rotation)
         {
-            Vector3 reference = refer.GetUp();
-            Quaternion q = QuaternionHelper.LookAtUp(refer.Pos, b.Pos, b.GetUp());
-            float z2z = MathHelper.RadiansToDegrees(
-                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitZ, q), reference));
-            float x2z = MathHelper.RadiansToDegrees(
-                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitX, q), reference));
+            Vector3 direction = b.GetYAxis();
+            float twistAngle = GetTwistAngle(b, refBone);
 
-            Vector3 direction = b.GetDirection();
-            if (x2z >= 90) // Z left of reference
+            float startLimit = b.StartTwistLimit;
+            float endLimit = b.EndTwistLimit;
+
+            if (!InsideConstraints(twistAngle, startLimit, endLimit)) // not inside constraints 
             {
-                float pew = z2z - b.LeftTwist;
-                if (pew > 1f) // angle larger then constraints angle
+                // Create a rotation to the closest limit
+                float toLeft = Math.Min(360 - Math.Abs(twistAngle - startLimit), Math.Abs(twistAngle - startLimit));
+                float toRight = Math.Min(360 - Math.Abs(twistAngle - endLimit), Math.Abs(twistAngle - endLimit));
+                if (toLeft < toRight)
                 {
-                    //UnityEngine.Debug.Log("Z left of reference ROTATING: " + -pew);
-                    pew = MathHelper.DegreesToRadians(-pew);
-                    rotation = Quaternion.FromAxisAngle(direction, pew); ;
+                    // Anti-clockwise rotation to left limit
+                    rotation = Quaternion.FromAxisAngle(direction, -MathHelper.DegreesToRadians(toLeft));
+                    Debug.Log("Rotating " + toLeft + " degrees clockwise");
                     return true;
                 }
-            }
-            else // Z right of reference
-            {
-                float pew = z2z - b.RightTwist;
-                if (pew > 1f) // angle larger constraints angle
+                else
                 {
-                    //UnityEngine.Debug.Log("Z right of reference ROTATING: " + pew);
-                    pew = MathHelper.DegreesToRadians(pew);
-                    rotation = Quaternion.FromAxisAngle(direction, pew);
-                    return  true;
-                }
-            }
-            rotation = Quaternion.Identity;
-            return false;
-        }
-
-        public static bool CheckOrientationalConstraint2(Bone b, Bone parent, out Quaternion rotation)
-        {
-
-            Vector3 direction = b.GetDirection();
-            float twistAngle = GetTwistAngle(b, parent);
-
-            float from = b.RightTwist;
-            float to = b.LeftTwist;
-
-            if (!(twistAngle >= from && twistAngle <= to)) // not inside constraints
-            {
-                // rotate the bone around its direction vector to be inside
-                // the constraints (rotate it from its current angle to from or to)
-                // TODO rotating the right directio? (-/+)
-                if (twistAngle < from) // TODO add some precision (so it doesn't need to rotate eg 0,000324)
-                {
-                    // rotate clockwise
-                    /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name + 
-                        " " + (twistAngle - from) + " clockwise around itself.");*/
-                    rotation = Quaternion.FromAxisAngle(direction, Math.Abs(MathHelper.DegreesToRadians(twistAngle - from)));
-                    return true;
-                }
-                else if (twistAngle > to)
-                {
-                    // rotate anticlockwise
-                    /*Debug.Log("Twistangle is " + twistAngle + ". Rotating " + b.Name +
-                        " " + (twistAngle - to) + " anticlockwise around itself.");*/
-                    rotation = Quaternion.FromAxisAngle(direction, -Math.Abs(MathHelper.DegreesToRadians(twistAngle - to)));
+                    // Clockwise to right limit
+                    rotation = Quaternion.FromAxisAngle(direction, MathHelper.DegreesToRadians(toRight));
+                    Debug.Log("Rotating " + toRight + " degrees clockwise");
                     return true;
                 }
             }
@@ -79,26 +43,68 @@ namespace QTM2Unity
             return false;
         }
 
-        // Calculates the angle b is twisted around its direction vector in radians
+        // Checks if the twist is inside the allowed range +/- 0.5 degrees
+        private static bool InsideConstraints(float twistAngle, float leftLimit, float rightLimit)
+        {
+            float precision = 0.5f;
+            if (leftLimit >= rightLimit) // The allowed range is on both sides of the reference vector
+            {
+                return twistAngle - leftLimit >= precision || twistAngle - rightLimit <= precision;
+            }
+            else
+            {
+                return twistAngle - leftLimit >= precision && twistAngle - rightLimit <= precision;
+            }
+        }
+
+        // Calculates the angle b is twisted around its direction vector with respect to refBone (in radians)
         // TODO make private. Only public for testing purposes.
-        public static float GetTwistAngle(Bone b, Bone parent)
+        public static float GetTwistAngle(Bone b, Bone refBone)
         {
-            Vector3 direction = b.GetDirection();
-            Vector3 up = b.GetUp();
-            Vector3 right = b.GetRight();
+            Vector3 direction = b.GetYAxis();
+            Vector3 up = b.GetZAxis();
+            Vector3 x = b.GetXAxis();
+
+            Vector3 reference = refBone.GetZAxis();
+            Quaternion rot = QuaternionHelper.GetRotationBetween(refBone.GetYAxis(), direction);
+            reference = Vector3.Transform(reference, rot);
+            reference.Normalize();
+
+            // TODO will the above work for all cases?
+
+            float twistAngle = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(reference, up));
+
+            if (Vector3.CalculateAngle(reference, x) > Mathf.PI / 2) // b is twisted left with respect to parent
+                return 360 - twistAngle;
+
+            return twistAngle;
+        }
+
+#if f
+        // Calculates the angle b is twisted around its direction vector with respect to refBone (in radians)
+        // TODO make private. Only public for testing purposes.
+        public static float GetTwistAngle2(Bone b, Bone refBone)
+        {
+            Vector3 direction = b.GetYAxis();
+            Vector3 up = b.GetZAxis();
+            Vector3 right = b.GetXAxis();
 
             // construct a reference vector which the twist/orientation will depend on
             // The reference is the parents up vector projected on the same plane as the 
             // current bone's up vector
-            Vector3 reference = Vector3Helper.ProjectOnPlane(parent.GetUp(), direction);
+            Vector3 reference = Vector3Helper.ProjectOnPlane(refBone.GetZAxis(), direction);
+            reference.Normalize(); 
+            // TODO the above won't work if parent.up is perpendicular to the plane
+            // and that vill happen if the angle between b and parent is 90 degrees
 
             float twistAngle = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(reference, up));
 
             if (Vector3.CalculateAngle(reference, right) > Mathf.PI / 2) // b is twisted left with respect to parent
-                return -twistAngle;
+                return 360 - twistAngle;
 
             return twistAngle;
         }
+#endif
 
         private enum Q { q1, q2, q3, q4 };
         private static float precision = 0.01f;
@@ -153,15 +159,15 @@ namespace QTM2Unity
             Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
 
             //Caclulating twist angle, this is a wierd way to do it, but i think it works.
-            angle = Vector3.CalculateAngle(joint.GetDirection(), Vector3.UnitY); // diff in Y axis
-            axis = Vector3.Cross(joint.GetDirection(), Vector3.UnitY); 
+            angle = Vector3.CalculateAngle(joint.GetYAxis(), Vector3.UnitY); // diff in Y axis
+            axis = Vector3.Cross(joint.GetYAxis(), Vector3.UnitY);
             Quaternion yAligned = Quaternion.FromAxisAngle(axis, angle); // rotation so that Y axis align
-            Vector3 rigthNow = Vector3.Transform(joint.GetRight(), yAligned); // Get X axis such that is is when Y aligned
+            Vector3 rigthNow = Vector3.Transform(joint.GetXAxis(), yAligned); // Get X axis such that is is when Y aligned
             float twist = Vector3.CalculateAngle(Vector3.UnitX, rigthNow); // angle between them is the twist angle
             Quaternion twistRot = Quaternion.Invert(Quaternion.FromAxisAngle(L1, twist)); // Quaternion representing the twist angle over L1
 
             rotation = rotation * twistRot; // apply twist rotation on ordinary rotation
-            
+
             Vector3 TRotated = Vector3.Transform(joint2Target, rotation); // align joint2target vector to  y axis get x z offset
             Vector2 target2D = new Vector2(TRotated.X, TRotated.Z); //only intrested in the X Z cordinates
 
@@ -267,7 +273,7 @@ namespace QTM2Unity
             //if (S < precision) S = precision;
             float radiusX = S * Mathf.Tan(MathHelper.DegreesToRadians(radius.X));
             float radiusY = S * Mathf.Tan(MathHelper.DegreesToRadians(radius.Y));
-            
+
             //3.8 Check whether the target is within the conic section or not
             bool inside = (target2D.X * target2D.X) / (radiusX * radiusX) +
                 (target2D.Y * target2D.Y) / (radiusY * radiusY) <= 1 + precision;
@@ -380,4 +386,94 @@ namespace QTM2Unity
             return newPoint;
         }
     }
+
+#if f
+        // An orientational constraint is the twist of the bone around its own direction vector
+        // with respect to its parent
+        // It is defined as a range betwen angles [left,right]
+        public static bool CheckOrientationalConstraint(Bone b, Bone refer, out Quaternion rotation)
+        {
+            Vector3 reference = refer.GetZAxis();
+            Quaternion q = QuaternionHelper.LookAtUp(refer.Pos, b.Pos, b.GetZAxis());
+            float z2z = MathHelper.RadiansToDegrees(
+                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitZ, q), reference));
+            float x2z = MathHelper.RadiansToDegrees(
+                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitX, q), reference));
+
+            Vector3 direction = b.GetYAxis();
+            if (x2z >= 90) // Z left of reference
+            {
+                float pew = z2z - b.LeftTwist;
+                if (pew > 1f) // angle larger then constraints angle
+                {
+                    //UnityEngine.Debug.Log("Z left of reference ROTATING: " + -pew);
+                    pew = MathHelper.DegreesToRadians(-pew);
+                    rotation = Quaternion.FromAxisAngle(direction, pew); ;
+                    return true;
+                }
+            }
+            else // Z right of reference
+            {
+                float pew = z2z - b.RightTwist;
+                if (pew > 1f) // angle larger constraints angle
+                {
+                    //UnityEngine.Debug.Log("Z right of reference ROTATING: " + pew);
+                    pew = MathHelper.DegreesToRadians(pew);
+                    rotation = Quaternion.FromAxisAngle(direction, pew);
+                    return  true;
+                }
+            }
+            rotation = Quaternion.Identity;
+            return false;
+        }
+
+        public static bool CheckOrientationalConstraint2(Bone b, Bone refBone, out Quaternion rotation)
+        {
+            Vector3 direction = b.GetYAxis();
+            float twistAngle = GetTwistAngle(b, refBone);
+
+            // The left limit is negative if it is less than 180 degrees, otherwise positive
+            float left = b.LeftTwist < 180 ? -b.LeftTwist : 360 - b.LeftTwist;
+            // The right limit is positive if it is less than 180 degrees, otherwise negative
+            float right = b.RightTwist < 180 ? b.RightTwist : -360 - b.RightTwist;
+
+            if (!(twistAngle >= left && twistAngle <= right)) // not inside constraints TODO: add some precision
+            {
+                // TODO: BLAH FUNKAR EJ
+
+                // rotate the bone around its direction vector to be inside
+                // the constraints (rotate it from its current angle to left or right angles)
+                /*if (Math.Abs(left - twistAngle) < Math.Abs(right - twistAngle))
+                {
+                    // Rotate to the left limit
+                    rotation = Quaternion.FromAxisAngle(direction, Math.Abs(MathHelper.DegreesToRadians(left - twistAngle)));
+                    Debug.Log("Rotating " + Math.Abs(left - twistAngle) + " degrees");
+                    return true;
+                }
+                else // Rotate to the right limit
+                {
+                    rotation = Quaternion.FromAxisAngle(direction, Math.Abs(MathHelper.DegreesToRadians(right - twistAngle)));
+                    Debug.Log("Rotating " + Math.Abs(left - twistAngle) + " degrees");
+                    return true;
+                }*/
+
+                if (twistAngle < left) // TODO add some precision (so it doesn't need to rotate eg 0,000324)
+                {
+                    // rotate clockwise
+                    rotation = Quaternion.FromAxisAngle(direction, -Math.Abs(MathHelper.DegreesToRadians(twistAngle - left)));
+                    Debug.Log("Rotating " + Math.Abs(twistAngle - left) + " degrees clockwise");
+                    return true;
+                }
+                else if (twistAngle > right)
+                {
+                    // rotate anticlockwise
+                    rotation = Quaternion.FromAxisAngle(direction, Math.Abs(MathHelper.DegreesToRadians(twistAngle - right)));
+                    Debug.Log("Rotating " + Math.Abs(twistAngle - right) + " degrees anticlockwise");
+                    return true;
+                }
+            }
+            rotation = Quaternion.Identity;
+            return false;
+        }
+#endif
 }

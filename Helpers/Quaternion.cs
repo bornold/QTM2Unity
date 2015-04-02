@@ -220,7 +220,7 @@ namespace QTM2Unity
 	    }
 
         // Returns a quaternion representing the rotation from vector a to b
-        public static Quaternion getRotation(Vector3 a, Vector3 b)
+        public static Quaternion GetRotationBetween(Vector3 a, Vector3 b)
         {
             a.Normalize();
             b.Normalize();
@@ -241,6 +241,7 @@ namespace QTM2Unity
 
             return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle));
         }
+
         //TODO TEMP idiotic 
         public static Quaternion GetRotation2(Vector3 a, Vector3 b)
         {
