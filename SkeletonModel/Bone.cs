@@ -71,9 +71,9 @@ namespace QTM2Unity
         }
         public void SetRotationalConstraints(float _right, float _up, float _left, float _down)
         {
-            this.endTwistLimit = _right;
+            this.right = _right;
             this.up = _up;
-            this.startTwistLimit = _left;
+            this.left = _left;
             this.down = _down;
         }
         public void SetRotationalConstraints(Vector4 givenConstraints)
