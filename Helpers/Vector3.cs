@@ -78,17 +78,33 @@ namespace QTM2Unity
         /// <param name="vector 1"> Vector3 to be projected.</param>
         /// <param name="vector2">v2 Vector3 the Vector3 to be projected on.</param>
         /// <returns>The result of the projection.</returns>
-
         public static Vector3 ProjectAndCreate(Vector3 v1, Vector3 v2)
         {
             double d = Vector3.Dot(v1,v2);
             double d_div = d / v2.Length;
             return new Vector3 (v2 * (float)d_div);
         }
+
         public static Vector3 Project(Vector3 a, Vector3 b)
         {
             return new Vector3((Vector3.Dot(a, b) / Vector3.Dot(b, b)) * b);
+        }
 
+        // sorry for another project function
+        // TODO need to decide which function to keep
+
+        /// <summary>
+        /// Projects Vector3 a onto Vector3 b and creates a new Vector3 for the result.
+        /// </summary>
+        /// <param name="a"> Vector to be projected.</param>
+        /// <param name="b"> Vector3 to project on.</param>
+        /// <returns>The result of the projection.</returns>
+        public static Vector3 ProjectOnVector(Vector3 a, Vector3 b)
+        {
+            // The projection is defined as |a|cos(t) * norm(b) 
+            // where t is the angle between the vectors
+            float t = Vector3.CalculateAngle(a, b);
+            return a.Length * Mathf.Cos(t) * Vector3.Normalize(b);
         }
 
         /// <summary>
