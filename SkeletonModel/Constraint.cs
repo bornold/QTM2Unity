@@ -106,10 +106,186 @@ namespace QTM2Unity
         }
 #endif
 
-        private enum Q { q1, q2, q3, q4 };
+        public enum Quadrant { q1, q2, q3, q4 }; //TODO private
         private static float precision = 0.01f;
         // A constraint modeled as an irregular cone
         // The direction vector is the direction the cone is opening up at
+
+        public static bool CheckRotationalConstraints(Bone joint, Vector3 target, Vector3 L1, Vector3 X1, out Quaternion res)
+        {
+            float precision = 0.01f;
+            res = OpenTK.Quaternion.Identity;
+            Vector3 newTarget = target;
+
+            OpenTK.Vector3 jointPos = joint.Pos;
+            OpenTK.Vector4 constraints = joint.Constraints;
+            OpenTK.Vector3 targetPos = new OpenTK.Vector3(target.X, target.Y, target.Z);
+            OpenTK.Vector3 joint2Target = (targetPos - jointPos);
+
+            bool behind = false;
+            bool reverseCone = false;
+            //bool sideCone = false;
+            bool someAngleAbove90 = constraints.X > 90 || constraints.Y > 90 || constraints.Z > 90 || constraints.W > 90;
+
+            //3.1 Find the line equation L1
+            //3.2 Find the projection O of the target t on line L1
+
+            OpenTK.Vector3 O = jointPos + Vector3Helper.ProjectOnVector(joint2Target, L1);
+            OpenTK.Vector3 O2 = jointPos + Vector3Helper.Project(joint2Target, L1);
+            //Vector3 OPos = O + jointPos;
+
+            if (Math.Abs(OpenTK.Vector3.Dot(L1, joint2Target)) < precision) // target is orthogonal to L1
+            {
+                O = jointPos + OpenTK.Vector3.Normalize(L1) * precision;
+                //OPos = O + jointPos;
+            }
+            else if (OpenTK.Vector3.Dot(O, L1) < -(1 - precision)) // O and L1 are opposite
+            //else if (Math.Abs(Vector3.Dot(O, L1) - O.Length * L1.Length) >= precision) // O not same direction as L1
+            {
+                behind = true;
+            }
+
+            //3.3 Find the distance between the point O and the joint position
+            float S = (O - jointPos).Length;
+
+            //3.4 Map the target (rotate and translate) in such a
+            //way that O is now located at the axis origin and oriented
+            //according to the x and y-axis ) Now it is a 2D simplified problem
+            //  Translate target such that O is in origo
+            OpenTK.Vector3 targetTrans = target;
+            OpenTK.Quaternion mappingQuat = Constraint.mapToOrigin(ref targetTrans, O, L1, X1);
+            // Target will now be on z, x plane and its y coordinate will be 0
+            //Debug.Log("target after mapping " + targetTrans.X + "," + targetTrans.Y + "," + targetTrans.Z);
+            //OpenTK.Vector2 target2D = new OpenTK.Vector2(targetTrans.X, targetTrans.Z); // Want to look at x and z coordinate
+
+            //3.5 Locate target in a particular quadrant
+            // TODO extract to own method locateQuadrant(out Quadrant q, out Vector2 radii)
+            OpenTK.Vector2 radii;
+            Constraint.Quadrant q;
+            if (targetTrans.X >= 0 && targetTrans.Z >= 0)
+            {
+                q = Constraint.Quadrant.q1;
+                radii = new OpenTK.Vector2(S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.Z)),
+                    S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.Y)));
+            }
+            else if (targetTrans.X >= 0 && targetTrans.Z < 0)
+            {
+                q = Constraint.Quadrant.q2;
+                radii = new OpenTK.Vector2(S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.Z)),
+                    S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.W)));
+            }
+            else if (targetTrans.X < 0 && targetTrans.Z < 0)
+            {
+                q = Constraint.Quadrant.q3;
+                radii = new OpenTK.Vector2(S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.X)),
+                    S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.W)));
+            }
+            else /*if (targetTrans.X > 0 && targetTrans.Z < 0)*/
+            {
+                q = Constraint.Quadrant.q4;
+                radii = new OpenTK.Vector2(S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.X)),
+                    S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.Y)));
+            }
+
+            //3.6 Find what conic section describes the allowed
+            //range of motion
+            //3.7 Find the conic section which is associated with
+            //that quadrant using the distances q[j] = S*tan(h[j]), where
+            //j = 1,..,4
+            if (someAngleAbove90 && !reverseCone)
+            {
+                // Parabola
+                Debug.Log("Parabola");
+            }
+            else
+            {
+                // Ellipse
+                if (!Constraint.findClosestPointEllipse(targetTrans, q, radii, behind, out newTarget))
+                    return false;
+            }
+
+            /*UnityDebug.CreateEllipse(radii.X, radii.Y, UnityEngine.Vector3.zero,
+                (OpenTK.Quaternion.FromAxisAngle(X1, Mathf.PI / 2) * mappingQuat).Convert(),
+                400, UnityEngine.Color.cyan);
+            UnityDebug.DrawLine(newTarget, targetTrans, UnityEngine.Color.magenta);*/
+
+            //3.13 Map (rotate and translate) that point on the
+            //conic section via reverse of 3.4 and use that point as
+            //the new target position
+            newTarget = O + OpenTK.Vector3.Transform(newTarget, OpenTK.Quaternion.Invert(mappingQuat));
+            if (behind) // Mirror the new target to the right side if the cone were reversed
+            {
+                OpenTK.Quaternion mirror = OpenTK.Quaternion.FromAxisAngle(X1, Mathf.PI);
+                newTarget = OpenTK.Vector3.Transform(newTarget, mirror);
+            }
+
+            //UnityDebug.DrawLine(targetPos, targetTrans, UnityEngine.Color.magenta);
+            UnityDebug.CreateEllipse(radii.X, radii.Y, O.Convert(),
+                OpenTK.Quaternion.Invert(mappingQuat).Convert(),
+                400, UnityEngine.Color.cyan);
+
+            // Calculate the rotation from the old target to the new
+            float angle = OpenTK.Vector3.CalculateAngle(target - jointPos, newTarget - jointPos);
+            OpenTK.Vector3 axis = OpenTK.Vector3.Cross(target - jointPos, newTarget - jointPos);
+            res = OpenTK.Quaternion.FromAxisAngle(axis, angle);
+            //newTarget = targetTrans; 
+            return true;
+        }
+
+        public static Quaternion mapToOrigin(ref Vector3 target, Vector3 O, Vector3 L1, Vector3 X1)
+        {
+            // Translate target such that O is in the origin
+            target = target.translate(O);
+            // Rotation 1: The rotation between L1 and world Y-axis
+            Quaternion rot1 = QuaternionHelper.GetRotationBetween(L1, Vector3.UnitY);
+            // Rotate target and X1 with this rotation
+            target = Vector3.Transform(target, rot1);
+            X1 = Vector3.Transform(X1, rot1);
+            // Rotation 2: The rotation between the rotated X1 and world X-axis
+            Quaternion rot2 = QuaternionHelper.GetRotationBetween(X1, Vector3.UnitX);
+            // Rotate target with this rotation
+            target = Vector3.Transform(target, rot2);
+            return rot2 * rot1;
+        }
+
+        // TODO private
+        public static bool findClosestPointEllipse(Vector3 target, Quadrant q, Vector2 radii,
+            bool behind, out Vector3 res)
+        {
+            // TODO 2d vector to make things more clear/harder to do wrong?
+            res = target;
+
+            //3.8 Check whether the target is within the conic section or not
+            bool inside = (target.X * target.X) / (radii.X * radii.X) +
+                (target.Z * target.Z) / (radii.Y * radii.Y) <= 1 + precision;
+
+            //3.9 if within the conic section then  
+            if (inside && !behind)
+            {
+                //3.10 use the true target position t
+                return false;
+            }
+            //3.11 else
+            //3.12 Find the nearest point on that conic section from the target
+            Vector2 nearest = NearestPoint(radii.X, radii.Y, new Vector2(target.X, target.Z), q);
+            res = new Vector3(nearest.X, 0, nearest.Y);
+
+            return true;
+        }
+
+        private static bool findClosestPointParabola(Vector3 target, Quadrant q, out Vector3 res)
+        {
+            res = target;
+
+            //3.8 Check whether the target is within the conic section or not
+
+            //3.9 if within the conic section then  
+            //3.10 use the true target position t
+            //3.11 else
+            //3.12 Find the nearest point on that conic section from the target
+
+            return false;
+        }
 
         public static bool CheckRotationalConstraints(Bone joint, Vector3 target, Vector3 L1, out Vector3 res)
         {
@@ -176,26 +352,26 @@ namespace QTM2Unity
             //3.6 Find what conic section describes the allowed
             //range of motion
             Vector2 radius;
-            Q q;
+            Quadrant q;
             #region find Quadrant
             if (target2D.X >= 0 && target2D.Y >= 0)
             {
                 radius = new Vector2(constraints.X, constraints.Y);
-                q = Q.q1;
+                q = Quadrant.q1;
             }
             else if (target2D.X >= 0 && target2D.Y < 0)
             {
-                q = Q.q2;
+                q = Quadrant.q2;
                 radius = new Vector2(constraints.X, constraints.W);
             }
             else if (target2D.X < 0 && target2D.Y < 0)
             {
-                q = Q.q3;
+                q = Quadrant.q3;
                 radius = new Vector2(constraints.Z, constraints.W);
             }
             else /*if (target.X > 0 && target.Y < 0)*/
             {
-                q = Q.q4;
+                q = Quadrant.q4;
                 radius = new Vector2(constraints.Z, constraints.Y);
             }
             //UnityEngine.Debug.Log(q + " " + radius);
@@ -223,19 +399,19 @@ namespace QTM2Unity
                 Vector3 L2;
                 switch (q)
                 {
-                    case Q.q1:
+                    case Quadrant.q1:
                         if (radius.X > 90) L2 = right;
                         else L2 = forward;
                         break;
-                    case Q.q2:
+                    case Quadrant.q2:
                         if (radius.X > 90) L2 = right;
                         else L2 = -forward;
                         break;
-                    case Q.q3:
+                    case Quadrant.q3:
                         if (radius.X > 90) L2 = -right;
                         else L2 = -forward;
                         break;
-                    case Q.q4:
+                    case Quadrant.q4:
                         if (radius.X > 90) { L2 = -right; }
                         else L2 = forward;
                         break;
@@ -340,7 +516,7 @@ namespace QTM2Unity
             }
             //3.14 end
         }
-        private static Vector2 NearestPoint(float radiusX, float radiusY, Vector2 target2D, Q q)
+        private static Vector2 NearestPoint(float radiusX, float radiusY, Vector2 target2D, Quadrant q)
         {
             Vector2 newPoint;
             float xRad, yRad, pX, pY;
@@ -368,16 +544,16 @@ namespace QTM2Unity
             }
             switch (q)
             {
-                case Q.q1:
+                case Quadrant.q1:
                     break;
-                case Q.q2:
+                case Quadrant.q2:
                     newPoint.Y = -newPoint.Y;
                     break;
-                case Q.q3:
+                case Quadrant.q3:
                     newPoint.X = -newPoint.X;
                     newPoint.Y = -newPoint.Y;
                     break;
-                case Q.q4:
+                case Quadrant.q4:
                     newPoint.X = -newPoint.X;
                     break;
                 default:
