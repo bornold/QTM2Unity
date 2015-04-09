@@ -28,14 +28,14 @@ namespace QTM2Unity
                 {
                     // Anti-clockwise rotation to left limit
                     rotation = Quaternion.FromAxisAngle(direction, -MathHelper.DegreesToRadians(toLeft));
-                    Debug.Log("Rotating " + toLeft + " degrees clockwise");
+                    //Debug.Log("Rotating " + toLeft + " degrees clockwise");
                     return true;
                 }
                 else
                 {
                     // Clockwise to right limit
                     rotation = Quaternion.FromAxisAngle(direction, MathHelper.DegreesToRadians(toRight));
-                    Debug.Log("Rotating " + toRight + " degrees clockwise");
+                    //Debug.Log("Rotating " + toRight + " degrees clockwise");
                     return true;
                 }
             }
@@ -195,7 +195,7 @@ namespace QTM2Unity
             if (someAngleAbove90 && !reverseCone)
             {
                 // Parabola
-                Debug.Log("Parabola");
+                //Debug.Log("Parabola");
             }
             else
             {
@@ -220,9 +220,9 @@ namespace QTM2Unity
             }
 
             //UnityDebug.DrawLine(targetPos, targetTrans, UnityEngine.Color.magenta);
-            UnityDebug.CreateEllipse(radii.X, radii.Y, O.Convert(),
-                OpenTK.Quaternion.Invert(mappingQuat).Convert(),
-                400, UnityEngine.Color.cyan);
+            //UnityDebug.CreateEllipse(radii.X, radii.Y, O.Convert(),
+            //    OpenTK.Quaternion.Invert(mappingQuat).Convert(),
+            //    400, UnityEngine.Color.cyan);
 
             // Calculate the rotation from the old target to the new
             float angle = OpenTK.Vector3.CalculateAngle(target - jointPos, newTarget - jointPos);
@@ -267,7 +267,7 @@ namespace QTM2Unity
             }
             //3.11 else
             //3.12 Find the nearest point on that conic section from the target
-            Vector2 nearest = NearestPoint(radii.X, radii.Y, new Vector2(target.X, target.Z), q);
+            Vector2 nearest = NearestPoint(radii.X, radii.Y, new Vector2(target.X, target.Z));
             res = new Vector3(nearest.X, 0, nearest.Y);
 
             return true;
@@ -287,8 +287,9 @@ namespace QTM2Unity
             return false;
         }
 
-        public static bool CheckRotationalConstraints(Bone joint, Vector3 target, Vector3 L1, out Vector3 res)
+        public static bool CheckRotationalConstraints(Bone joint, Bone parent, Vector3 target, out Vector3 res)
         {
+            Vector3 L1 = parent.GetYAxis();
             Vector3 jointPos = joint.Pos;
             Vector4 constraints = joint.Constraints;
             Vector3 targetPos = new Vector3(target.X, target.Y, target.Z);
@@ -304,12 +305,9 @@ namespace QTM2Unity
 
             Vector3 O = Vector3Helper.Project(joint2Target, L1);
 
-            Vector3 OPos = O + jointPos;
-
             if (Math.Abs(Vector3.Dot(L1, joint2Target)) < precision) // target is ortogonal with L1
             {
                 O = Vector3.Normalize(L1) * precision;
-                OPos = O + jointPos;
             }
             else if (Math.Abs(Vector3.Dot(O, L1) - O.Length * L1.Length) >= precision) // O not same direction as L1
             {
@@ -319,7 +317,7 @@ namespace QTM2Unity
 
             //if (some90) UnityEngine.Debug.Log("we are behind and some angle is over 90");
             //3.3 Find the distance between the point O and the joint position
-            float S = (OPos - jointPos).Length;
+            float S = O.Length;
             //UnityEngine.Debug.Log("O: " + O);
             //UnityEngine.Debug.Log("S: " + S);
             //UnityEngine.Debug.Log("OPos: " + OPos);
@@ -329,20 +327,26 @@ namespace QTM2Unity
             //3.4 Map the target (rotate and translate) in such a
             //way that O is now located at the axis origin and oriented
             //according to the x and y-axis ) Now it is a 2D simplified problem
+            Quaternion rotation;
+            float angle;
+            Vector3 axis;
+            //float angle = Vector3.CalculateAngle(L1, Vector3.UnitY);
+            //Vector3 axis = Vector3.Cross(L1, Vector3.UnitY);
+            //Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
 
-            float angle = Vector3.CalculateAngle(L1, Vector3.UnitY);
-            Vector3 axis = Vector3.Cross(L1, Vector3.UnitY);
-            Quaternion rotation = Quaternion.FromAxisAngle(axis, angle);
+            ////Caclulating twist angle, this is a wierd way to do it, but i think it works.
+            ////angle = Vector3.CalculateAngle(joint.GetYAxis(), Vector3.UnitY); // diff in Y axis
+            ////axis = Vector3.Cross(joint.GetYAxis(), Vector3.UnitY);
+            //angle = Vector3.CalculateAngle(parent.GetYAxis(), Vector3.UnitY); // diff in Y axis
+            //axis = Vector3.Cross(parent.GetYAxis(), Vector3.UnitY);
+            //Quaternion yAligned = Quaternion.FromAxisAngle(axis, angle); // rotation so that Y axis align
+            //Vector3 rigthNow = Vector3.Transform(joint.GetXAxis(), yAligned); // Get X axis such that is is when Y aligned
+            //float twist = Vector3.CalculateAngle(Vector3.UnitX, rigthNow); // angle between them is the twist angle
+            //Quaternion twistRot = Quaternion.Invert(Quaternion.FromAxisAngle(L1, twist)); // Quaternion representing the twist angle over L1
 
-            //Caclulating twist angle, this is a wierd way to do it, but i think it works.
-            angle = Vector3.CalculateAngle(joint.GetYAxis(), Vector3.UnitY); // diff in Y axis
-            axis = Vector3.Cross(joint.GetYAxis(), Vector3.UnitY);
-            Quaternion yAligned = Quaternion.FromAxisAngle(axis, angle); // rotation so that Y axis align
-            Vector3 rigthNow = Vector3.Transform(joint.GetXAxis(), yAligned); // Get X axis such that is is when Y aligned
-            float twist = Vector3.CalculateAngle(Vector3.UnitX, rigthNow); // angle between them is the twist angle
-            Quaternion twistRot = Quaternion.Invert(Quaternion.FromAxisAngle(L1, twist)); // Quaternion representing the twist angle over L1
+            //rotation = rotation * twistRot; // apply twist rotation on ordinary rotation
 
-            rotation = rotation * twistRot; // apply twist rotation on ordinary rotation
+            rotation = Quaternion.Invert(parent.Orientation);
 
             Vector3 TRotated = Vector3.Transform(joint2Target, rotation); // align joint2target vector to  y axis get x z offset
             Vector2 target2D = new Vector2(TRotated.X, TRotated.Z); //only intrested in the X Z cordinates
@@ -387,55 +391,37 @@ namespace QTM2Unity
             {
                 //O = -O;
                 O = -Vector3.Normalize(O) * precision;
-                OPos = O + jointPos;
-                S = (OPos - jointPos).Length;
+                S = O.Length;
             }
-            else if (behind && (radius.X > 90 || radius.Y > 90)) // has one angle > 90, other not, very speciall case
+            else if (radius.X > 90 || radius.Y > 90) // has one angle > 90, other not, very speciall case
             {
-                sideCone = true;
-                Quaternion inverRot = Quaternion.Invert(rotation);
-                Vector3 right = Vector3.Transform(Vector3.UnitX, inverRot);
-                Vector3 forward = Vector3.Transform(Vector3.UnitZ, inverRot);
-                Vector3 L2;
-                switch (q)
+                Vector3 L2 = GetNewL(rotation, q, radius);
+                if (!behind)
                 {
-                    case Quadrant.q1:
-                        if (radius.X > 90) L2 = right;
-                        else L2 = forward;
-                        break;
-                    case Quadrant.q2:
-                        if (radius.X > 90) L2 = right;
-                        else L2 = -forward;
-                        break;
-                    case Quadrant.q3:
-                        if (radius.X > 90) L2 = -right;
-                        else L2 = -forward;
-                        break;
-                    case Quadrant.q4:
-                        if (radius.X > 90) { L2 = -right; }
-                        else L2 = forward;
-                        break;
-                    default:
-                        L2 = right;
-                        break;
+                    L2 = (L2 - L1) / 2 + L1;
                 }
-                L2.Normalize();
                 angle = Vector3.CalculateAngle(L2, L1);
                 axis = Vector3.Cross(L2, L1);
                 rotation = rotation * Quaternion.FromAxisAngle(axis, angle);
                 TRotated = Vector3.Transform(joint2Target, rotation);
                 target2D = new Vector2(TRotated.X, TRotated.Z);
-
                 O = Vector3Helper.Project(joint2Target, L2);
-                OPos = O + jointPos;
-                S = (jointPos - OPos).Length;
-                if (radius.X > 90)
+                S = O.Length;
+                if (behind)
                 {
-                    radius.X = (radius.X - 90);
+                    sideCone = true;
+                    if (radius.X > 90)
+                    {
+                        radius.X = (radius.X - 90);
+                    }
+                    else
+                    {
+                        radius.Y = (radius.Y - 90);
+                    }
                 }
                 else
                 {
-                    radius.Y = (radius.Y - 90);
+                    S = O.Length * 1.4f; //magic number
                 }
             }
             #endregion
@@ -446,7 +432,6 @@ namespace QTM2Unity
             //3.7 Find the conic section which is associated with
             //that quadrant using the distances qj = Stanhj, where
             //j = 1,..,4
-            //if (S < precision) S = precision;
             float radiusX = S * Mathf.Tan(MathHelper.DegreesToRadians(radius.X));
             float radiusY = S * Mathf.Tan(MathHelper.DegreesToRadians(radius.Y));
 
@@ -462,18 +447,14 @@ namespace QTM2Unity
             //UnityEngine.Debug.Log("target2D.Y: " + target2D.Y);
             //UnityEngine.Debug.Log("used S: " + S);
             //UnityEngine.Debug.Log("used O: " + O);
-            //UnityEngine.Debug.Log(
-            //    " inside: " + inside +
-            //    " behind: " + behind +
-            //    " reverseCone: " + reverseCone +
-            //    " sidecone: " + sideCone +
-            //    " some90: " + some90);
 
-            //UnityEngine.Debug.Log(" inside: " + inside);
-            //UnityEngine.Debug.Log(" behind: " + behind);
-            //UnityEngine.Debug.Log(" reverseCone: " + reverseCone);
-            //UnityEngine.Debug.Log(" sidecone: " + sideCone);
-            //UnityEngine.Debug.Log(" some90: " + some90);
+            //if (inside || behind || reverseCone || sideCone || some90)
+            //    UnityEngine.Debug.Log(
+            //        (inside ? " inside " : "") +
+            //        (behind ? " behind " : "") +
+            //        (reverseCone ? " reverseCone " : "") +
+            //        (sideCone ? " sideCone " : "") +
+            //        (some90 ? " some90 " : ""));
 
             //3.9 if within the conic section then         
             if (
@@ -493,15 +474,17 @@ namespace QTM2Unity
             {
 
                 //3.12 Find the nearest point on that conic section from the target
-                Vector2 newPoint = NearestPoint(radiusX, radiusY, target2D, q);
+                Vector2 newPoint = NearestPoint(radiusX, radiusY, target2D);
                 Vector3 newPointV3 = new Vector3(newPoint.X, 0.0f, newPoint.Y);
 
                 //3.13 Map (rotate and translate) that point on the
                 //conic section via reverse of 3.4 and use that point as
                 //the new target position
+                //UnityDebug.CreateEllipse(radiusX, radiusY, 400);
+                //UnityDebug.DrawLine(new Vector3(target2D.X, 0, target2D.Y), newPointV3);
                 rotation = Quaternion.Invert(rotation);
                 Vector3 moveTo = Vector3.Transform(newPointV3, rotation);
-                moveTo += OPos;
+                moveTo += O + jointPos;
                 Vector3 vectorToMoveTo = (moveTo - jointPos);
                 axis = Vector3.Cross(joint2Target, vectorToMoveTo);
                 angle = Vector3.CalculateAngle(joint2Target, vectorToMoveTo);
@@ -516,12 +499,42 @@ namespace QTM2Unity
             }
             //3.14 end
         }
-        private static Vector2 NearestPoint(float radiusX, float radiusY, Vector2 target2D, Quadrant q)
+        private static Vector3 GetNewL(Quaternion rotation, Quadrant q, Vector2 radius)
+        {
+            Quaternion inverRot = Quaternion.Invert(rotation);
+            Vector3 right = Vector3.Transform(Vector3.UnitX, inverRot);
+            Vector3 forward = Vector3.Transform(Vector3.UnitZ, inverRot);
+            Vector3 L2;
+            switch (q)
+            {
+                case Quadrant.q1:
+                    if (radius.X > 90) L2 = right;
+                    else L2 = forward;
+                    break;
+                case Quadrant.q2:
+                    if (radius.X > 90) L2 = right;
+                    else L2 = -forward;
+                    break;
+                case Quadrant.q3:
+                    if (radius.X > 90) L2 = -right;
+                    else L2 = -forward;
+                    break;
+                case Quadrant.q4:
+                    if (radius.X > 90) { L2 = -right; }
+                    else L2 = forward;
+                    break;
+                default:
+                    L2 = right;
+                    break;
+            }
+            L2.Normalize();
+            return L2;
+        }
+        private static Vector2 NearestPoint(float radiusX, float radiusY, Vector2 target2D)//, Quadrant q)
         {
             Vector2 newPoint;
             float xRad, yRad, pX, pY;
-
-            if (radiusX >= radiusY)//^ reverseCone)
+            if (radiusX >= radiusY)
             {
                 xRad = Math.Abs(radiusX);
                 yRad = Math.Abs(radiusY);
@@ -542,23 +555,25 @@ namespace QTM2Unity
                     (xRad, yRad, new Vector2(pX, pY));
                 MathHelper.Swap(ref newPoint.X, ref newPoint.Y);
             }
-            switch (q)
-            {
-                case Quadrant.q1:
-                    break;
-                case Quadrant.q2:
-                    newPoint.Y = -newPoint.Y;
-                    break;
-                case Quadrant.q3:
-                    newPoint.X = -newPoint.X;
-                    newPoint.Y = -newPoint.Y;
-                    break;
-                case Quadrant.q4:
-                    newPoint.X = -newPoint.X;
-                    break;
-                default:
-                    break;
-            }
+            //switch (q)
+            //{
+            //    case Quadrant.q1:
+            //        break;
+            //    case Quadrant.q2:
+            //        newPoint.Y = -newPoint.Y;
+            //        break;
+            //    case Quadrant.q3:
+            //        newPoint.X = -newPoint.X;
+            //        newPoint.Y = -newPoint.Y;
+            //        break;
+            //    case Quadrant.q4:
+            //        newPoint.X = -newPoint.X;
+            //        break;
+            //    default:
+            //        break;
+            //}
+            if (target2D.X < 0) newPoint.X = -newPoint.X;
+            if (target2D.Y < 0) newPoint.Y = -newPoint.Y;
             return newPoint;
         }
     }
