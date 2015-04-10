@@ -23,7 +23,7 @@ namespace QTM2Unity
             Vector3[,] rotAxis = new Vector3[k, bones.Length - 1];
 
             int iter = 0;
-            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 10000)
+            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 1000)
             {
                 fillJacobian(out J, out rotAxis, ref bones, ref target);
                 float[,] dTheta;
@@ -32,7 +32,7 @@ namespace QTM2Unity
                 bool allZero = true;
                 for (int i = 0; i < bones.Length - 1; i++) // go through all joints (not end effector)
                 {
-                    if (dTheta[i, 0] > 0.000001) // good values? TODO
+                    if (dTheta[i, 0] > 0.0001f) // good values? TODO
                         allZero = false;
                     Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, i], dTheta[i, 0]);
                     bones[i].Rotate(q); // Rotate bone i dTheta[i,0] radians around previously calculated axis
@@ -54,7 +54,7 @@ namespace QTM2Unity
                 }
                 iter++;
             }
-            Debug.Log("Iterations " + iter);
+            //Debug.Log("Iterations " + iter);
             return bones;
         }
 

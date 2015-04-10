@@ -373,10 +373,5 @@ namespace QTM2Unity.Unity
         {
             return forwardVect + (backMid - forwardVect) * 2 / 3;
         }
-        // TODO write a converter https://msdn.microsoft.com/en-us/library/ayybcxe5.aspx
-        private Vector3 cv(OpenTK.Vector3 v) {
-            return new Vector3(v.X, v.Y, v.Z);
-        } 
     }
-
 }

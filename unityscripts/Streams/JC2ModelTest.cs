@@ -3,7 +3,7 @@ using UnityEngine;
 using QTM2Unity.Unity;
 namespace QTM2Unity
 {
-    class JC2ModelTest : StandardUnityModel
+    class JC2ModelTest : RTStandardUnityModel
     {
         // Update is called once per frame
         public override void UpdateNext()
@@ -12,7 +12,6 @@ namespace QTM2Unity
             skeleton = joints.GetJointLocation(markerData);
             SetAll();
         }
-    
     }
 }
 

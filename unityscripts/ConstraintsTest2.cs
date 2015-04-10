@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using OpenTK;
 namespace QTM2Unity
 {
@@ -53,48 +53,46 @@ namespace QTM2Unity
             OpenTK.Vector3 L1;
 
 
-            Vector3 parentPos;
             Vector3 targ;
             joint = new Bone("Current Joint");
             joint.Constraints = new Vector4(Constraints.x, Constraints.y, Constraints.z, Constraints.w);
 
             targ = transform.Search("Target").position.Convert();
-            parentPos = transform.Search("ParentJoint").position.Convert();
-            joint.Pos = transform.Search("CurrentJoint").position.Convert();
+            Vector3 jointPos = transform.Search("CurrentJoint").position.Convert();
+            joint.Pos = jointPos;
+            UnityEngine.Transform parentTrans = transform.Search("ParentJoint");
+            Vector3 parentPos = parentTrans.position.Convert();
+            Vector3 y = parentTrans.up.Convert();
 
-            L1 = joint.Pos - parentPos;
-            float angle = Vector3.CalculateAngle(L1, Vector3.UnitY);
-            Vector3 axis = Vector3.Cross(L1, Vector3.UnitY);
-            OpenTK.Quaternion rot = Quaternion.FromAxisAngle(axis, angle);
-            rot = OpenTK.Quaternion.Invert(rot);
-            OpenTK.Quaternion rot2 = Quaternion.FromAxisAngle(L1, MathHelper.DegreesToRadians(twist));
-            rot = rot2 * rot;
-            joint.Orientation = rot;
-
+            Quaternion parentRot = QuaternionHelper.LookAtUp(parentPos, jointPos, y);
+            Bone parent = new Bone("Parent", parentPos, parentRot);
+            L1 = parent.GetYAxis();
+            Vector3 parentX = parent.GetXAxis();
+            UnityDebug.DrawRays(parentRot, parentPos, 2f);
             if (spinAroundX || spinAroundY || spinAroundZ) targ = UpdateTarget(targ, joint.Pos);
-            L1 = joint.Pos - parentPos;
-            Vector3 res;
-
             //OpenTK.Quaternion rot = transform.Search("CurrentJoint").rotation.Convert();
             
             UnityDebug.DrawLine(parentPos, joint.Pos, UnityEngine.Color.white);
-            UnityDebug.DrawRay(joint.Pos, L1, UnityEngine.Color.black);
+            //UnityDebug.DrawRay(joint.Pos, L1, UnityEngine.Color.black);
             UnityDebug.DrawLine(joint.Pos, targ, UnityEngine.Color.magenta);
-            UnityDebug.DrawRays(joint.Orientation, joint.Pos, 2f);
+            //UnityDebug.DrawRays(joint.Orientation, joint.Pos, 2f);
             if (printCone)
             {
                 UnityDebug.CreateIrregularCone3(
                         joint.Constraints,
                         joint.Pos,
                         L1,
-                        joint.Orientation,
+                        parent.Orientation,
                         coneResolution,
                         (float)(targ - joint.Pos).Length
                         );
             }
-            if (Constraint.CheckRotationalConstraints(joint, targ, L1, out res)) targ = res;
+            Vector3 res;
+            if (Constraint.CheckRotationalConstraints(joint, parent, targ, out res)) targ = res;
+            //Quaternion res2;
+            //if (Constraint.CheckRotationalConstraints(joint, targ, parent.GetYAxis(), parent.GetXAxis(), out res2)) targ = Vector3.Transform((targ - joint.Pos), res2);
 
-            UnityDebug.DrawLine(joint.Pos, res, UnityEngine.Color.cyan);
+            UnityDebug.DrawLine(joint.Pos, targ, UnityEngine.Color.cyan);
             UpdateGOS("Replaced", UnityDebug.cv(targ));
         }
         Vector3 UpdateTarget(Vector3 targetPos, Vector3 jointPos)

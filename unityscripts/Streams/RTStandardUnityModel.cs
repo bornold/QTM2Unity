@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using QTM2Unity.Unity;
+﻿using UnityEngine;
 namespace QTM2Unity
 {
-    class StandardUnityModel : RT
+    class RTStandardUnityModel : RT_IK_Constrained
     {
-        public bool firstSpine = true;
+        public bool firstSpine = false;
 
         Transform hips;
         Transform upLegLeft;
@@ -30,27 +28,18 @@ namespace QTM2Unity
         Transform handLeft;
         Transform handRight;
 
-        public JointLocalization joints;
-        public BipedSkeleton skeleton;
-        public bool showRotationTrace = false;
-        public bool showSkeleton = false;
-
-
-        public OpenTK.Vector3 goPos;
         // Use this for initialization
         public override void StartNext()
         {
-            joints = new JointLocalization();
+            base.StartNext();
             FindTransform();
         }
 
         // Update is called once per frame
         public override void UpdateNext()
         {
-            List<LabeledMarker> markerData = rtClient.Markers;
-            if (markerData == null && markerData.Count == 0) return;
-            if (joints == null || skeleton == null || !hips || !handRight) StartNext();
-            goPos = this.transform.position.Convert();
+            base.UpdateNext();
+            SetAll();
         }
 
         public void SetAll()
@@ -86,8 +75,8 @@ namespace QTM2Unity
             Bone b = skeleton[name];
             if (b != null && !float.IsNaN(b.Orientation.W))
             {
-                go.rotation = cq(b.Orientation) * rot;
-                if (setPos && !float.IsNaN(b.Pos.X)) go.position = go.parent.position + cv(b.Pos);
+                go.rotation = b.Orientation.Convert() * rot;
+                if (setPos && !float.IsNaN(b.Pos.X)) go.position = go.parent.position + b.Pos.Convert();
             }
         }
         private void setGO(Transform go, string name, bool setPos)
@@ -136,25 +125,6 @@ namespace QTM2Unity
             foreArmRight = transform.Search("RightForeArm");
             handLeft = transform.Search("LeftHand");
             handRight = transform.Search("RightHand");
-        }
-        public void OnDrawGizmos()
-        {
-            if (skeleton != null )
-            {
-                foreach (TreeNode<Bone> b in skeleton)
-                {
-                    if (showRotationTrace)
-                        UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos.Convert() + this.transform.position);
-                    if (showSkeleton)
-                    {
-                        foreach (TreeNode<Bone> b1 in b.Children)
-                        {
-                            UnityDebug.DrawLine(b.Data.Pos + goPos, b1.Data.Pos + goPos);
-                        }
-
-                    }
-                }
-            }
         }
     }
 }

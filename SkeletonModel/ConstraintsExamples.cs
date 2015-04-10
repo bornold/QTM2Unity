@@ -12,7 +12,7 @@ namespace QTM2Unity
         public Vector2 FemurTwist = new Vector2(45, 45);
         public Vector4 Knee = new Vector4(10, 10, 10, 160);
         public Vector2 KneeTwist = new Vector2(45, 45);
-        public Vector4 Ankle = new Vector4(40, 175, 40, 40);
+        public Vector4 Ankle = new Vector4(30, 110, 30, 0);
         public Vector2 AnkleTwist = new Vector2(45, 45);
         public Vector4 Spine = new Vector4(20, 20, 20, 20);
         public Vector2 SpineTwist = new Vector2(45, 45);

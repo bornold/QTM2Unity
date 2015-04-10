@@ -52,7 +52,8 @@ public class IKChainTest : MonoBehaviour {
         {
             newConstraints();
         }
-        Bone grandpa = new Bone("grandpa", new OpenTK.Vector3(0, -1, 0), OpenTK.Quaternion.Identity);
+        Bone grandpa = new Bone("grandpa", new OpenTK.Vector3(0, -1, 0), QuaternionHelper.RotationY(0));
+
         Vector3 last = bones[bones.Count-1].Pos.Convert();
         if ((last - this.gameObject.transform.position).magnitude > 0.01 )
         {
@@ -81,32 +82,31 @@ public class IKChainTest : MonoBehaviour {
             if (!_target.Equals(target))
             {
                 _target = target;
-                if (bones.Any(t => t.Pos.IsNaN())) { UnityEngine.Debug.LogError(bones.Find(t => t.Pos.IsNaN()).ToString()); }
                 bones = solver.SolveBoneChain(bones.ToArray(), target, grandpa).ToList();
             }
         }
-        Debug.DrawLine(Vector3.zero, Vector3.up * boneLength, UnityEngine.Color.black);
+
         UnityDebug.DrawRays(grandpa.Orientation, grandpa.Pos, boneLength);
 
         Bone prev = bones[0];
         foreach (Bone curr in bones)
         {
-            //Color c = Color.Lerp(Color.magenta, Color.cyan, d++ / (float)bones.Count);
             UnityDebug.DrawLine(prev.Pos, curr.Pos);
 
             if (curr != bones[bones.Count -1])
             {
                 if (showOrientation) UnityDebug.DrawRays(curr.Orientation, curr.Pos, boneLength);
-                if (showConstraints && curr.Constraints != null    )
+                if (showConstraints)
                 {
                     OpenTK.Quaternion rot = (prev == curr) ? OpenTK.Quaternion.Identity : curr.Orientation;
-                    UnityDebug.DrawLine(curr.Pos, curr.Pos + (curr.Pos - prev.Pos), UnityEngine.Color.black);
+                    OpenTK.Quaternion rotaten = (curr == prev) ? grandpa.Orientation : prev.Orientation;
                     var L1 = (prev == curr) ? OpenTK.Vector3.UnitY : (curr.Pos - prev.Pos);
+                    UnityDebug.DrawLine(curr.Pos, curr.Pos + L1, UnityEngine.Color.black);
                     UnityDebug.CreateIrregularCone3(
                         curr.Constraints,
                         curr.Pos,
                         L1,
-                        rot,
+                        rotaten,
                         conResolution,
                         boneLength * coneScale    
                         );
@@ -124,12 +124,11 @@ public class IKChainTest : MonoBehaviour {
         _constraints = constraints;
         _jointTwistDiffrence= jointTwistDiffrence;
         List<Bone> newBones = new List<Bone>();
-        float twist = 0.0f;
+        float twist = jointTwistDiffrence;
         var qwist = OpenTK.Quaternion.Identity;
         for (int i = 0; i < chains; i++)
         {
-                qwist = new OpenTK.Quaternion(OpenTK.Vector3.UnitY, OpenTK.MathHelper.DegreesToRadians(twist));
-            qwist.Normalize();
+            qwist = QuaternionHelper.RotationY(OpenTK.MathHelper.DegreesToRadians(twist));
             Bone b = new Bone("Bone " + i.ToString(), new OpenTK.Vector3(0f, (float)i * boneLength, 0f), qwist);
             b.SetRotationalConstraints(constraints.Convert());
             b.SetOrientationalConstraints(twistConstraints.x, twistConstraints.y);

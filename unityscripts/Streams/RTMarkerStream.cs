@@ -65,7 +65,7 @@ namespace QTM2Unity.Unity
 				    if(markerData[i].position.Length > 0)
 				    {
 					    markers[i].name = markerData[i].label;
-                        markers[i].transform.localPosition = cv(markerData[i].position);
+                        markers[i].transform.localPosition = markerData[i].position.Convert();
 					    markers[i].SetActive(true);
 					    markers[i].GetComponent<Renderer>().enabled = visibleMarkers;
                         markers[i].transform.localScale = Vector3.one * markerScale;
@@ -86,7 +86,7 @@ namespace QTM2Unity.Unity
                 {
                     if (markerData[i].position.Length > 0)
                     {
-                        Gizmos.DrawSphere(cv(markerData[i].position) + this.transform.position, markerScale);
+                        Gizmos.DrawSphere(markerData[i].position.Convert() + this.transform.position, markerScale);
                     }
                 }
             }

@@ -21,8 +21,8 @@ namespace QTM2Unity
 	            {
 	                if (visibleBones)
 					{
-						Gizmos.DrawLine(cv(boneData[i].fromMarker.position) + this.transform.position,
-                                        cv(boneData[i].toMarker.position) + this.transform.position);
+						Gizmos.DrawLine(boneData[i].fromMarker.position.Convert() + this.transform.position,
+                                        boneData[i].toMarker.position.Convert() + this.transform.position);
 					}
 	            }
 			}

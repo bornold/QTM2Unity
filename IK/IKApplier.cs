@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OpenTK;
 namespace QTM2Unity
 {
     class IKApplier
     {
         BipedSkeleton lastSkel;
+        BipedSkeleton bufferSkel;
         public BipedSkeleton ApplyIK(BipedSkeleton skeleton, IKSolver iks)
         {
             if (lastSkel == null) lastSkel = skeleton;
 
             IEnumerator it = skeleton.GetEnumerator();
-            //TODO ATTENTION! 
             //Root and all of roots children MUST have set possition
             TreeNode<Bone> b;
 
@@ -23,28 +21,27 @@ namespace QTM2Unity
                 b = (TreeNode<Bone>)it.Current;
                 if (!b.Data.Exists ) // Possition of joint no knowned, Solve with IK
                 {
-                    //UnityEngine.Debug.Log(b.Data.Name + "is missing");
-///////////////////////////////////////////////FUCK UGLY AND TEMPORARY//////////////////////////////////////////////////////////////
+                    /////////////////////////////////////////////// UGLY AND TEMPORARY//////////////////////////////////////////////////////////////
                     Bone referenceBone;
                     if (b.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_L) 
                         || b.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_R))
                     {
                         referenceBone = new Bone(
-                            "",
+                            "hip reversed",
                             b.Parent.Parent.Data.Pos,
                             b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(MathHelper.Pi));
                     }
                     else if (b.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_R))
                     {
                         referenceBone = new Bone(
-                            "",
-                            b.Parent.Data.Pos,
-                            b.Parent.Data.Orientation * QuaternionHelper.RotationZ(-OpenTK.MathHelper.PiOver2));
+                            "spine End to right",
+                            b.Parent.Parent.Data.Pos,
+                            b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(-OpenTK.MathHelper.PiOver2));
                     }
                     else if (b.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_L))
                     {
                         referenceBone = new Bone(
-                            "",
+                            "spine End to left",
                             b.Parent.Data.Pos,
                             b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.PiOver2));
                     }
@@ -52,8 +49,11 @@ namespace QTM2Unity
                     {
                         referenceBone = b.Parent.Parent.Data;
                     }
-///////////////////////////////////////////////FUCK UGLY AND TEMPORARY END//////////////////////////////////////////////////////////////
-                    foreach (Bone a in MissingJoint(b, iks, referenceBone, ref it)) skeleton[a.Name] = a;
+/////////////////////////////////////////////// UGLY AND TEMPORARY END//////////////////////////////////////////////////////////////
+                    foreach (Bone a in MissingJoint(b, iks, referenceBone, ref it)) 
+                    { 
+                        skeleton[a.Name] = a; 
+                    }
                 }
             }
             lastSkel = skeleton;

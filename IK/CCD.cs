@@ -38,19 +38,17 @@ namespace QTM2Unity
                     // - first the endEffector
                     // - then the rest of the affected joints
 
-                    rotation = (a.Length == 0 || b.Length == 0) ? rotation = Quaternion.Identity
-                        : rotation = QuaternionHelper.GetRotationBetween(a, b);
+                    rotation = (a.Length == 0 || b.Length == 0) ? Quaternion.Identity
+                        : QuaternionHelper.GetRotationBetween(a, b);
 
                     if (bones[i].Constraints != Vector4.Zero)
                     {
 
                         Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
-                        Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetYAxis();
+                        Bone reference = (i > 0) ? bones[i - 1] : parent;
                         Vector3 res;
-                        Vector3 cpo = new Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z);
-                        if (Constraint.CheckRotationalConstraints(bones[i], trg, dir, out res))
+                        if (Constraint.CheckRotationalConstraints(bones[i], reference, trg, out res))
                         {
-                            Vector3 cpo2 = new Vector3(bones[i].Pos.X, bones[i].Pos.Y, bones[i].Pos.Z);
                             a = bones[i + 1].Pos - bones[i].Pos;
                             b = res - bones[i].Pos;
                             rotation = QuaternionHelper.GetRotationBetween(a, b);
@@ -59,10 +57,11 @@ namespace QTM2Unity
 
                     ForwardKinematics(ref bones, rotation, i);
 
-                    if (bones[i].StartTwistLimit > 0 && bones[i].EndTwistLimit > 0)
+                    if (bones[i].StartTwistLimit > -1 && bones[i].EndTwistLimit > -1)
                     {
-                        Quaternion rotation2 = Quaternion.Identity;
+                        Quaternion rotation2;// = Quaternion.Identity;
                         if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation2))
+
                         {
                             //bones[i].Rotate(rotation2);
                             ForwardKinematics(ref bones, rotation2, i);

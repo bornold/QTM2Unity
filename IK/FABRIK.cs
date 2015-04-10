@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using OpenTK;
 
 namespace QTM2Unity
@@ -24,9 +22,9 @@ namespace QTM2Unity
             }
 
             // The target is reachable
+            bones[bones.Length - 1].Orientation = target.Orientation;
             Vector3 root = bones[0].Pos;
             int iterations = 0;
-            bones[bones.Length - 1].Orientation = target.Orientation;
             while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iterations++ < 500)
             {
                 // Forward reaching
@@ -35,7 +33,6 @@ namespace QTM2Unity
                 // Backward reaching
                 BackwardReaching(ref bones, ref distances, root, parent);
             }
-
             return bones;
         }
 
@@ -46,36 +43,39 @@ namespace QTM2Unity
                 // Position
                 float r = (target - bones[i].Pos).Length;
                 float l = distances[i] / r;
-                bones[i + 1].Pos = ((1 - l) * bones[i].Pos) + (l * target);
+                Vector3 newPos = ((1 - l) * bones[i].Pos) + (l * target);
+                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
+                Vector3 res;
+                bones[i + 1].Pos = 
+                    Constraint.CheckRotationalConstraints(bones[i], prevBone, newPos, out res) ? 
+                    res : newPos;
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
-
                 // Constraints
-                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
-                EnsureRotationalConstraints(ref bones[i], ref prevBone);
-                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetYAxis();
-                EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], dir);
+                EnsureOrientationalConstraints(ref bones[i], ref prevBone, false);
+
             }
             return bones;
         }
 
         private void ForwardReaching(ref Bone[] bones, ref float[] distances, Bone target)
-        {
+        {   
             bones[bones.Length - 1].Pos = target.Pos;
-            bones[bones.Length - 1].Orientation = target.Orientation; //TODO if bone is endeffector, we should not look at orient constraints
+            bones[bones.Length - 1].Orientation = target.Orientation; //TODO if bone is endeffector, we should not look at rot constraints
             for (int i = bones.Length - 2; i >= 0; i--)
             {
                 // Position
                 float r = (bones[i + 1].Pos - bones[i].Pos).Length;
                 float l = distances[i] / r;
-                bones[i].Pos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
+               // bones[i].Pos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
 
+                Vector3 newPos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
+                bones[i].Pos = newPos;
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
 
                 // Constraints
-                EnsureRotationalConstraints(ref bones[i], ref bones[i + 1]);
-                EnsureOrientationalConstraints(ref bones[i], ref bones[i + 1], -bones[i + 1].GetYAxis());
+                EnsureOrientationalConstraints(ref bones[i+1], ref bones[i], true);
 
             }
         }
@@ -88,41 +88,36 @@ namespace QTM2Unity
                 // Position
                 float r = (bones[i + 1].Pos - bones[i].Pos).Length;
                 float l = distances[i] / r;
-                bones[i + 1].Pos = (1 - l) * bones[i].Pos + l * bones[i + 1].Pos;
 
+                Vector3 newPos = (1 - l) * bones[i].Pos + l * bones[i + 1].Pos;
+                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
+                Vector3 res;
+                bones[i + 1].Pos =
+                    Constraint.CheckRotationalConstraints(bones[i], prevBone, newPos, out res) ?
+                    res : 
+                    newPos;
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
-
                 // Constraints
-                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
-                EnsureRotationalConstraints(ref bones[i], ref prevBone);
-                Vector3 dir = (i > 0) ? bones[i].Pos - bones[i - 1].Pos : parent.GetYAxis();
-                //if (dir.IsNaN()) UnityEngine.Debug.Log(parent.Orientation);
-                EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], dir);
+                EnsureOrientationalConstraints(ref bones[i], ref prevBone, false);
             }
         }
-        private bool EnsureOrientationalConstraints(ref Bone target, ref Bone reference, Vector3 L1)
+
+        private bool EnsureOrientationalConstraints(ref Bone target, ref Bone reference, bool forward)
         {
-            if (reference.Constraints != Vector4.Zero)
-            {
-                Vector3 res;
-                if (Constraint.CheckRotationalConstraints(reference, target.Pos, L1, out res))
-                {
-                    target.Pos = res;
-                    reference.RotateTowards(target.Pos - reference.Pos);
-                    return true;
-                }
-            }
-            return false;
-        }
-        private bool EnsureRotationalConstraints(ref Bone target, ref Bone reference)
-        {
-            if (target.StartTwistLimit > 0 && target.EndTwistLimit > 0)
+            if (target.StartTwistLimit > -1 && target.EndTwistLimit > -1)
             {
                 Quaternion rotation = Quaternion.Identity;
                 if (Constraint.CheckOrientationalConstraint(target, reference, out rotation))
                 {
-                    target.Rotate(rotation);
+                    if (forward)
+                    {
+                        reference.Rotate(rotation);
+                    }
+                    else
+                    {
+                        target.Rotate(rotation);
+                    }
                     return true;
                 }
             }

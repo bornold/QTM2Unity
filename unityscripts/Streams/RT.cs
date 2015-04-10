@@ -5,15 +5,14 @@ namespace QTM2Unity
 {
     public abstract class RT : MonoBehaviour
     {
-        public RTClient rtClient;
-        public float traceScale = 0.07f;
-        public Color skelettColor = Color.white;
+        public bool debug = false;
+        protected RTClient rtClient;
+        protected OpenTK.Vector3 pos;
         protected bool streaming = false;
         protected List<LabeledMarker> markerData;
-
         // Use this for initialization
-        public abstract void UpdateNext();
         public abstract void StartNext();
+        public abstract void UpdateNext();
         void Start()
         {
             rtClient = RTClient.getInstance();
@@ -34,27 +33,8 @@ namespace QTM2Unity
             }
             markerData = rtClient.Markers;
             if (markerData == null && markerData.Count == 0) return;
-
+            pos = this.transform.position.Convert();
             UpdateNext();
-        }
-
-        protected void drawRays(OpenTK.Quaternion rot, Vector3 pos)
-        {
-            pos += this.transform.position;
-            UnityDebug.DrawRays(rot, pos, traceScale);
-        }
-        protected void drawLine(OpenTK.Vector3 start, OpenTK.Vector3 end)
-        {
-            Debug.DrawLine(cv(start) + this.transform.position, cv(end) + this.transform.position, skelettColor);
-        }
-
-        public Vector3 cv(OpenTK.Vector3 v)
-        {
-            return new Vector3(v.X, v.Y, v.Z);
-        }
-        public Quaternion cq(OpenTK.Quaternion q)
-        {
-            return new Quaternion(q.X, q.Y, q.Z, q.W);
         }
     }
 }
