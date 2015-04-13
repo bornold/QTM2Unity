@@ -45,10 +45,15 @@ namespace QTM2Unity
                 float l = distances[i] / r;
                 Vector3 newPos = ((1 - l) * bones[i].Pos) + (l * target);
                 Bone prevBone = (i > 0) ? bones[i - 1] : parent;
-                Vector3 res;
-                bones[i + 1].Pos = 
-                    Constraint.CheckRotationalConstraints(bones[i], prevBone, newPos, out res) ? 
-                    res : newPos;
+
+                if (bones[i].Constraints != Vector4.Zero)
+                {
+                    Vector3 res;
+                    newPos = 
+                        Constraint.CheckRotationalConstraints(bones[i], prevBone, newPos, out res) ? 
+                        res : newPos;
+                }
+                bones[i + 1].Pos = newPos;
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
                 // Constraints
@@ -91,11 +96,15 @@ namespace QTM2Unity
 
                 Vector3 newPos = (1 - l) * bones[i].Pos + l * bones[i + 1].Pos;
                 Bone prevBone = (i > 0) ? bones[i - 1] : parent;
-                Vector3 res;
-                bones[i + 1].Pos =
-                    Constraint.CheckRotationalConstraints(bones[i], prevBone, newPos, out res) ?
-                    res : 
-                    newPos;
+
+                if (bones[i].Constraints != Vector4.Zero)
+                {
+                    Vector3 res;
+                    newPos =
+                        Constraint.CheckRotationalConstraints(bones[i], prevBone, newPos, out res) ?
+                        res : newPos;
+                }
+                bones[i + 1].Pos = newPos;
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
                 // Constraints

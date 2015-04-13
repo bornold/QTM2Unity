@@ -7,53 +7,51 @@ namespace QTM2Unity
     class IKApplier
     {
         BipedSkeleton lastSkel;
-        BipedSkeleton bufferSkel;
         public BipedSkeleton ApplyIK(BipedSkeleton skeleton, IKSolver iks)
         {
             if (lastSkel == null) lastSkel = skeleton;
 
-            IEnumerator it = skeleton.GetEnumerator();
-            //Root and all of roots children MUST have set possition
-            TreeNode<Bone> b;
+            IEnumerator skelEnumer = skeleton.GetEnumerator();
+            IEnumerator lastSkelEnumer = lastSkel.GetEnumerator();
 
-            while (it.MoveNext())
+            //Root and all of roots children MUST have set possition
+            TreeNode<Bone> bone;
+
+            while (skelEnumer.MoveNext() && lastSkelEnumer.MoveNext())
             {
-                b = (TreeNode<Bone>)it.Current;
-                if (!b.Data.Exists ) // Possition of joint no knowned, Solve with IK
+                bone = (TreeNode<Bone>)skelEnumer.Current;
+                if (!bone.Data.Exists ) // Possition of joint no knowned, Solve with IK
                 {
                     /////////////////////////////////////////////// UGLY AND TEMPORARY//////////////////////////////////////////////////////////////
                     Bone referenceBone;
-                    if (b.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_L) 
-                        || b.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_R))
+                    if (bone.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_L) 
+                        || bone.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_R))
                     {
                         referenceBone = new Bone(
                             "hip reversed",
-                            b.Parent.Parent.Data.Pos,
-                            b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(MathHelper.Pi));
+                            new Vector3( bone.Parent.Parent.Data.Pos),
+                            bone.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(MathHelper.Pi));
                     }
-                    else if (b.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_R))
+                    else if (bone.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_R))
                     {
                         referenceBone = new Bone(
                             "spine End to right",
-                            b.Parent.Parent.Data.Pos,
-                            b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(-OpenTK.MathHelper.PiOver2));
+                            new Vector3(bone.Parent.Parent.Data.Pos),
+                            bone.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(-OpenTK.MathHelper.PiOver2));
                     }
-                    else if (b.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_L))
+                    else if (bone.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_L))
                     {
                         referenceBone = new Bone(
                             "spine End to left",
-                            b.Parent.Data.Pos,
-                            b.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.PiOver2));
+                            new Vector3(bone.Parent.Parent.Data.Pos),
+                            bone.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.PiOver2));
                     }
                     else
                     {
-                        referenceBone = b.Parent.Parent.Data;
+                        referenceBone = bone.Parent.Parent.Data;
                     }
+                    MissingJoint(iks, referenceBone, ref skelEnumer, ref lastSkelEnumer);
 /////////////////////////////////////////////// UGLY AND TEMPORARY END//////////////////////////////////////////////////////////////
-                    foreach (Bone a in MissingJoint(b, iks, referenceBone, ref it)) 
-                    { 
-                        skeleton[a.Name] = a; 
-                    }
                 }
             }
             lastSkel = skeleton;
@@ -61,28 +59,48 @@ namespace QTM2Unity
         }
 
 
-        private List<Bone> MissingJoint(TreeNode<Bone> b, IKSolver iks, Bone parent, ref IEnumerator it)
+        private void MissingJoint(IKSolver iks, Bone referenceBone, ref IEnumerator skelEnum, ref IEnumerator lastSkelEnum)
         {
-            Bone root = lastSkel[b.Parent.Data.Name]; // last frames' parent is root in solution
-            Bone missing = lastSkel[b.Data.Name]; // this node that is missing
-            Vector3 offset = b.Parent.Data.Pos - root.Pos; // offset to move last frames chain to this frames' position
-            root.Pos += offset; // move chain to this place
-            missing.Pos += offset;
-            List<Bone> missingChain = new List<Bone>() { root, missing }; // chain to be solved
-            while (!b.IsLeaf && it.MoveNext()) //while not leaf
+            List<Bone> missingChain = new List<Bone>(); // chain to be solved
+
+            //root of chain 
+            // missings joints parent from last frame is root in solution
+            TreeNode<Bone> curr = ((TreeNode<Bone>)skelEnum.Current).Parent;
+            TreeNode<Bone> last = ((TreeNode<Bone>)lastSkelEnum.Current).Parent;
+            Vector3 offset = curr.Data.Pos - last.Data.Pos; // offset to move last frames chain to this frames' position
+
+            CopyFromLast(ref curr, ref last); 
+            curr.Data.Pos += offset;
+            missingChain.Add(curr.Data); 
+
+            // first missing, copy data from last frame
+            curr = ((TreeNode<Bone>)skelEnum.Current);
+            last = ((TreeNode<Bone>)lastSkelEnum.Current);
+            CopyFromLast(ref curr, ref last);
+            curr.Data.Pos += offset;
+            missingChain.Add(curr.Data);
+            while (!curr.IsLeaf && skelEnum.MoveNext() && lastSkelEnum.MoveNext()) //while not leaf
             {
-                b = (TreeNode<Bone>)it.Current;
-                missing = lastSkel[b.Data.Name];
-                missing.Pos += offset;
-                missingChain.Add(missing);
-                if (b.Data.Exists) // target found! it the last in list
+                curr = ((TreeNode<Bone>)skelEnum.Current);
+                last = ((TreeNode<Bone>)lastSkelEnum.Current);
+                if (curr.Data.Exists) // target found! it the last in list
                 {
-                    Bone target = b.Data;
-                    missingChain = iks.SolveBoneChain(missingChain.ToArray(), target, parent).ToList(); // solve with IK
+                    Bone target = new Bone("target",new Vector3(curr.Data.Pos),new Quaternion(curr.Data.Orientation.Xyz, curr.Data.Orientation.W));
+                    CopyFromLast(ref curr, ref last);
+                    curr.Data.Pos += offset;
+                    missingChain.Add(curr.Data);
+                    iks.SolveBoneChain(missingChain.ToArray(), target, referenceBone).ToList(); // solve with IK
                     break;
                 }
+                CopyFromLast(ref curr, ref last);
+                curr.Data.Pos += offset;
+                missingChain.Add(curr.Data);
             }
-            return missingChain;
+        }
+        private void CopyFromLast(ref TreeNode<Bone> curr, ref TreeNode<Bone> last)
+        {
+            curr.Data.Pos = new Vector3(last.Data.Pos);
+            curr.Data.Orientation = new Quaternion(last.Data.Orientation.Xyz, last.Data.Orientation.W);
         }
     }
 }

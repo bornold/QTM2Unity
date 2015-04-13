@@ -43,7 +43,6 @@ namespace QTM2Unity
         public const string FINGER_R = "finger_R";
         #endregion
 
-        [Obsolete]
         public BipedSkeleton()
         {
             root = new TreeNode<Bone>(new Bone(PELVIS));

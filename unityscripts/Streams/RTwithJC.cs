@@ -8,22 +8,30 @@ namespace QTM2Unity
         public bool showMarkers = false;
         public float markerScale = 0.015f;
         public bool showRotationTrace = false;
-        public float traceScale = 0.02f;
+        public float traceScale = 0.08f;
         protected BipedSkeleton skeleton;
+        protected BipedSkeleton skeletonBuffer;
+
         protected JointLocalization joints;
         
         public override void StartNext()
         {
             joints = new JointLocalization();
+            skeleton = new BipedSkeleton();
+            skeletonBuffer = new BipedSkeleton();
         }
 
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if (joints == null) joints = new JointLocalization();
-            BipedSkeleton lastSkel = skeleton;
-            if (debug) { foreach (LabeledMarker LM in markerData) Debug.Log(LM.label); debug = false; }
-            skeleton = joints.GetJointLocation(markerData);
+            if (joints == null) joints = new JointLocalization(); 
+            if (skeleton == null) skeleton = new BipedSkeleton();
+            if (skeletonBuffer == null) skeletonBuffer = new BipedSkeleton();
+
+            BipedSkeleton temp = skeleton;
+            skeleton = skeletonBuffer;
+            skeletonBuffer = temp;
+            joints.GetJointLocation(markerData, ref skeleton);
         }
         void OnDrawGizmos()
         {
@@ -45,9 +53,9 @@ namespace QTM2Unity
         {
             foreach (TreeNode<Bone> b in skeleton)
             {
-                if (showRotationTrace)
+                if (showRotationTrace && !b.IsLeaf)
                 {
-                    UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos.Convert(), traceScale);
+                    UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos + pos, traceScale);
                 }
 
                 if (showSkeleton)

@@ -10,7 +10,6 @@ namespace QTM2Unity
         protected OpenTK.Vector3 pos;
         protected bool streaming = false;
         protected List<LabeledMarker> markerData;
-        // Use this for initialization
         public abstract void StartNext();
         public abstract void UpdateNext();
         void Start()
@@ -19,7 +18,6 @@ namespace QTM2Unity
             StartNext();
         }
 
-        // Update is called once per frame
         void Update()
         {
             if (rtClient == null)

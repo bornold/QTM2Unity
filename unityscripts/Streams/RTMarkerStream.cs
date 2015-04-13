@@ -13,8 +13,6 @@ namespace QTM2Unity.Unity
         public bool gizmo;
 		public float markerScale = 0.01f;
 
-        private bool streaming = false;
-
 		// Use this for initialization
         public override void StartNext()
         {
