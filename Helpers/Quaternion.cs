@@ -222,6 +222,9 @@ namespace QTM2Unity
         // Returns a quaternion representing the rotation from vector a to b
         public static Quaternion GetRotationBetween(Vector3 a, Vector3 b)
         {
+            if (a == Vector3.Zero || b == Vector3.Zero)
+                return Quaternion.Identity; 
+
             a.Normalize();
             b.Normalize();
 
