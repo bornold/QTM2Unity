@@ -27,6 +27,11 @@ namespace QTM2Unity
             int iterations = 0;
             while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iterations++ < 500)
             {
+                // Check if target is on the chain
+                if (TargetOnChain(bones, target))
+                {
+                    // TODO
+                }
                 // Forward reaching
                 ForwardReaching(ref bones, ref distances, target);
 
@@ -34,6 +39,12 @@ namespace QTM2Unity
                 BackwardReaching(ref bones, ref distances, root, parent);
             }
             return bones;
+        }
+
+        private bool TargetOnChain(Bone[] bones, Bone target)
+        {
+            // TODO
+            return false;
         }
 
         private Bone[] TargetUnreachable(ref float[] distances, Bone[] bones, Vector3 target, Bone parent)
@@ -64,21 +75,39 @@ namespace QTM2Unity
         }
 
         private void ForwardReaching(ref Bone[] bones, ref float[] distances, Bone target)
-        {   
+        {
+            
             bones[bones.Length - 1].Pos = target.Pos;
             bones[bones.Length - 1].Orientation = target.Orientation; //TODO if bone is endeffector, we should not look at rot constraints
             for (int i = bones.Length - 2; i >= 0; i--)
             {
+                if (bones[i+1].Pos == bones[i].Pos)
+                {
+                    // move one of them a small distance along the chain
+                    if (i+2 < bones.Length)
+                    {
+                        bones[i + 1].Pos = bones[i + 1].Pos +
+                            Vector3.Normalize(bones[i + 2].Pos - bones[i + 1].Pos) * 0.001f;
+                    }
+                    else if (i - 1 >= 0)
+                    {
+                        bones[i].Pos = bones[i - 1].Pos +
+                            Vector3.Normalize(bones[i - 1].Pos - bones[i].Pos) * 0.001f;
+                    }
+                    // else terminate
+                }
                 // Position
+                Vector3 newPos;
                 float r = (bones[i + 1].Pos - bones[i].Pos).Length;
                 float l = distances[i] / r;
-               // bones[i].Pos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
+                // bones[i].Pos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
 
-                Vector3 newPos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
+                newPos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
                 bones[i].Pos = newPos;
+
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
-
+                  
                 // Constraints
                 EnsureOrientationalConstraints(ref bones[i+1], ref bones[i], true);
 
@@ -90,13 +119,30 @@ namespace QTM2Unity
             bones[0].Pos = root;
             for (int i = 0; i < bones.Length - 1; i++)
             {
+                if (bones[i + 1].Pos == bones[i].Pos)
+                {
+                    // move one of them a small distance along the chain
+                    if (i + 2 < bones.Length)
+                    {
+                        bones[i + 1].Pos = bones[i + 1].Pos +
+                            Vector3.Normalize(bones[i + 2].Pos - bones[i + 1].Pos) * 0.001f;
+                    }
+                    else if (i - 1 >= 0)
+                    {
+                        bones[i].Pos = bones[i - 1].Pos +
+                            Vector3.Normalize(bones[i - 1].Pos - bones[i].Pos) * 0.001f;
+                    }
+                    // else terminate? TODO
+                }
+
+                Vector3 newPos;
                 // Position
                 float r = (bones[i + 1].Pos - bones[i].Pos).Length;
                 float l = distances[i] / r;
 
-                Vector3 newPos = (1 - l) * bones[i].Pos + l * bones[i + 1].Pos;
+                newPos = (1 - l) * bones[i].Pos + l * bones[i + 1].Pos;
+                
                 Bone prevBone = (i > 0) ? bones[i - 1] : parent;
-
                 if (bones[i].Constraints != Vector4.Zero)
                 {
                     Vector3 res;
@@ -109,6 +155,7 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
                 // Constraints
                 EnsureOrientationalConstraints(ref bones[i], ref prevBone, false);
+              
             }
         }
 
