@@ -90,8 +90,8 @@ namespace QTM2Unity
         public Bone(string name)
         {
             this.name = name;
-            startTwistLimit = 0;
-            endTwistLimit = 0;
+            startTwistLimit = -1;
+            endTwistLimit = -1;
         }
 
         public Bone(string name, Vector3 position)
