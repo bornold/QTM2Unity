@@ -11,7 +11,7 @@ namespace QTM2Unity
 
         void OnDrawGizmos()
         {
-            if (!Application.isPlaying)
+            if (!Application.isPlaying || rtClient == null)
                 return;
 			if (rtClient.Bones != null)
 			{

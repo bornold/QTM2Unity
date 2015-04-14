@@ -30,6 +30,7 @@ namespace QTM2Unity
         }
         void LateUpdate()
         {
+            if (!streaming) return;
             foreach (TreeNode<Bone> b in skeleton)
             {
                 if (showConstraints)
@@ -69,7 +70,7 @@ namespace QTM2Unity
                         OpenTK.Vector3 poss = c.Pos + pos;
                         UnityDebug.CreateIrregularCone3(c.Constraints, poss, L1, referenceBone.Orientation, coneRes, coneSize);
                         if (showL1) UnityDebug.DrawLine(poss, poss + L1 * traceScale, UnityEngine.Color.black);
-                        if (showParentRot) UnityDebug.DrawRays(referenceBone.Orientation, referenceBone.Pos, traceScale);
+                        if (showParentRot) UnityDebug.DrawRays2(referenceBone.Orientation, c.Pos+pos, traceScale);
 
                     }
                 }

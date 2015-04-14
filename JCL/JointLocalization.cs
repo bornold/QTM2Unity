@@ -13,11 +13,11 @@ namespace QTM2Unity
         public float spineLength = 0.05f; // m
         public float BMI = 24;
 
-        private float height = 150; // cm
-        private float mass = 40; 
-        private float chestDepth = 50; //mm
+        private float height = 175; // cm
+        private float mass = 75; // kg
+        private float chestDepth = 200; //mm
         private Vector3 neck2ChestVector = Vector3.Zero; 
-        private float shoulderWidth = 50; // mm
+        private float shoulderWidth = 400; // mm
         #endregion
 
         #region important markers for hip joint
@@ -30,6 +30,19 @@ namespace QTM2Unity
         private Dictionary<string, Vector3> markers;
         private Dictionary<string, Vector3> markersLastFrame;
         private BipedSkeleton currentFrame;
+        Dictionary<string, Vector3> markers2;
+        public JointLocalization()
+        {
+            List<string> markersList = new List<string>()
+            {
+             bodyBase, chest, neck, spine, head,leftHead, rightHead,
+             leftShoulder, leftElbow, leftInnerElbow, leftOuterElbow, leftWrist, leftWristRadius, leftHand,
+             rightShoulder, rightElbow, rightInnerElbow, rightOuterElbow, rightWrist, rightWristRadius, rightHand,
+             leftHip, leftUpperKnee, leftOuterKnee, leftLowerKnee, leftAnkle, leftHeel, leftFoot,
+             rightHip, rightUpperKnee, rightOuterKnee, rightLowerKnee, rightAnkle, rightHeel, rightFoot,
+            };
+            markers2 = markersList.ToDictionary(k => k, v => new Vector3(float.NaN, float.NaN, float.NaN));
+        }
         public void GetJointLocation(List<LabeledMarker> markerData, ref BipedSkeleton skeleton)
         { 
             // Copy last frames markers
@@ -37,6 +50,8 @@ namespace QTM2Unity
 
             // Copy new markers to dictionary
             markers = markerData.ToDictionary(k => k.label, v => v.position);
+            markers = markers.Concat(markers2.Where(kvp => !markers.ContainsKey(kvp.Key))).ToDictionary(kv => kv.Key, kv => kv.Value);
+
             // collect data from markers about body proportions
             // this is necessary for shoulder joint localization 
             // Locate hiporientation, hip orientation is important for IK solver,
@@ -365,7 +380,7 @@ namespace QTM2Unity
         }
         private void GetSpineRoot(Quaternion pelvisOrientation, Bone b)
         {
-            Vector3 target = joints[BipedSkeleton.SPINE1];
+            Vector3 target = joints[BipedSkeleton.SPINE1].IsNaN() ? joints[BipedSkeleton.SPINE3] : joints[BipedSkeleton.SPINE1];
             Vector3 front = Vector3.Transform(Vector3.UnitZ,pelvisOrientation);
             Vector3 pos = joints[BipedSkeleton.SPINE0];
             b.Pos = pos;
@@ -532,7 +547,7 @@ namespace QTM2Unity
             Vector3 
                 pos, target,
                 right, left, front, back,
-                up, forward,
+                up,
                 pelvisfront = Vector3.Transform(Vector3.UnitZ, pelvisOrientation);
             pelvisfront.Normalize();
             /////////////// FEMUR LEFT ///////////////
@@ -575,10 +590,15 @@ namespace QTM2Unity
             /////////////// Spine end ///////////////
             back = markers[neck];
             front = markers[chest];
-            Vector3 n2cV = Vector3.Normalize(Vector3.Transform(neck2ChestVector, chestOrientation));
-            Vector3 neckPos = back.IsNaN() ?
-                front + -(n2cV * ((chestDepth/1000) - marker2SpineDist)) :
-                back + n2cV * marker2SpineDist;
+            Vector3 neckPos;
+
+                Vector3 n2cV = Vector3.Normalize(Vector3.Transform(neck2ChestVector, chestOrientation));
+            if (!back.IsNaN() && neck2ChestVector != Vector3.Zero)
+                neckPos = back + n2cV * marker2SpineDist;
+            else if (!front.IsNaN() && neck2ChestVector != Vector3.Zero)
+                neckPos = front + (-n2cV * ((chestDepth / 1000) - marker2SpineDist));
+            else
+                neckPos = Vector3Helper.MidPoint(markers[leftShoulder], markers[rightShoulder]);
             dic.Add(BipedSkeleton.SPINE3, neckPos);
             //////////////////////////////////////////
 
@@ -834,6 +854,7 @@ namespace QTM2Unity
         string rightAnkle = "R_FAL";
         string rightHeel = "R_FCC";
         string rightFoot = "R_FM2";
+
         #endregion
     }
 }

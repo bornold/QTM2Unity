@@ -216,6 +216,14 @@ namespace QTM2Unity
             return false;
         }
 
+
+        public bool _connected;
+        public int _pickedServer;
+        public short _udpPort;
+        public int _streammode;
+        public int _streamval;
+        public bool _stream6d;
+        public bool _stream3d;
 		/// <summary>
 		/// Connect the specified pickedServer.
 		/// </summary>
@@ -230,7 +238,17 @@ namespace QTM2Unity
 			sDiscoveryResponse server =  mProtocol.DiscoveryResponses[pickedServer];
 			if(mProtocol.connect(server, udpPort))
 			{
-				return connectStream(udpPort, streammode, streamval, stream6d, stream3d);
+                if (connectStream(udpPort, streammode, streamval, stream6d, stream3d))
+                {
+                    _connected = true;
+                    _pickedServer = pickedServer;
+                    _udpPort= udpPort;
+                    _streammode = streammode;
+                    _streamval = streamval;
+                    _stream6d = stream6d;
+                    _stream3d = stream3d;
+                    return true;
+                }
 			}
 			Debug.Log ("Error Creating Connection to server");
 			return false;

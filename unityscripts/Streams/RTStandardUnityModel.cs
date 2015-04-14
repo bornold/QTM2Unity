@@ -90,7 +90,7 @@ namespace QTM2Unity
 
         private void setGOFoot(Transform go, string name)
         {
-            setGO(go, name, Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180), false);
+            setGO(go, name, Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180) * Quaternion.Euler(Vector3.right * -30), false);
         }
         private void setGOArmRight(Transform go, string name)
         {
