@@ -28,9 +28,12 @@ namespace QTM2Unity
             while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iterations++ < 500)
             {
                 // Check if target is on the chain
-                if (TargetOnChain(bones, target))
+                if (IsTargetOnChain(ref bones, ref target))
                 {
-                    // TODO
+                    // Bend chain a small degree
+                    Quaternion rot = Quaternion.FromAxisAngle(bones[0].GetXAxis(), MathHelper.DegreesToRadians(1));
+                    //bones[0].Rotate(rot);
+                    ForwardKinematics(ref bones, rot, 0);
                 }
                 // Forward reaching
                 ForwardReaching(ref bones, ref distances, target);
@@ -39,12 +42,6 @@ namespace QTM2Unity
                 BackwardReaching(ref bones, ref distances, root, parent);
             }
             return bones;
-        }
-
-        private bool TargetOnChain(Bone[] bones, Bone target)
-        {
-            // TODO
-            return false;
         }
 
         private Bone[] TargetUnreachable(ref float[] distances, Bone[] bones, Vector3 target, Bone parent)

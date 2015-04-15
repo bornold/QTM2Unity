@@ -26,6 +26,15 @@ namespace QTM2Unity
             while ((target.Pos - (bones[numberOfBones - 1].Pos)).Length > threshold
                 && iter < numberOfIterations)
             {
+
+                // Check if target is on the chain
+                if (IsTargetOnChain(ref bones, ref target))
+                {
+                    // Bend chain a small degree
+                    Quaternion rot = Quaternion.FromAxisAngle(bones[0].GetXAxis(), MathHelper.DegreesToRadians(1));
+                    ForwardKinematics(ref bones, rot, 0);
+                }
+
                 // for each bone, starting with the one closest to the end effector 
                 // (but not the end effector itself)
                 for (int i = numberOfBones - 2; i >= 0; i--)
