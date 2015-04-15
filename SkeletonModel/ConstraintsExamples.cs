@@ -6,15 +6,15 @@ namespace QTM2Unity
 
         public Vector4 Femur = new Vector4(60, 160, 60, 60);
         public Vector2 FemurTwist = new Vector2(315, 45);
-        public Vector4 Knee = new Vector4(10, 10, 10, 160);
+        public Vector4 Knee = new Vector4(10, 0, 10, 160);
         public Vector2 KneeTwist = new Vector2(315, 45);
         public Vector4 Ankle = new Vector4(30, 110, 30, 0);
         public Vector2 AnkleTwist = new Vector2(315, 45);
         public Vector4 Spine = new Vector4(20, 20, 20, 20);
         public Vector2 SpineTwist = new Vector2(315, 45);
-        public Vector4 Neck = new Vector4(60, 60, 60, 60);
+        public Vector4 Neck = new Vector4(85, 85, 85, 85);
         public Vector2 NeckTwist = new Vector2(270, 90);
-        public Vector4 KeyBone = new Vector4(60, 40, 60, 20);
+        public Vector4 KeyBone = new Vector4(40, 10, 40, 10);
         public Vector2 KeyBoneTwist = new Vector2(355, 5);
         public Vector4 Shoulder = new Vector4(110, 110, 110, 110);
         public Vector2 ShoulderTwist = new Vector2(270, 90);
@@ -22,15 +22,14 @@ namespace QTM2Unity
         public Vector2 ElbowTwist = new Vector2(270, 180);
         public Vector4 Wrist = new Vector4(60, 60, 60, 60);
         public Vector2 WristTwist = new Vector2(350, 10);
-        private Vector4 ElbowRight;
-        public ConstraintsExamples()
-        {
-            ElbowRight = new Vector4(Elbow.W, Elbow.Z, Elbow.Y, Elbow.X);
-        }
+        private Vector2 NoTwist = new Vector2(359, 1);
+        private Vector4 NoMovment = new Vector4(1,1,1,1);
         public void SetConstraints(ref BipedSkeleton skeleton)
         {
+            skeleton[BipedSkeleton.SPINE3].SetRotationalConstraints(NoMovment);
+            skeleton[BipedSkeleton.SPINE3].SetOrientationalConstraints(NoTwist);
             #region Cone constraints
-            #region Spine
+            #region Spine too head
             skeleton[BipedSkeleton.SPINE0].SetRotationalConstraints(Spine);
             skeleton[BipedSkeleton.SPINE1].SetRotationalConstraints(Spine);
             skeleton[BipedSkeleton.NECK].SetRotationalConstraints(Neck);
@@ -49,7 +48,7 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.UPPERARM_L].SetRotationalConstraints(Shoulder);
             skeleton[BipedSkeleton.UPPERARM_R].SetRotationalConstraints(Shoulder);
             skeleton[BipedSkeleton.LOWERARM_L].SetRotationalConstraints(Elbow);
-            skeleton[BipedSkeleton.LOWERARM_R].SetRotationalConstraints(ElbowRight);
+            skeleton[BipedSkeleton.LOWERARM_R].SetRotationalConstraints(Elbow);
             skeleton[BipedSkeleton.HAND_L].SetRotationalConstraints(Wrist);
             skeleton[BipedSkeleton.HAND_R].SetRotationalConstraints(Wrist);
             #endregion

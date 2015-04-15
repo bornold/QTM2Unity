@@ -31,9 +31,9 @@ namespace QTM2Unity
         void LateUpdate()
         {
             if (!streaming) return;
-            foreach (TreeNode<Bone> b in skeleton)
+            if (showConstraints || showParentRot || showL1)
             {
-                if (showConstraints)
+                foreach (TreeNode<Bone> b in skeleton)
                 {
                     if (!b.IsRoot && b.Data.Constraints != OpenTK.Vector4.Zero)
                     {
@@ -68,9 +68,9 @@ namespace QTM2Unity
                         Bone c = b.Data;
                         OpenTK.Vector3 L1 = referenceBone.GetYAxis();
                         OpenTK.Vector3 poss = c.Pos + pos;
-                        UnityDebug.CreateIrregularCone3(c.Constraints, poss, L1, referenceBone.Orientation, coneRes, coneSize);
+                        if (showConstraints) UnityDebug.CreateIrregularCone3(c.Constraints, poss, L1, referenceBone.Orientation, coneRes, coneSize);
                         if (showL1) UnityDebug.DrawLine(poss, poss + L1 * traceScale, UnityEngine.Color.black);
-                        if (showParentRot) UnityDebug.DrawRays2(referenceBone.Orientation, c.Pos+pos, traceScale);
+                        if (showParentRot) UnityDebug.DrawRays2(referenceBone.Orientation, poss, traceScale);
 
                     }
                 }

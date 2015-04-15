@@ -35,7 +35,7 @@ namespace QTM2Unity
         {
             List<string> markersList = new List<string>()
             {
-             bodyBase, chest, neck, spine, head,leftHead, rightHead,
+             bodyBase, chest, neck, spine, head, leftHead, rightHead,
              leftShoulder, leftElbow, leftInnerElbow, leftOuterElbow, leftWrist, leftWristRadius, leftHand,
              rightShoulder, rightElbow, rightInnerElbow, rightOuterElbow, rightWrist, rightWristRadius, rightHand,
              leftHip, leftUpperKnee, leftOuterKnee, leftLowerKnee, leftAnkle, leftHeel, leftFoot,
@@ -566,26 +566,6 @@ namespace QTM2Unity
             dic.Add(BipedSkeleton.SPINE0, spine0);
             //////////////////////////////////////////
 
-            /////////////// SPINE1 //////////////
-            /*
-                Offset med z axel från ryggbas orientering med y axel roterad så TV12 mot TV2
-             */
-            if (markers[neck].IsNaN())
-            {
-                pos = markers[bodyBase];
-                target = markers[spine];
-            }
-            else
-            {
-                pos = markers[spine];
-                target = markers[neck];
-            }
-            front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, pelvisfront));
-            front.Normalize();
-            pos = markers[spine];
-            pos += front * marker2SpineDist;
-            dic.Add(BipedSkeleton.SPINE1, pos);
-            //////////////////////////////////////////
 
             /////////////// Spine end ///////////////
             back = markers[neck];
@@ -602,6 +582,42 @@ namespace QTM2Unity
             dic.Add(BipedSkeleton.SPINE3, neckPos);
             //////////////////////////////////////////
 
+
+            /////////////// SPINE1 //////////////
+            /*
+                Offset med z axel från ryggbas orientering med y axel roterad så TV12 mot TV2
+             */
+            if (markers[spine].IsNaN())
+            {
+                pos = Vector3Helper.MidPoint(neckPos, spine0);
+            }
+            else
+            {
+                if (markers[neck].IsNaN())
+                {
+                    pos = markers[bodyBase];
+                    target = markers[spine];
+                }
+                else
+                {
+                    pos = markers[spine];
+                    target = markers[neck];
+                }
+                front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, pelvisfront));
+                front.Normalize();
+                pos = markers[spine];
+                pos += front * marker2SpineDist;
+            }
+            dic.Add(BipedSkeleton.SPINE1, pos);
+            //////////////////////////////////////////
+
+            /////////////// neck ///////////////
+            up = Vector3.Transform(Vector3.UnitY, chestOrientation);
+            up.Normalize();
+            pos = neckPos + up * spineLength;
+            dic.Add(BipedSkeleton.NECK, pos);
+            //////////////////////////////////////////
+
             /////////////// HEAD ///////////////
             front = markers[head];
             right = markers[rightHead];
@@ -614,16 +630,10 @@ namespace QTM2Unity
             dic.Add(BipedSkeleton.HEAD, headPos);
             //////////////////////////////////////////
 
-            /////////////// neck ///////////////
-            up = Vector3.Transform(Vector3.UnitY, chestOrientation);
-            up.Normalize();
-            pos = neckPos + up * spineLength;
-            dic.Add(BipedSkeleton.NECK, pos);
-            //////////////////////////////////////////
 
             /////////////// SHOUDLERs ///////////////
-            dic.Add(BipedSkeleton.SHOULDER_L, GetShoulderJoint(neckPos, chestOrientation, false)); //neckPos);
-            dic.Add(BipedSkeleton.SHOULDER_R, GetShoulderJoint(neckPos, chestOrientation, true)); //neckPos);
+            dic.Add(BipedSkeleton.SHOULDER_L, neckPos);//GetShoulderJoint(neckPos, chestOrientation, false));
+            dic.Add(BipedSkeleton.SHOULDER_R, neckPos);//GetShoulderJoint(neckPos, chestOrientation, true));
             //////////////////////////////
 
             /////////////// UPPER ARMS ///////////////
@@ -694,10 +704,9 @@ namespace QTM2Unity
             Y = -0.30f * pelvisWidth - 10.9f;
             Z = -0.24f * pelvisDepth - 9.9f;
             if (!isRightHip) X = -X;
-            Vector3 pos = new Vector3(X, Y, Z) / 1000;
-            pos = QuaternionHelper.Rotate(pelvisOrientation, pos);
-            pos = ASISMid + pos;
-            return pos;
+            Vector3 offset = new Vector3(X, Y, Z) / 1000;
+            offset = QuaternionHelper.Rotate(pelvisOrientation, offset);
+            return ASISMid + offset;
         }
         private Vector3 GetUpperarmJoint(Quaternion chestOrientation, bool isRightShoulder)
         {
@@ -716,11 +725,7 @@ namespace QTM2Unity
         }
         private Vector3 GetShoulderJoint(Vector3 neckPos, Quaternion chestOrientation, bool isRightShoulder)
         {
-            bool neckGone = markers[neck].IsNaN();
-            float y = 0,
-                  x = isRightShoulder ? 25 : -25,
-                  z = 0;// neckGone ? -(chestDepth - marker2SpineDist) : marker2SpineDist;
-            Vector3 res = new Vector3(x, y, z) / 1000;
+            Vector3 res = new Vector3(isRightShoulder ? 25 : -25, 0, 0) / 1000;
             res = QuaternionHelper.Rotate(chestOrientation, res);
             return res + neckPos;
         }

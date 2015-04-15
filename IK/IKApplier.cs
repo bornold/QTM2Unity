@@ -23,6 +23,15 @@ namespace QTM2Unity
                 if (!bone.Data.Exists ) // Possition of joint no knowned, Solve with IK
                 {
                     /////////////////////////////////////////////// UGLY AND TEMPORARY//////////////////////////////////////////////////////////////
+                    if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
+                    {
+                        Vector3 pos = new Vector3(bone.Parent.Data.Pos);
+                        bone.Data.Pos = pos;
+                        Vector3 forward = bone.Parent.Data.GetZAxis();
+                        Vector3 target = bone.Children.First().Data.Pos;
+                        bone.Data.Orientation = QuaternionHelper.LookAtUp(pos, target, forward);
+                        continue;
+                    }
                     Bone referenceBone;
                     if (bone.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_L) 
                         || bone.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_R))
