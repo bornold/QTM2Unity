@@ -6,9 +6,6 @@ namespace QTM2Unity
 {
     class FABRIK : IKSolver
     {
-        private static float threshold = 0.001f; // TODO define a good default threshold value
-        // Place in IKSolver instead?
-
         override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             // Calculate distances 
@@ -22,11 +19,17 @@ namespace QTM2Unity
             }
 
             // The target is reachable
-            bones[bones.Length - 1].Orientation = target.Orientation;
+            int numberOfBones = bones.Length;
+            bones[numberOfBones - 1].Orientation = target.Orientation;
             Vector3 root = bones[0].Pos;
             int iterations = 0;
-            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iterations++ < 500)
+            Vector3 eeLastIt = new Vector3(bones[numberOfBones - 1].Pos * 2);
+            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iterations++ < maxIterations)
             {
+                if (bones[numberOfBones - 1].Pos.Equals(eeLastIt))
+                    break;
+                else
+                    eeLastIt = new Vector3(bones[numberOfBones - 1].Pos);
                 // Check if target is on the chain
                 if (IsTargetOnChain(ref bones, ref target))
                 {

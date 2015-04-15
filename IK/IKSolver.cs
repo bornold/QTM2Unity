@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using OpenTK;
+﻿using OpenTK;
 
 namespace QTM2Unity
 {
     abstract class IKSolver
     {
         abstract public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent);
-
+        protected float threshold = 0.005f; // TODO define a good default threshold value 
+        // This depends on where the position is defined on the end effector
+        protected int maxIterations = 500; // TODO what's a good value?
         // TODO probably better if we just keep length in bones... oor is it...
         protected void GetDistances(out float[] distances, ref Bone[] bones)
         {
@@ -21,7 +19,11 @@ namespace QTM2Unity
         }
         protected void ForwardKinematics(ref Bone[] bones, Quaternion rotation, int i)
         {
-            for (int j = bones.Length - 1; j >= i; j--)
+            ForwardKinematics(ref bones, rotation, i, bones.Length-1);
+        }
+        protected void ForwardKinematics(ref Bone[] bones, Quaternion rotation, int i, int length)
+        {
+            for (int j = length; j >= i; j--)
             {
                 if (j > i)
                 {
