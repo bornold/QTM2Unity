@@ -9,8 +9,6 @@ namespace QTM2Unity
 {
     abstract class Jacobian : IKSolver
     {
-        private static float threshold = 0.001f; // TODO good value?
-
         override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             // Calculate the distances
@@ -23,7 +21,7 @@ namespace QTM2Unity
             Vector3[,] rotAxis = new Vector3[k, bones.Length - 1];
 
             int iter = 0;
-            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < 1000)
+            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < maxIterations)
             {
                 fillJacobian(out J, out rotAxis, ref bones, ref target);
                 float[,] dTheta;

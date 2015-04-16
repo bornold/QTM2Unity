@@ -9,6 +9,7 @@ namespace QTM2Unity
         public float markerScale = 0.015f;
         public bool showRotationTrace = false;
         public float traceScale = 0.08f;
+        public Vector3 offset = new Vector3(0, 0, 0);
         protected BipedSkeleton skeleton;
         protected BipedSkeleton skeletonBuffer;
 
@@ -32,6 +33,7 @@ namespace QTM2Unity
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
             joints.GetJointLocation(markerData, ref skeleton);
+            pos += offset.Convert();
         }
         void OnDrawGizmos()
         {

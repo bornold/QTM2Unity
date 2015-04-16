@@ -45,6 +45,16 @@ namespace QTM2Unity
             Debug.DrawRay(cv(pos), cv(dir) * 10f, c);
 
         }
+        public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir, float size)
+        {
+            Debug.DrawRay(cv(pos), Vector3.Normalize(cv(dir)) * size, Color.black);
+
+        }
+        public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir, Color c, float size)
+        {
+            Debug.DrawRay(cv(pos), Vector3.Normalize(cv(dir)) * size, c);
+
+        }
         public static void DrawRay(UnityEngine.Vector3 pos, OpenTK.Vector3 dir, Color c)
         {
             Debug.DrawRay(pos, cv(dir) * 10f, c);
