@@ -15,9 +15,9 @@ namespace QTM2Unity
         Transform spine;
         Transform spine1;
         Transform spine2;
-        Transform neck;
+        //Transform neck;
         Transform neck1;
-        Transform neck2;
+        //Transform neck2;
         Transform head;
         Transform shoulderLeft;
         Transform shoulderRight;
@@ -113,9 +113,9 @@ namespace QTM2Unity
             spine = transform.Search("Spine");
             spine1 = transform.Search("Spine1");
             spine2 = transform.Search("Spine2");
-            neck = transform.Search("Neck");
+            //neck = transform.Search("Neck");
             neck1 = transform.Search("Neck1");
-            neck2 = transform.Search("Neck2");
+            //neck2 = transform.Search("Neck2");
             head = transform.Search("Head");
             shoulderLeft = transform.Search("LeftShoulder");
             shoulderRight = transform.Search("RightShoulder");

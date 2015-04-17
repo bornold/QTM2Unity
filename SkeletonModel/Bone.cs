@@ -116,50 +116,7 @@ namespace QTM2Unity
             : this(name, position, orientation, constriants.X, constriants.Y, constriants.Z, constriants.W)
         { }
         #endregion
-#if flase
-        private Constraint orientationalConstr;
-        public Constraint OrientationalConstraint
-        {
-            get { return orientationalConstr; }
-        }
-        public void setOrientationalConstraint(float from, float to)
-        {
-            orientationalConstr = new Constraint(from, to);
-        }
-        private RotationalConstraint rotationalConstr;
-        public RotationalConstraint RotationalConstraint
-        {
-            get { return rotationalConstr; }
-        }
-        public void SetRotationalConstraint(float right, float up, float left, float down)
-        {
-            rotationalConstr = new RotationalConstraint(right, up, left, down);
-        }
-        public void SetRotationalConstraint(Vector4 constraints)
-        {
-            rotationalConstr = new RotationalConstraint(constraints.X, constraints.Y, constraints.Z, constraints.W);
-        }
-        public bool EnsureConstraints(ref Bone target, Vector3 L1, bool checkRot)
-        {
-             if (checkRot)
-            {
-                Constraint.CheckOrientationalConstraint(ref target, this, this.leftTwist,this.rightTwist);
-            }         
-            Vector3 res;
-            if (Constraint.CheckRotationalConstraints(target.Pos, this.Pos, L1, Constraints, out res))
-            {
-                target.Pos = res;
-                RotateTowards(target.Pos - this.Pos);
-                if (checkRot)
-                {
-                    Constraint.CheckOrientationalConstraint(ref target, this, this.leftTwist,this.rightTwist);
-                }
-                return true;
-            }
-            
-            return false;
-        }
-#endif
+
         // Directions 
         #region Direction getters
         public Vector3 GetYAxis()
@@ -211,7 +168,7 @@ namespace QTM2Unity
             return name.Equals(other.Name) && orientation.Equals(other.Orientation) && pos.Equals(other.Pos);
         }
 
-        public string ToString()
+        public override string ToString()
         {
             return string.Format("{0} at position: {1} with orientation: {2}", name, pos, orientation);
         }

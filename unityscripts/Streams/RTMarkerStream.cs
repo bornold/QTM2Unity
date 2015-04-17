@@ -5,7 +5,6 @@ namespace QTM2Unity.Unity
 {
 	public class RTMarkerStream : RT
 	{
-		private List<LabeledMarker> markerData;
 		private GameObject markerRoot;
 		private List<GameObject> markers;
 
@@ -25,7 +24,6 @@ namespace QTM2Unity.Unity
         private void initiateMarkers()
         {
             markers.Clear();
-            markerData = rtClient.Markers;
             foreach (Transform child in gameObject.transform)
             {
                 Destroy(child.gameObject    );

@@ -74,7 +74,7 @@ public class KneeErrorTEst : MonoBehaviour
                 {
                     TreeNode<Bone> footleft = lowerlegleft.AddChild(ankle);
                     {
-                        TreeNode<Bone> toeleft = footleft.AddChild(target);
+                        footleft.AddChild(target);
                     }
                 }
             }
@@ -131,7 +131,8 @@ public class KneeErrorTEst : MonoBehaviour
         }
         //Debug.Log("______Before______");
         //foreach (TreeNode<Bone> b in bones) Debug.Log(b.Data.ToString());
-        bones = applier.ApplyIK(bones, solver);
+        applier.IKSolver = solver;
+        applier.ApplyIK(ref bones);
         //Debug.Log("______After______");
         //foreach (TreeNode<Bone> b in bones) Debug.Log(b.Data.ToString());
 

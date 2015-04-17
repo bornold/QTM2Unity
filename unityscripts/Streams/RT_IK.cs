@@ -9,33 +9,36 @@ namespace QTM2Unity
     class RT_IK : RTwithJC
     {
         private IKApplier ikApplier = new IKApplier();
-        private IKSolver solver = new CCD();
         public IK ik = IK.CCD;
-
+        public override void StartNext()
+        {
+            base.StartNext();
+            ikApplier.IKSolver = new CCD();
+        }
         public override void UpdateNext()
         {
             base.UpdateNext();
-            switch (ik)
-            {
-                case IK.CCD:
-                    solver = new CCD();
-                    break;
-                case IK.FABRIK:
-                    solver = new FABRIK();
-                    break;
-                case IK.DLS:
-                    solver = new DampedLeastSquares();
-                    break;
-                case IK.TRANSPOSE:
-                    solver = new JacobianTranspose();
-                    break;
-                case IK.TT:
-                    solver = new TargetTriangleIK();
-                    break;
-                default:
-                    break;
+                switch (ik)
+                {
+                    case IK.CCD:
+                        ikApplier.IKSolver = new CCD();
+                        break;
+                    case IK.FABRIK:
+                        ikApplier.IKSolver = new FABRIK();
+                        break;
+                    case IK.DLS:
+                        ikApplier.IKSolver = new DampedLeastSquares();
+                        break;
+                    case IK.TRANSPOSE:
+                        ikApplier.IKSolver = new JacobianTranspose();
+                        break;
+                    case IK.TT:
+                        ikApplier.IKSolver = new TargetTriangleIK();
+                        break;
+                    default:
+                        break;
             }
-            skeleton = ikApplier.ApplyIK(skeleton, solver);
+            ikApplier.ApplyIK(ref skeleton);
         }
     }
 }

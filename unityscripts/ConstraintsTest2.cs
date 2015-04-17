@@ -67,7 +67,7 @@ namespace QTM2Unity
             Quaternion parentRot = QuaternionHelper.LookAtUp(parentPos, jointPos, y);
             Bone parent = new Bone("Parent", parentPos, parentRot);
             L1 = parent.GetYAxis();
-            Vector3 parentX = parent.GetXAxis();
+            //Vector3 parentX = parent.GetXAxis();
             UnityDebug.DrawRays(parentRot, parentPos, 2f);
             if (spinAroundX || spinAroundY || spinAroundZ) targ = UpdateTarget(targ, joint.Pos);
             //OpenTK.Quaternion rot = transform.Search("CurrentJoint").rotation.Convert();

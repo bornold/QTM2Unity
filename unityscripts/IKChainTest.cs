@@ -98,7 +98,6 @@ public class IKChainTest : MonoBehaviour {
                 if (showOrientation) UnityDebug.DrawRays(curr.Orientation, curr.Pos, boneLength);
                 if (showConstraints)
                 {
-                    OpenTK.Quaternion rot = (prev == curr) ? OpenTK.Quaternion.Identity : curr.Orientation;
                     OpenTK.Quaternion rotaten = (curr == prev) ? grandpa.Orientation : prev.Orientation;
                     var L1 = (prev == curr) ? OpenTK.Vector3.UnitY : (curr.Pos - prev.Pos);
                     UnityDebug.DrawLine(curr.Pos, curr.Pos + L1, UnityEngine.Color.black);

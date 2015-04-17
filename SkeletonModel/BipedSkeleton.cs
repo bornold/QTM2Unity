@@ -55,7 +55,7 @@ namespace QTM2Unity
                     {
                         TreeNode<Bone> footleft = lowerlegleft.AddChild(new Bone(FOOT_L));
                         {
-                            TreeNode<Bone> toeleft = footleft.AddChild(new Bone(TOE_L));
+                            footleft.AddChild(new Bone(TOE_L));
                         }
                     }
                 }
@@ -67,7 +67,7 @@ namespace QTM2Unity
                     {
                         TreeNode<Bone> footright = lowerlegright.AddChild(new Bone(FOOT_R));
                         {
-                             TreeNode<Bone> toeright = footright.AddChild(new Bone(TOE_R));
+                             footright.AddChild(new Bone(TOE_R));
                         }
                     }
                 }
@@ -84,7 +84,7 @@ namespace QTM2Unity
                     {
                         TreeNode<Bone> neck = spine3.AddChild(new Bone(NECK));
                         {
-                            TreeNode<Bone> head = neck.AddChild(new Bone(HEAD));
+                            neck.AddChild(new Bone(HEAD));
                         }
                 #endregion
                         #region arm left
@@ -96,7 +96,7 @@ namespace QTM2Unity
                                 {
                                     TreeNode<Bone> handLeft = lowerarmleft.AddChild(new Bone(HAND_L));
                                     {
-                                         TreeNode<Bone> fingerLeft = handLeft.AddChild(new Bone(FINGER_L));
+                                         handLeft.AddChild(new Bone(FINGER_L));
                                     }
                                 }
                             }
@@ -111,7 +111,7 @@ namespace QTM2Unity
                                 {
                                     TreeNode<Bone> handLeft = lowerarmleft.AddChild(new Bone(HAND_R));
                                     {
-                                        TreeNode<Bone> fingerLeft = handLeft.AddChild(new Bone(FINGER_R));
+                                        handLeft.AddChild(new Bone(FINGER_R));
                                     }
                                 }
                             }

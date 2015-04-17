@@ -160,7 +160,7 @@ namespace QTM2Unity
 
             Bone[] bones = getNodes(ref root);
 
-            IEnumerator<TreeNode<Bone>> it = root.GetEnumerator();
+            //IEnumerator<TreeNode<Bone>> it = root.GetEnumerator();
             // Create Jacobian matrix J(theta) = (ds[i]/dtheta[j])[ij]
             // ds[i]/dtheta[j] = v[j] x (s[i]-p[j])
             for (int i = 0; i < k; i++)
