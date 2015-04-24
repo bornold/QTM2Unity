@@ -65,8 +65,11 @@ namespace QTM2Unity
             Vector3 up = b.GetZAxis();
             Vector3 x = b.GetXAxis();
 
-            Vector3 reference = refBone.GetZAxis();
-            Quaternion rot = QuaternionHelper.GetRotationBetween(refBone.GetYAxis(), direction);
+            Quaternion referenceRotation = refBone.Orientation * b.ParentPointer;
+            Vector3 parentDir = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, referenceRotation));
+
+            Vector3 reference = Vector3.Normalize(Vector3.Transform(Vector3.UnitZ, referenceRotation));// refBone.GetZAxis();
+            Quaternion rot = QuaternionHelper.GetRotationBetween(parentDir, direction);
             reference = Vector3.Transform(reference, rot);
             reference.Normalize();
 
@@ -263,7 +266,9 @@ namespace QTM2Unity
 
         public static bool CheckRotationalConstraints(Bone joint, Bone parent, Vector3 target, out Vector3 res, out Quaternion rot)
         {
-            Vector3 L1 = parent.GetYAxis();
+            Quaternion referenceRotation = parent.Orientation * joint.ParentPointer;
+            Vector3 L1 = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, referenceRotation));
+
             Vector3 jointPos = joint.Pos;
             Vector4 constraints = joint.Constraints;
             Vector3 targetPos = new Vector3(target.X, target.Y, target.Z);
@@ -299,7 +304,7 @@ namespace QTM2Unity
             //3.4 Map the target (rotate and translate) in such a
             //way that O is now located at the axis origin and oriented
             //according to the x and y-axis ) Now it is a 2D simplified problem
-            Quaternion rotation = Quaternion.Invert(parent.Orientation);
+            Quaternion rotation = Quaternion.Invert(referenceRotation);//Quaternion.Invert(parent.Orientation);
 
             Vector3 TRotated = Vector3.Transform(joint2Target, rotation); // align joint2target vector to  y axis get x z offset
             Vector2 target2D = new Vector2(TRotated.X, TRotated.Z); //only intrested in the X Z cordinates

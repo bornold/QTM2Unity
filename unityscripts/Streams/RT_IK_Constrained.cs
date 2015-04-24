@@ -37,40 +37,13 @@ namespace QTM2Unity
                 {
                     if (!b.IsRoot && b.Data.Constraints != OpenTK.Vector4.Zero)
                     {
-                        Bone referenceBone;
-                        if (b.Data.Name.Equals(BipedSkeleton.UPPERLEG_L)
-                            || b.Data.Name.Equals(BipedSkeleton.UPPERLEG_R))
-                        {
-                            OpenTK.Quaternion happy = b.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.Pi);
-                            referenceBone = new Bone(
-                                "",
-                                b.Parent.Data.Pos,
-                                happy);
-                        }
-                        else if (b.Data.Name.Equals(BipedSkeleton.SHOULDER_R))
-                        {
-                            referenceBone = new Bone(
-                                "",
-                                b.Parent.Data.Pos,
-                                b.Parent.Data.Orientation * QuaternionHelper.RotationZ(-OpenTK.MathHelper.PiOver2));
-                        }
-                        else if (b.Data.Name.Equals(BipedSkeleton.SHOULDER_L))
-                        {
-                            referenceBone = new Bone(
-                                "",
-                                b.Parent.Data.Pos,
-                                b.Parent.Data.Orientation * QuaternionHelper.RotationZ(OpenTK.MathHelper.PiOver2));
-                        }
-                        else
-                        {
-                            referenceBone = b.Parent.Data;
-                        }
+                        OpenTK.Quaternion parentRotation = b.Parent.Data.Orientation * b.Data.ParentPointer;
                         Bone c = b.Data;
-                        OpenTK.Vector3 L1 = referenceBone.GetYAxis();
+                        OpenTK.Vector3 L1 = OpenTK.Vector3.Normalize(OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, parentRotation));  //referenceBone.GetYAxis();
                         OpenTK.Vector3 poss = c.Pos + pos;
-                        if (showConstraints) UnityDebug.CreateIrregularCone3(c.Constraints, poss, L1, referenceBone.Orientation, coneRes, coneSize);
+                        if (showConstraints) UnityDebug.CreateIrregularCone3(c.Constraints, poss, L1, parentRotation, coneRes, coneSize);
                         if (showL1) UnityDebug.DrawLine(poss, poss + L1 * traceScale, UnityEngine.Color.black);
-                        if (showParentRot) UnityDebug.DrawRays2(referenceBone.Orientation, poss, traceScale);
+                        if (showParentRot) UnityDebug.DrawRays2(parentRotation, poss, traceScale);
 
                     }
                 }

@@ -83,6 +83,13 @@ namespace QTM2Unity
             this.left = givenConstraints.Z;
             this.down = givenConstraints.W;
         }
+        private Quaternion parentPointer = Quaternion.Identity;
+        public Quaternion ParentPointer
+        {
+            get{return parentPointer;}
+            set {parentPointer = value;}
+        }
+
         #endregion
         #endregion
 

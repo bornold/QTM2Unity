@@ -23,20 +23,21 @@ namespace QTM2Unity
             bones[numberOfBones - 1].Orientation = target.Orientation;
             Vector3 root = bones[0].Pos;
             int iterations = 0;
-            int pushIterations = 0;
+            int pushIterations = 5;
             int tggl = -1;
             float lastDistToTarget = float.MaxValue;
-            float distToTarget = lastDistToTarget-1;
+            float distToTarget = threshold * 2;
             while (distToTarget > threshold && iterations++ < maxIterations)
             {
                 if (distToTarget >= lastDistToTarget)
                 {
-                    Vector3 axis = Vector3.Cross(bones[bones.Length -1].GetYAxis(), bones[bones.Length -1].Pos - target.Pos);
+                    if (pushIterations * pushValue > 360) break; 
+                    pushIterations++;
                     tggl *= -1;
-                    float angle = tggl*MathHelper.DegreesToRadians(++pushIterations * pushValue);
+                    Vector3 axis = Vector3.Cross(bones[bones.Length -1].GetYAxis(), bones[bones.Length -1].Pos - target.Pos);
+                    float angle = MathHelper.DegreesToRadians(tggl * pushIterations * pushValue);
                     Quaternion push = Quaternion.FromAxisAngle(axis, angle);
                     ForwardKinematics(ref bones, push);
-                    //break;
                 }
                 // Check if target is on the chain
                 if (IsTargetOnChain(ref bones, ref target))
@@ -51,7 +52,8 @@ namespace QTM2Unity
                 ForwardReaching(ref bones, ref distances, target);
                 // Backward reaching
                 BackwardReaching(ref bones, ref distances, root, parent);
-
+                
+                lastDistToTarget = distToTarget;
                 distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             }
             return bones;

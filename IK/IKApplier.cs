@@ -26,42 +26,14 @@ namespace QTM2Unity
                     ///////////////////////////////////////////////TEMPORARY/////////////////////////
                     if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
                     {
-                        Vector3 pos = new Vector3(bone.Parent.Data.Pos);
-                        bone.Data.Pos = pos;
+                        bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
                         Vector3 forward = bone.Parent.Data.GetZAxis();
                         Vector3 target = bone.Children.First().Data.Pos;
-                        bone.Data.Orientation = QuaternionHelper.LookAtUp(pos, target, forward);
+                        bone.Data.Orientation = QuaternionHelper.LookAtUp(bone.Data.Pos, target, forward);
                         continue;
                     }
-                    Bone referenceBone;
-                    if (bone.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_L) 
-                        || bone.Parent.Data.Name.Equals(BipedSkeleton.UPPERLEG_R))
-                    {
-                        referenceBone = new Bone(
-                            "hip reversed",
-                            new Vector3( bone.Parent.Parent.Data.Pos),
-                            bone.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(MathHelper.Pi));
-                    }
-                    else if (bone.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_R))
-                    {
-                        referenceBone = new Bone(
-                            "spine End to right",
-                            new Vector3(bone.Parent.Parent.Data.Pos),
-                            bone.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(-MathHelper.PiOver2));
-                    }
-                    else if (bone.Parent.Data.Name.Equals(BipedSkeleton.SHOULDER_L))
-                    {
-                        referenceBone = new Bone(
-                            "spine End to left",
-                            new Vector3(bone.Parent.Parent.Data.Pos),
-                            bone.Parent.Parent.Data.Orientation * QuaternionHelper.RotationZ(MathHelper.PiOver2));
-                    }
-                    else
-                    {
-                        referenceBone = bone.Parent.Parent.Data;
-                    }
-                    MissingJoint(referenceBone, ref skelEnumer, ref lastSkelEnumer);
                     /////////////////////////////////////////////// TEMPORARY END//////////////////////////////
+                    MissingJoint(bone.Parent.Parent.Data, ref skelEnumer, ref lastSkelEnumer);
                 }
             }
             lastSkel = skeleton;

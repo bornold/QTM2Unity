@@ -8,7 +8,7 @@ namespace QTM2Unity
         public Vector2 FemurTwist = new Vector2(315, 45);
         public Vector4 Knee = new Vector4(10, 0, 10, 160);
         public Vector2 KneeTwist = new Vector2(315, 45);
-        public Vector4 Ankle = new Vector4(30, 110, 30, 0);
+        public Vector4 Ankle = new Vector4(20, 30, 20, 70);
         public Vector2 AnkleTwist = new Vector2(315, 45);
         public Vector4 Spine = new Vector4(20, 20, 20, 20);
         public Vector2 SpineTwist = new Vector2(315, 45);
@@ -52,6 +52,15 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.HAND_L].SetRotationalConstraints(Wrist);
             skeleton[BipedSkeleton.HAND_R].SetRotationalConstraints(Wrist);
             #endregion
+            #endregion
+
+            #region ParentPointers
+            skeleton[BipedSkeleton.SHOULDER_R].ParentPointer = QuaternionHelper.RotationZ(-MathHelper.PiOver2);
+            skeleton[BipedSkeleton.SHOULDER_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.PiOver2);
+            skeleton[BipedSkeleton.UPPERLEG_R].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
+            skeleton[BipedSkeleton.UPPERLEG_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
+            skeleton[BipedSkeleton.FOOT_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver2);
+            skeleton[BipedSkeleton.FOOT_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver2);
             #endregion
 
             #region TwistConstraints

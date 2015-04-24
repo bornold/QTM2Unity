@@ -61,9 +61,6 @@ namespace QTM2Unity
             Vector3 y = jointTrans.up.Convert();
             joint.Orientation = QuaternionHelper.LookAtUp(joint.Pos, nextJointPos, y);
 
-
-            Vector3 parentPos;
-            Quaternion parentRot;
             Bone propparent = new Bone("PropParent");
             if (backwards)
             {
