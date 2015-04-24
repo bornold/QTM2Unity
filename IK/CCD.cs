@@ -46,7 +46,9 @@ namespace QTM2Unity
                         Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
                         Bone reference = (i > 0) ? bones[i - 1] : parent;
                         Vector3 res;
-                        if (Constraint.CheckRotationalConstraints(bones[i], reference, trg, out res))
+                        Quaternion rot;
+
+                        if (Constraint.CheckRotationalConstraints(bones[i], reference, trg, out res, out rot))
                         {
                             a = bones[i + 1].Pos - bones[i].Pos;
                             b = res - bones[i].Pos;

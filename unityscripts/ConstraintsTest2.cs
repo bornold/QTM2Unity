@@ -6,6 +6,8 @@ namespace QTM2Unity
     {
         public float targetScale = 0.05f;
         public bool printCone = true;
+        public bool backwards = false;
+        public bool pause = false;
         public int coneResolution = 60;
         public bool spinAroundX = false;
         public bool spinAroundY = false;
@@ -15,16 +17,15 @@ namespace QTM2Unity
         public float twist = 0;
         
         private UnityEngine.GameObject targetGO = new UnityEngine.GameObject();
-        private UnityEngine.GameObject replacedGO = new UnityEngine.GameObject();
+        private UnityEngine.GameObject nextGO = new UnityEngine.GameObject();
         private UnityEngine.GameObject parentGO = new UnityEngine.GameObject();
         private UnityEngine.GameObject currentGO = new UnityEngine.GameObject();
         private Bone joint = new Bone("Current Joint");
 
-        private enum Q { q1, q2, q3, q4 };
         void Start()
         {
             SetGO(targetGO, "Target", UnityEngine.Vector3.up, UnityEngine.Color.white);
-            SetGO(replacedGO, "Replaced", UnityEngine.Vector3.zero, UnityEngine.Color.black);
+            SetGO(nextGO, "NextJoint", UnityEngine.Vector3.zero, UnityEngine.Color.black);
             SetGO(currentGO, "CurrentJoint", UnityEngine.Vector3.zero, UnityEngine.Color.gray);
             SetGO(parentGO, "ParentJoint", UnityEngine.Vector3.right, UnityEngine.Color.gray);
             joint = new Bone("Current Joint");
@@ -50,50 +51,96 @@ namespace QTM2Unity
         }
         void Update()
         {
-            OpenTK.Vector3 L1;
+            Vector3 nextJointPos = transform.Search("NextJoint").position.Convert();
+            Vector3 targ = transform.Search("Target").position.Convert();
 
-
-            Vector3 targ;
             joint = new Bone("Current Joint");
             joint.Constraints = new Vector4(Constraints.x, Constraints.y, Constraints.z, Constraints.w);
+            UnityEngine.Transform jointTrans = transform.Search("CurrentJoint");
+            joint.Pos = jointTrans.position.Convert();
+            Vector3 y = jointTrans.up.Convert();
+            joint.Orientation = QuaternionHelper.LookAtUp(joint.Pos, nextJointPos, y);
 
-            targ = transform.Search("Target").position.Convert();
-            Vector3 jointPos = transform.Search("CurrentJoint").position.Convert();
-            joint.Pos = jointPos;
+
+            Vector3 parentPos;
+            Quaternion parentRot;
+            Bone propparent = new Bone("PropParent");
+            if (backwards)
+            {
+                propparent.Pos = targ;
+                propparent.Orientation = QuaternionHelper.LookAtUp(targ, joint.Pos, y);
+            }
+
             UnityEngine.Transform parentTrans = transform.Search("ParentJoint");
-            Vector3 parentPos = parentTrans.position.Convert();
-            Vector3 y = parentTrans.up.Convert();
+            y = parentTrans.up.Convert();
 
-            Quaternion parentRot = QuaternionHelper.LookAtUp(parentPos, jointPos, y);
-            Bone parent = new Bone("Parent", parentPos, parentRot);
-            L1 = parent.GetYAxis();
-            //Vector3 parentX = parent.GetXAxis();
-            UnityDebug.DrawRays(parentRot, parentPos, 2f);
+            Bone parent = new Bone("Parent", parentTrans.position.Convert(), QuaternionHelper.LookAtUp(parentTrans.position.Convert(), joint.Pos, y));
+
+
             if (spinAroundX || spinAroundY || spinAroundZ) targ = UpdateTarget(targ, joint.Pos);
-            //OpenTK.Quaternion rot = transform.Search("CurrentJoint").rotation.Convert();
+
+            OpenTK.Vector3 L1 = parent.GetYAxis();
+
+            Vector3 res = joint.Pos;
+            Quaternion rot;
+            if (backwards && !pause)
+            {
+                if (Constraint.CheckRotationalConstraints(joint, propparent, nextJointPos, out res, out rot))
+                { }
+                else { UnityEngine.Debug.Log("inside"); }
+                Quaternion q = QuaternionHelper.GetRotationBetween(targ, res);
+                Vector3 test = propparent.Pos - joint.Pos;
+                Vector3 testNoting = joint.Pos + Vector3.Transform(test, rot);
+                Vector3 testInvert = joint.Pos + Vector3.Transform(test, Quaternion.Invert(rot));
+                //UnityDebug.DrawLine(joint.Pos, testNoting, UnityEngine.Color.black);
+                UnityDebug.DrawLine(joint.Pos, testInvert, UnityEngine.Color.white);
+                UpdateGOS("ParentJoint", testInvert.Convert());
+
+            }
+            else if (!pause)
+            {
+                if (Constraint.CheckRotationalConstraints(joint, parent, targ, out res, out rot))
+                {  }
+                UpdateGOS("NextJoint", res.Convert());
+                nextJointPos = res;
+            }
             
-            UnityDebug.DrawLine(parentPos, joint.Pos, UnityEngine.Color.white);
-            //UnityDebug.DrawRay(joint.Pos, L1, UnityEngine.Color.black);
-            UnityDebug.DrawLine(joint.Pos, targ, UnityEngine.Color.magenta);
-            //UnityDebug.DrawRays(joint.Orientation, joint.Pos, 2f);
+            //UnityDebug.DrawRays(parentRot, parentPos, 2f);
+
             if (printCone)
             {
                 UnityDebug.CreateIrregularCone3(
                         joint.Constraints,
                         joint.Pos,
-                        L1,
+                        parent.GetYAxis(),
                         parent.Orientation,
                         coneResolution,
-                        (float)(targ - joint.Pos).Length
-                        );
+                        (float)(nextJointPos - joint.Pos).Length * 0.8f
+                );
             }
-            Vector3 res;
-            if (Constraint.CheckRotationalConstraints(joint, parent, targ, out res)) targ = res;
-            //Quaternion res2;
-            //if (Constraint.CheckRotationalConstraints(joint, targ, parent.GetYAxis(), parent.GetXAxis(), out res2)) targ = Vector3.Transform((targ - joint.Pos), res2);
+                if (backwards)
+                {
+                    Vector4 constraints = parent.Constraints;
+                    MathHelper.Swap(ref constraints.X, ref constraints.Z); MathHelper.Swap(ref constraints.Y, ref constraints.W);
 
+                    UnityDebug.CreateIrregularCone3(
+                            joint.Constraints,
+                            joint.Pos,
+                            propparent.GetYAxis(),
+                            propparent.Orientation,
+                            coneResolution,
+                            (float)(nextJointPos - joint.Pos).Length * 0.8f
+                    );
+                    //pause = true;
+                }
+                UnityDebug.DrawRays(joint.Orientation, joint.Pos, (joint.Pos-parent.Pos).Length * 0.5f);
+                UnityDebug.DrawRays(parent.Orientation, parent.Pos, (joint.Pos - parent.Pos).Length*0.5f);
+
+            UnityDebug.DrawLine(joint.Pos, parent.Pos, UnityEngine.Color.white);
+            UnityDebug.DrawLine(joint.Pos, nextJointPos, UnityEngine.Color.black);
             UnityDebug.DrawLine(joint.Pos, targ, UnityEngine.Color.cyan);
-            UpdateGOS("Replaced", UnityDebug.cv(targ));
+            UnityDebug.DrawLine(joint.Pos, res, UnityEngine.Color.magenta);
+             
         }
         Vector3 UpdateTarget(Vector3 targetPos, Vector3 jointPos)
         {
@@ -115,5 +162,3 @@ namespace QTM2Unity
         }
     }
 }
-
-

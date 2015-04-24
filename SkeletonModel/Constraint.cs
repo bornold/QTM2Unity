@@ -261,7 +261,7 @@ namespace QTM2Unity
             return false;
         }
 
-        public static bool CheckRotationalConstraints(Bone joint, Bone parent, Vector3 target, out Vector3 res)
+        public static bool CheckRotationalConstraints(Bone joint, Bone parent, Vector3 target, out Vector3 res, out Quaternion rot)
         {
             Vector3 L1 = parent.GetYAxis();
             Vector3 jointPos = joint.Pos;
@@ -278,7 +278,6 @@ namespace QTM2Unity
             //3.2 Find the projection O of the target t on line L1
 
             Vector3 O = Vector3Helper.Project(joint2Target, L1);
-
             if (Math.Abs(Vector3.Dot(L1, joint2Target)) < precision) // target is ortogonal with L1
             {
                 O = Vector3.Normalize(L1) * precision;
@@ -351,17 +350,18 @@ namespace QTM2Unity
             else if (radius.X > 90 || radius.Y > 90) // has one angle > 90, other not, very speciall case
             {
                 Vector3 L2 = GetNewL(rotation, q, radius);
-                if (!behind)
-                {
-                    L2 = (L2 - L1) / 2 + L1;
-                }
+                if (!behind) L2 = (L2 - L1) / 2 + L1;
                 float angle = Vector3.CalculateAngle(L2, L1);
                 Vector3 axis = Vector3.Cross(L2, L1);
                 rotation = rotation * Quaternion.FromAxisAngle(axis, angle);
                 TRotated = Vector3.Transform(joint2Target, rotation);
                 target2D = new Vector2(TRotated.X, TRotated.Z);
                 O = Vector3Helper.Project(joint2Target, L2);
-                S = O.Length;
+                if (Math.Abs(Vector3.Dot(L2, joint2Target)) < precision) // target is ortogonal with L2
+                {
+                    O = Vector3.Normalize(L2) * precision;
+                }
+                S = behind ? O.Length : O.Length * 1.4f; //magic number
                 if (behind)
                 {
                     sideCone = true;
@@ -373,10 +373,6 @@ namespace QTM2Unity
                     {
                         radius.Y = (radius.Y - 90);
                     }
-                }
-                else
-                {
-                    S = O.Length * 1.4f; //magic number
                 }
             }
             #endregion
@@ -403,25 +399,27 @@ namespace QTM2Unity
             //UnityEngine.Debug.Log("used S: " + S);
             //UnityEngine.Debug.Log("used O: " + O);
 
-            //if (inside || behind || reverseCone || sideCone || some90)
+            //if (inside || behind || reverseCone || sideCone)
             //    UnityEngine.Debug.Log(
             //        (inside ? " inside " : "") +
             //        (behind ? " behind " : "") +
             //        (reverseCone ? " reverseCone " : "") +
-            //        (sideCone ? " sideCone " : "") +
-            //        (some90 ? " some90 " : ""));
+            //        (sideCone ? " sideCone " : ""));
 
             //3.9 if within the conic section then         
             if (
-                   (inside && !reverseCone && !behind)
-                || (inside && reverseCone && !behind)
-                || (!inside && reverseCone && behind)
-                || (!inside && reverseCone && !behind)
-                || (inside && !reverseCone && behind && sideCone)
+                //   ( inside && !reverseCone && !behind)
+                //|| ( inside &&  reverseCone && !behind)
+                   (inside  && !behind)
+                || (!inside &&  reverseCone)// &&  behind)
+//                || (!inside &&  reverseCone && !behind)
+                //|| ( inside && !reverseCone &&  behind && sideCone)
+                || (inside && sideCone)
                )
             {
                 //3.10 use the true target position t
                 res = target;
+                rot = Quaternion.Identity;
                 return false;
             }
             //3.11 else
@@ -442,10 +440,10 @@ namespace QTM2Unity
                 Vector3 vectorToMoveTo = (moveTo - jointPos);
                 Vector3 axis = Vector3.Cross(joint2Target, vectorToMoveTo);
                 float angle = Vector3.CalculateAngle(joint2Target, vectorToMoveTo);
-                Quaternion rot = Quaternion.FromAxisAngle(axis, angle);
+                 rot = Quaternion.FromAxisAngle(axis, angle);
                 res = Vector3.Transform(joint2Target, rot) + jointPos;
 
-                //UnityDebug.CreateEllipse(radiusX, radiusY, OPos.Convert(), rotation.Convert(), 400, UnityEngine.Color.cyan);
+                //UnityDebug.CreateEllipse(radiusX, radiusY, (O + jointPos).Convert(), rotation.Convert(), 400, UnityEngine.Color.cyan);
                 //UnityDebug.DrawLine(targetPos, moveTo, UnityEngine.Color.magenta);
                 //if (res.IsNaN()) UnityEngine.Debug.LogError("jointPos " + jointPos + "constraints " + constraints + " L1 " + L1 + " targetPos " + targetPos);
                 return true;

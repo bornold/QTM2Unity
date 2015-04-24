@@ -6,7 +6,9 @@ namespace QTM2Unity
     {
         abstract public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent);
         protected float threshold = 0.005f; 
-        protected int maxIterations = 500; 
+        protected int maxIterations = 500;
+        protected float pushValue = 5;
+
         // TODO probably better if we just keep length in bones... oor is it...
         protected void GetDistances(out float[] distances, ref Bone[] bones)
         {
@@ -15,6 +17,10 @@ namespace QTM2Unity
             {
                 distances[i] = (bones[i].Pos - bones[i + 1].Pos).Length;
             }
+        }
+        protected void ForwardKinematics(ref Bone[] bones, Quaternion rotation)
+        {
+            ForwardKinematics(ref bones, rotation, 0, bones.Length - 1);
         }
         protected void ForwardKinematics(ref Bone[] bones, Quaternion rotation, int i)
         {
