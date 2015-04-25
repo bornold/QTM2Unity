@@ -23,21 +23,31 @@ namespace QTM2Unity
             bones[numberOfBones - 1].Orientation = target.Orientation;
             Vector3 root = bones[0].Pos;
             int iterations = 0;
-            int pushIterations = 5;
-            int tggl = -1;
+            float pushIterations = 0;
+            //bool tggl = false;
             float lastDistToTarget = float.MaxValue;
-            float distToTarget = threshold * 2;
+            float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             while (distToTarget > threshold && iterations++ < maxIterations)
             {
                 if (distToTarget >= lastDistToTarget)
                 {
-                    if (pushIterations * pushValue > 360) break; 
-                    pushIterations++;
-                    tggl *= -1;
-                    Vector3 axis = Vector3.Cross(bones[bones.Length -1].GetYAxis(), bones[bones.Length -1].Pos - target.Pos);
-                    float angle = MathHelper.DegreesToRadians(tggl * pushIterations * pushValue);
+                    if (pushIterations > 360) break; 
+                    pushIterations += pushValue;
+                    //tggl = !tggl;
+                    Vector3 axis;
+                    //axis = Vector3.Cross(bones[0].GetYAxis(), target.Pos - bones[0].Pos);
+                    //axis = bones[0].GetZAxis();
+                    axis = Vector3.Cross(bones[bones.Length - 1].GetYAxis(), bones[bones.Length - 1].Pos - target.Pos);
+                    //axis = Vector3.Cross(bones[0].GetYAxis(), bones[bones.Length - 1].GetYAxis());
+                    float angle = MathHelper.DegreesToRadians(pushIterations);
                     Quaternion push = Quaternion.FromAxisAngle(axis, angle);
-                    ForwardKinematics(ref bones, push);
+                    //if (tggl) push = Quaternion.Invert(push);
+                    //ForwardKinematics(ref bones, push);
+                    push = push * (1 / bones.Length-1);
+                    for (int i = 0; i < bones.Length; i++)
+                    {
+                        ForwardKinematics(ref bones, push, i);
+                    }
                 }
                 // Check if target is on the chain
                 if (IsTargetOnChain(ref bones, ref target))
@@ -56,6 +66,11 @@ namespace QTM2Unity
                 lastDistToTarget = distToTarget;
                 distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             }
+            //if (pushIterations > 0)
+            //{
+            //    UnityEngine.Debug.Log("iterations: " + iterations);
+            //    UnityEngine.Debug.Log("pushes: " + pushIterations);
+            //}
             return bones;
         }
 

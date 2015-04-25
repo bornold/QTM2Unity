@@ -76,7 +76,6 @@ namespace QTM2Unity
 
             if (spinAroundX || spinAroundY || spinAroundZ) targ = UpdateTarget(targ, joint.Pos);
 
-            OpenTK.Vector3 L1 = parent.GetYAxis();
 
             Vector3 res = joint.Pos;
             Quaternion rot;
@@ -85,9 +84,9 @@ namespace QTM2Unity
                 if (Constraint.CheckRotationalConstraints(joint, propparent, nextJointPos, out res, out rot))
                 { }
                 else { UnityEngine.Debug.Log("inside"); }
-                Quaternion q = QuaternionHelper.GetRotationBetween(targ, res);
+                //Quaternion q = QuaternionHelper.GetRotationBetween(targ, res);
                 Vector3 test = propparent.Pos - joint.Pos;
-                Vector3 testNoting = joint.Pos + Vector3.Transform(test, rot);
+                //Vector3 testNoting = joint.Pos + Vector3.Transform(test, rot);
                 Vector3 testInvert = joint.Pos + Vector3.Transform(test, Quaternion.Invert(rot));
                 //UnityDebug.DrawLine(joint.Pos, testNoting, UnityEngine.Color.black);
                 UnityDebug.DrawLine(joint.Pos, testInvert, UnityEngine.Color.white);
