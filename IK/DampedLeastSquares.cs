@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OpenTK;
-using Debug = UnityEngine.Debug;
 
 namespace QTM2Unity
 {

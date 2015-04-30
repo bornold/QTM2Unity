@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OpenTK;
-using Debug = UnityEngine.Debug;
 
 namespace QTM2Unity
 {
@@ -72,7 +71,7 @@ namespace QTM2Unity
             Vector3[,] rotAxis = new Vector3[k, n];
 
             int iter = 0;
-            while (!targetReached(ref endEffectors, ref targets) && iter < 10000)
+            while (!targetReached(ref endEffectors, ref targets) && iter < maxIterations)
             {
                 Vector3[] positions = getPositions(ref bones, ref endEffectors); // TEST
                 fillJacobian(out J, out rotAxis, ref root, ref endEffectors, ref targets);
@@ -108,17 +107,8 @@ namespace QTM2Unity
                         index++;
                     }
                 }
-
-                // TEST
-                Vector3[] newPositions = getPositions(ref bones, ref endEffectors);
-
-                if (equalPositions(ref positions, ref newPositions, 0.01f))
-                    Debug.Log(iter);
-                if (iter == 500 || iter == 999)
-                    Debug.Log("wololo");
                 iter++;
             }
-            Debug.Log("Iterations " + iter);
         }
 
         private void fillJacobian(out Vector3[,] jacobian, out Vector3[,] rotAxis,

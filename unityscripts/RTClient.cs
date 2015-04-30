@@ -1,4 +1,4 @@
-using Debug = UnityEngine.Debug;
+//using Debug = UnityEngine.Debug;
 using System;
 using System.Collections.Generic;
 using QTMRealTimeSDK;
@@ -83,12 +83,12 @@ namespace QTM2Unity
 		public void events(RTPacket packet)
 		{
             eEvent currentEvent =  packet.getEvent();
-			Debug.Log("Event occured! : " + currentEvent);
+			//Debug.Log("Event occured! : " + currentEvent);
 
             if (currentEvent == eEvent.kEventRTFromFileStarted)
             {
                 // reload settings when we start streaming to get proper settings
-                Debug.Log("Reloading Settings");
+                //Debug.Log("Reloading Settings");
 
                 get3DSettings();
                 get6DOFSettings();
@@ -250,7 +250,7 @@ namespace QTM2Unity
                     return true;
                 }
 			}
-			Debug.Log ("Error Creating Connection to server");
+			//Debug.Log ("Error Creating Connection to server");
 			return false;
 		}
 
@@ -363,7 +363,7 @@ namespace QTM2Unity
                 {
                     if(!get3DSettings())
                     {
-                        Debug.Log("Error retrieving settings");
+                        //Debug.Log("Error retrieving settings");
                         return false;
                     }
                 }
@@ -372,7 +372,7 @@ namespace QTM2Unity
                 {
                     if (!get6DOFSettings())
                     {
-                        Debug.Log("Error retrieving settings");
+                        //Debug.Log("Error retrieving settings");
                         return false;
                     }
                 }
@@ -391,7 +391,7 @@ namespace QTM2Unity
 			}
 			else
 			{
-				Debug.Log ("Error Creating Connection to server");
+				//Debug.Log ("Error Creating Connection to server");
 			}
 			return false;
 		}

@@ -1,6 +1,5 @@
 ﻿using System;
 using OpenTK;
-using Debug = UnityEngine.Debug;
 
 namespace QTM2Unity
 {
