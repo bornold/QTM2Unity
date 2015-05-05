@@ -3,7 +3,7 @@ namespace QTM2Unity
 {
     class RTStandardUnityModel : RT_IK_Constrained
     {
-        public bool firstSpine = false;
+        public bool useFirstSpine = false;
 
         Transform hips;
         Transform upLegLeft;
@@ -46,7 +46,7 @@ namespace QTM2Unity
         {
             setGO(hips, BipedSkeleton.PELVIS, true);
             setGO(spine, BipedSkeleton.SPINE0, false);
-            if (firstSpine) setGO(spine1, BipedSkeleton.SPINE1, false);
+            if (useFirstSpine) setGO(spine1, BipedSkeleton.SPINE1, false);
             else setGO(spine2, BipedSkeleton.SPINE1, false);
             
             setGO(neck1, BipedSkeleton.NECK, false);

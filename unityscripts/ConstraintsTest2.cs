@@ -1,4 +1,5 @@
-﻿    using System;
+﻿using System;
+using System.Collections;
 using OpenTK;
 namespace QTM2Unity
 {
@@ -6,6 +7,7 @@ namespace QTM2Unity
     {
         public float targetScale = 0.05f;
         public bool printCone = true;
+        public bool showRotation = false;
         public bool backwards = false;
         public bool pause = false;
         public int coneResolution = 60;
@@ -15,7 +17,9 @@ namespace QTM2Unity
         public int spins = 360;
         public UnityEngine.Vector4 Constraints = new UnityEngine.Vector4(110, 20, 30, 40);
         public float twist = 0;
-        
+
+        private UnityEngine.LineRenderer lineRenderer;
+
         private UnityEngine.GameObject targetGO = new UnityEngine.GameObject();
         private UnityEngine.GameObject nextGO = new UnityEngine.GameObject();
         private UnityEngine.GameObject parentGO = new UnityEngine.GameObject();
@@ -24,6 +28,7 @@ namespace QTM2Unity
 
         void Start()
         {
+            lineRenderer = GetComponent<UnityEngine.LineRenderer>();
             SetGO(targetGO, "Target", UnityEngine.Vector3.up, UnityEngine.Color.white);
             SetGO(nextGO, "NextJoint", UnityEngine.Vector3.zero, UnityEngine.Color.black);
             SetGO(currentGO, "CurrentJoint", UnityEngine.Vector3.zero, UnityEngine.Color.gray);
@@ -38,7 +43,7 @@ namespace QTM2Unity
             go.transform.localScale = UnityEngine.Vector3.one * targetScale;
             go.transform.parent = this.gameObject.transform;
             UnityEngine.MeshRenderer gameObjectRenderer = go.GetComponent<UnityEngine.MeshRenderer>();
-            UnityEngine.Material newMaterial = new UnityEngine.Material(UnityEngine.Shader.Find("Transparent/Diffuse"));
+            UnityEngine.Material newMaterial = new UnityEngine.Material(UnityEngine.Shader.Find("Specular"));
             newMaterial.color = c;
             gameObjectRenderer.material = newMaterial;
             go.SetActive(true);
@@ -72,7 +77,7 @@ namespace QTM2Unity
             y = parentTrans.up.Convert();
 
             Bone parent = new Bone("Parent", parentTrans.position.Convert(), QuaternionHelper.LookAtUp(parentTrans.position.Convert(), joint.Pos, y));
-
+            parent.Rotate(QuaternionHelper.RotationX(MathHelper.DegreesToRadians(twist)));
 
             if (spinAroundX || spinAroundY || spinAroundZ) targ = UpdateTarget(targ, joint.Pos);
 
@@ -114,7 +119,8 @@ namespace QTM2Unity
                         (float)(nextJointPos - joint.Pos).Length * 0.8f
                 );
             }
-                if (backwards)
+            UnityEngine.Vector3 tests;
+            if (backwards)
                 {
                     Vector4 constraints = parent.Constraints;
                     MathHelper.Swap(ref constraints.X, ref constraints.Z); MathHelper.Swap(ref constraints.Y, ref constraints.W);
@@ -129,14 +135,17 @@ namespace QTM2Unity
                     );
                     //pause = true;
                 }
+            if (showRotation)
+            {
                 UnityDebug.DrawRays(joint.Orientation, joint.Pos, (joint.Pos-parent.Pos).Length * 0.5f);
                 UnityDebug.DrawRays(parent.Orientation, parent.Pos, (joint.Pos - parent.Pos).Length*0.5f);
+            }
 
             UnityDebug.DrawLine(joint.Pos, parent.Pos, UnityEngine.Color.white);
             UnityDebug.DrawLine(joint.Pos, nextJointPos, UnityEngine.Color.black);
             UnityDebug.DrawLine(joint.Pos, targ, UnityEngine.Color.cyan);
             UnityDebug.DrawLine(joint.Pos, res, UnityEngine.Color.magenta);
-             
+            DrawLine(joint.Pos);
         }
         Vector3 UpdateTarget(Vector3 targetPos, Vector3 jointPos)
         {
@@ -155,6 +164,10 @@ namespace QTM2Unity
             d = d + 1 % spins;
             float angle = (float)d / spins * 2.0f * Mathf.PI;
             return new Vector3(X * Mathf.Cos(angle), Y * Mathf.Sin(angle), Z * Mathf.Cos(angle));
+        }
+        private void DrawLine(Vector3 test)
+        {
+            lineRenderer.SetPosition(0, test.Convert());
         }
     }
 }
