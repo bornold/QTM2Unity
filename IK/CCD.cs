@@ -7,16 +7,26 @@ namespace QTM2Unity
         // Note: The end effector is assumed to be the last element in bones
         override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
+
             int numberOfBones = bones.Length;
             int iter = 0;
-            Vector3 eeLastIt = new Vector3(bones[numberOfBones - 1].Pos*2);
-            while ((target.Pos - (bones[numberOfBones - 1].Pos)).Length > threshold
-                && iter++ < maxIterations)
+            float lastDistToTarget = float.MaxValue;
+            float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length; 
+            int samePosIterations = 0;
+            while (distToTarget > threshold && iter++ < maxIterations)
             {
-                if (bones[numberOfBones - 1].Pos.Equals(eeLastIt))
-                    break;
+                if (distToTarget >= lastDistToTarget)
+                {
+                    if (++samePosIterations > 10)
+                    {
+                        samePosIterations = 0;
+                        ForwardKinematics(ref bones, QuaternionHelper.RotationZ(MathHelper.PiOver6));
+                    }
+                }
                 else
-                    eeLastIt = new Vector3(bones[numberOfBones - 1].Pos);
+                {
+                    samePosIterations = 0;
+                }
 
                 // Check if target is on the chain
                 if (IsTargetOnChain(ref bones, ref target))
@@ -69,8 +79,10 @@ namespace QTM2Unity
                         }
                     }
                 }
+                lastDistToTarget = distToTarget;
+                distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             }
-            bones[bones.Length - 1].Orientation = target.Orientation; 
+            bones[bones.Length - 1].Orientation = target.Orientation;
             return bones;
         }
     }

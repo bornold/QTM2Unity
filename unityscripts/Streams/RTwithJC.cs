@@ -5,11 +5,11 @@ namespace QTM2Unity
     {
         public bool showSkeleton = true;
         public Color skelettColor = Color.white;
-        public bool showMarkers = false;
-        public float markerScale = 0.015f;
+        public bool showJoints = false;
+        public float jointScale = 0.015f;
         public bool showRotationTrace = false;
-        public float traceScale = 0.08f;
-        public Vector3 offset = new Vector3(0, 0, 0);
+        public float traceLength = 0.08f;
+        public Vector3 debugOffset = new Vector3(0, 0, 0);
         protected BipedSkeleton skeleton;
         protected BipedSkeleton skeletonBuffer;
 
@@ -33,7 +33,7 @@ namespace QTM2Unity
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
             joints.GetJointLocation(markerData, ref skeleton);
-            pos += offset.Convert();
+            pos += debugOffset.Convert();
         }
         void OnDrawGizmos()
         {
@@ -41,11 +41,11 @@ namespace QTM2Unity
                 return;
             if (skeleton != null)
             {
-                if (showMarkers)
+                if (showJoints)
                 {
                     foreach (TreeNode<Bone> b in skeleton)
                     {
-                        Gizmos.DrawSphere((b.Data.Pos + pos).Convert(), markerScale);
+                        Gizmos.DrawSphere((b.Data.Pos + pos).Convert(), jointScale);
                     }
                 }
                 Draw();
@@ -57,7 +57,7 @@ namespace QTM2Unity
             {
                 if (showRotationTrace && (!b.IsLeaf || b.Data.Name.Equals(BipedSkeleton.HEAD)))
                 {
-                    UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos + pos, traceScale);
+                    UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos + pos, traceLength);
                 }
 
                 if (showSkeleton)
