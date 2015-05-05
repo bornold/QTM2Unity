@@ -18,9 +18,7 @@ namespace TestForQTM2UnityProject
         static int streamFreq = 100;// 30;
         static int streammode = 1;
         static int server = 0;
-        static string connectionStatus = "Not Connected";
         static string gpath = @"C:\Users\Jonas\Desktop\result\";
-        static bool connected = false;
         static bool stream6d = false;
         static bool stream3d = true;
 
@@ -48,43 +46,41 @@ namespace TestForQTM2UnityProject
             for (int i = 0; i < servers.Length; i++) Console.Out.WriteLine(string.Format("{1,-10}", i++, servers[i]));
 
             Console.Out.WriteLine("Connecting to: " + servers[server]);
-            while (!RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d, out connectionStatus))
+            while (!RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d))
             {
                 Console.Out.WriteLine("Error connecting to " + servers[server]);
                 Console.Out.WriteLine("Is QTM streaming?");
                 Console.Out.Write("Trying again");
                 Thread.Sleep(1000);
                 Console.Out.Write(".");
-                if (RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d, out connectionStatus)) break;
+                if (RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d)) break;
                 Thread.Sleep(1000);
                 Console.Out.Write(".");
-                if (RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d, out connectionStatus)) break;
+                if (RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d)) break;
                 Thread.Sleep(1000);
                 Console.Out.Write(".");
-                if (RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d, out connectionStatus)) break;
+                if (RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d)) break;
                 Console.Clear();
             }
-            connected = true;
             Console.Out.WriteLine("Connection to " + servers[server] + " successfull");
         }
         static void Disconnect()
         {
+            Console.Out.WriteLine("Disconnecting...");
             RTClient.getInstance().disconnect();
-            connected = false;
-            connectionStatus = "Disconnected";
+            Console.Out.WriteLine("Disconnected");
+
         }
+
         public static void Main(string[] args)
         {
             Connect();
             int intervall = Math.Max(1, (int)Math.Ceiling((decimal)1000 / streamFreq));
             var metaList = GetCompleteSetOfMarkers(verbose: true, intervall:intervall);
-            Console.Out.WriteLine("Disconnecting...");
             Disconnect();
-            Console.Out.WriteLine(connectionStatus);
 
             var jl = new JointLocalization();
-            var ikapplier = new IKApplier();
-            ikapplier.IKSolver = new JacobianTranspose();
+
             var skeleton = new BipedSkeleton();
             var konstigt = new ConstraintsExamples();
             konstigt.SetConstraints(ref skeleton);
@@ -101,8 +97,8 @@ namespace TestForQTM2UnityProject
             SaveToFile(GoldenStandard, "GoldenStandard");
 
             int size = metaList.Count;
-            Console.WriteLine("Creating {0} random gaps witg max length of {1}", size, size / 10);
-            var gaps = GapMatrix(gaps:size/10, gapSizeMax:size/10, numberOfFrames:size);
+            Console.WriteLine("Creating {0} random gaps with max length of {1}", size / 10, size / 20);
+            var gaps = GapMatrix(gaps:size/10, gapSizeMax:size/20, numberOfFrames:size, markers:metaList.First().Item2.Count);
             int frameNo = 0;
             Console.Write(string.Format("Frame "));
             foreach (var n in metaList.First().Item2)
@@ -128,6 +124,8 @@ namespace TestForQTM2UnityProject
                 frameNo++;
             }
             //Console.Clear();
+            var ikapplier = new IKApplier();
+            ikapplier.IKSolver = new JacobianTranspose();
             do
             {
                 Console.Out.WriteLine(size + " frames in set..");
@@ -181,11 +179,12 @@ namespace TestForQTM2UnityProject
                             Console.WriteLine(sb);
 
                         }
-                        Console.WriteLine("{0} random gaps witg max length of {1}", size, size / 10);
+                        Console.WriteLine("{0} random gaps with max length of {1}", size, size / 10);
                         continue;
                 }
                 //Console.Clear();
                 long max = 0;
+                int maxFrame = 0;
                 var result = new List<List<float[]>>();
                 //var result = new List<List<Tuple<float[], float[]>>>();
 
@@ -208,7 +207,11 @@ namespace TestForQTM2UnityProject
                     stopWatch.Stop();
                     long duration = stopWatch.ElapsedMilliseconds;
                     Console.WriteLine(" in " + duration + "ms");
-                    if (duration > max) max = duration;
+                    if (duration > max)
+                    {
+                        max = duration;
+                        maxFrame = list.Item1;
+                    }
                     var theres = ToNotSkeleton(skeleton);
                     if (theres.Any(c => c.Any(d => float.IsNaN(d))) )
                     {
@@ -220,12 +223,12 @@ namespace TestForQTM2UnityProject
                                 sb.Append(t.Data.ToString() + "\n");
                             }
                         }
-                        sb.Insert(0, "\nA NaN in here:\n");
+                        sb.Insert(0, string.Format("\nA NaN at frame: {0}\n",list.Item1));
                         foreach (var lm in list.Item2)
                         {
                             if (lm.position.IsNaN())
                             {
-                                sb.Append(string.Format(lm.label + "\n\t{0}\n", lm.position));
+                                sb.Append(string.Format(lm.label + "\n\t Pos: {0}\n", lm.position));
                             }
                         }
                         sb.Append("\n");
@@ -235,10 +238,15 @@ namespace TestForQTM2UnityProject
                     result.Add(theres);
                 }
                 Console.WriteLine("Saving result to file...");
-                SaveToFile(result, ikalg.ToString());
                 Console.WriteLine("Calculating diffrence to golden...");
                 var resDiff = DiffToGolden(result, GoldenStandard);
-                Console.WriteLine("Maximum time for " + ikalg + " was " + max + "ms");
+                Console.WriteLine("Maximum time for " + ikalg + " was " + max + "ms at frame: " + maxFrame);
+                Console.WriteLine("Save data? (y)");
+                if (Console.ReadKey().KeyChar == 'y')
+                {
+                    SaveToFile(result, ikalg.ToString());
+                    SaveToFile(resDiff, ikalg.ToString() + "_res");
+                }
                 Console.WriteLine();
             } while (true);
         }
@@ -289,7 +297,7 @@ namespace TestForQTM2UnityProject
                 returnthis.Add(listoffloats);
                 frame++;
             }
-            Console.WriteLine("\n" + maxName + " was at distance from golden: " + max);
+            Console.WriteLine("\n" + maxName + " was at distance from golden: " + max + " at frame: " + maxFrame);
             StringBuilder sb2 = new StringBuilder();
             foreach (var some in returnthis[maxFrame])
             {
@@ -309,8 +317,11 @@ namespace TestForQTM2UnityProject
             SaveToFile(tofile, name);
         }
         private static void SaveToFile(List<List<float[]>> tofile, string name)
-        //private static void SaveToFile(List<List<Tuple<float[], float[]>>> tofile, string name, string path = @"C:\Users\Jonas\Desktop\result\")
-
+        {
+            string json = JsonConvert.SerializeObject(tofile);
+            System.IO.File.WriteAllText(gpath + name + ".txt", json);
+        }
+        private static void SaveToFile(List<List<float>> tofile, string name)
         {
             string json = JsonConvert.SerializeObject(tofile);
             System.IO.File.WriteAllText(gpath + name + ".txt", json);
@@ -374,7 +385,7 @@ namespace TestForQTM2UnityProject
             if (writeToFile)
             {
                 string json = JsonConvert.SerializeObject(array);
-                System.IO.File.WriteAllText(gpath, json);
+                System.IO.File.WriteAllText(gpath + "gaps.txt", json);
             }
             if (verbose)
             {
