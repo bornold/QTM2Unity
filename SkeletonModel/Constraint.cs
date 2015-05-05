@@ -12,6 +12,11 @@ namespace QTM2Unity
         // If both start and end is 0 no twist constraint exist
         public static bool CheckOrientationalConstraint(Bone b, Bone refBone, out Quaternion rotation)
         {
+            if (b.Orientation.Xyz.IsNaN() || refBone.Orientation.Xyz.IsNaN())
+            {
+                rotation = Quaternion.Identity;
+                return false;
+            }
             Vector3 direction = b.GetYAxis();
             float twistAngle = GetTwistAngle(b, refBone);
 
@@ -73,7 +78,7 @@ namespace QTM2Unity
             reference.Normalize();
 
             // TODO will the above work for all cases?
-
+      
             float twistAngle = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(reference, up));
 
             if (Vector3.CalculateAngle(reference, x) > Mathf.PI / 2) // b is twisted left with respect to parent

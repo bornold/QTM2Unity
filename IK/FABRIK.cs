@@ -176,7 +176,7 @@ namespace QTM2Unity
 
         private bool EnsureOrientationalConstraints(ref Bone target, ref Bone reference, bool forward)
         {
-            if (target.StartTwistLimit > -1 && target.EndTwistLimit > -1)
+            if (target.StartTwistLimit > -1 && target.EndTwistLimit > -1 && !target.Orientation.Xyz.IsNaN() && !reference.Orientation.Xyz.IsNaN())
             {
                 Quaternion rotation = Quaternion.Identity;
                 if (Constraint.CheckOrientationalConstraint(target, reference, out rotation))
