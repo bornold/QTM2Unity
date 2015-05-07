@@ -392,7 +392,7 @@ namespace QTM2Unity
                     pos = markers[spine];
                     target = markers[neck];
                 }
-                front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, HipForward));
+                front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, ChestForward));
                 front.Normalize();
                 pos = markers[spine];
                 pos += front * markerToSpineDist;
