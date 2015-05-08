@@ -452,12 +452,7 @@ namespace TestForQTM2UnityProject
             }
             SaveToFile(tofile, name);
         }
-        private static void SaveToFile(List<List<float[]>> tofile, string name)
-        {
-            string json = JsonConvert.SerializeObject(tofile);
-            System.IO.File.WriteAllText(gpath + name + ".txt", json);
-        }
-        private static void SaveToFile(List<List<float>> tofile, string name)
+        private static void SaveToFile(Object tofile, string name)
         {
             string json = JsonConvert.SerializeObject(tofile);
             System.IO.File.WriteAllText(gpath + name + ".txt", json);
