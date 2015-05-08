@@ -9,9 +9,9 @@ namespace QTM2Unity
     {
         public bool showConstraints = false;
         public float coneSize = 0.05f;
-        public int coneRes = 50;
+        public int coneResolution = 50;
         public bool showL1 = false;
-        public bool showParentRot = false;
+        public bool showParentRotation = false;
         protected ConstraintsExamples constraints = new ConstraintsExamples();
         public override void StartNext()
         {
@@ -31,7 +31,7 @@ namespace QTM2Unity
         void LateUpdate()
         {
             if (!streaming) return;
-            if (showConstraints || showParentRot || showL1)
+            if (showConstraints || showParentRotation || showL1)
             {
                 foreach (TreeNode<Bone> b in skeleton)
                 {
@@ -41,9 +41,9 @@ namespace QTM2Unity
                         Bone c = b.Data;
                         OpenTK.Vector3 L1 = OpenTK.Vector3.Normalize(OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, parentRotation));  //referenceBone.GetYAxis();
                         OpenTK.Vector3 poss = c.Pos + pos;
-                        if (showConstraints) UnityDebug.CreateIrregularCone3(c.Constraints, poss, L1, parentRotation, coneRes, coneSize);
-                        if (showL1) UnityDebug.DrawLine(poss, poss + L1 * traceScale, UnityEngine.Color.black);
-                        if (showParentRot) UnityDebug.DrawRays2(parentRotation, poss, traceScale);
+                        if (showConstraints) UnityDebug.CreateIrregularCone3(c.Constraints, poss, L1, parentRotation, coneResolution, coneSize);
+                        if (showL1) UnityDebug.DrawLine(poss, poss + L1 * traceLength, UnityEngine.Color.black);
+                        if (showParentRotation) UnityDebug.DrawRays2(parentRotation, poss, traceLength);
 
                     }
                 }

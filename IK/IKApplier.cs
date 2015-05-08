@@ -65,7 +65,7 @@ namespace QTM2Unity
                 last = ((TreeNode<Bone>)lastSkelEnum.Current).Data;
                 if (curr.Data.Exists) // target found! it the last in list
                 {
-                    Bone target = new Bone("target",new Vector3(curr.Data.Pos),new Quaternion(curr.Data.Orientation.Xyz, curr.Data.Orientation.W));
+                    Bone target = new Bone(curr.Data.Name,new Vector3(curr.Data.Pos),new Quaternion(new Vector3(curr.Data.Orientation.Xyz), curr.Data.Orientation.W));
                     CopyFromLast(ref curr, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
@@ -80,7 +80,7 @@ namespace QTM2Unity
         private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)
         {
             curr.Data.Pos = new Vector3(last.Pos);
-            curr.Data.Orientation = new Quaternion(last.Orientation.Xyz, last.Orientation.W);
+            curr.Data.Orientation = new Quaternion(new Vector3(last.Orientation.Xyz), last.Orientation.W);
         }
     }
 }

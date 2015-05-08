@@ -23,31 +23,13 @@ namespace QTM2Unity
             bones[numberOfBones - 1].Orientation = target.Orientation;
             Vector3 root = bones[0].Pos;
             int iterations = 0;
-            float pushIterations = 0;
-            //bool tggl = false;
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             while (distToTarget > threshold && iterations++ < maxIterations)
             {
                 if (distToTarget >= lastDistToTarget)
                 {
-                    if (pushIterations > 360) break; 
-                    pushIterations += pushValue;
-                    //tggl = !tggl;
-                    Vector3 axis;
-                    //axis = Vector3.Cross(bones[0].GetYAxis(), target.Pos - bones[0].Pos);
-                    //axis = bones[0].GetZAxis();
-                    axis = Vector3.Cross(bones[bones.Length - 1].GetYAxis(), bones[bones.Length - 1].Pos - target.Pos);
-                    //axis = Vector3.Cross(bones[0].GetYAxis(), bones[bones.Length - 1].GetYAxis());
-                    float angle = MathHelper.DegreesToRadians(pushIterations);
-                    Quaternion push = Quaternion.FromAxisAngle(axis, angle);
-                    //if (tggl) push = Quaternion.Invert(push);
-                    //ForwardKinematics(ref bones, push);
-                    push = push * (1 / bones.Length-1);
-                    for (int i = 0; i < bones.Length; i++)
-                    {
-                        ForwardKinematics(ref bones, push, i);
-                    }
+                    ForwardKinematics(ref bones, QuaternionHelper.RotationZ(MathHelper.PiOver6));
                 }
                 // Check if target is on the chain
                 if (IsTargetOnChain(ref bones, ref target))
@@ -66,11 +48,6 @@ namespace QTM2Unity
                 lastDistToTarget = distToTarget;
                 distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             }
-            //if (pushIterations > 0)
-            //{
-            //    UnityEngine.Debug.Log("iterations: " + iterations);
-            //    UnityEngine.Debug.Log("pushes: " + pushIterations);
-            //}
             return bones;
         }
 
@@ -199,7 +176,7 @@ namespace QTM2Unity
 
         private bool EnsureOrientationalConstraints(ref Bone target, ref Bone reference, bool forward)
         {
-            if (target.StartTwistLimit > -1 && target.EndTwistLimit > -1)
+            if (target.StartTwistLimit > -1 && target.EndTwistLimit > -1 && !target.Orientation.Xyz.IsNaN() && !reference.Orientation.Xyz.IsNaN())
             {
                 Quaternion rotation = Quaternion.Identity;
                 if (Constraint.CheckOrientationalConstraint(target, reference, out rotation))

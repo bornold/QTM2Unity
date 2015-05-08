@@ -9,7 +9,7 @@ namespace QTM2Unity
     {
         #region varible necessary to estimate joints
         public float markerCentreToSkinSurface =  0.009f;
-        public float markerToSpineDist = 0.05f; // m
+        public float markerToSpineDist = 0.1f; // m
         public float midHeadToHeadJoint = 0.05f; // m
         public float spineLength = 0.05f; // m
         public float BMI = 24;
@@ -376,11 +376,11 @@ namespace QTM2Unity
             /*
                 Offset med z axel från ryggbas orientering med y axel roterad så TV12 mot TV2
              */
-            if (markers[spine].IsNaN())
-            {
-                pos = Vector3Helper.MidPoint(neckPos, spine0);
-            }
-            else
+            //if (markers[spine].IsNaN())
+            //{
+            //    pos = Vector3Helper.MidPoint(neckPos, spine0);
+            //}
+            //else
             {
                 if (markers[neck].IsNaN())
                 {
