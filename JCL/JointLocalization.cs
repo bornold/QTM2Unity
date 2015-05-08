@@ -576,17 +576,18 @@ namespace QTM2Unity
             {
                 Yaxis = neckPos - backspinePos;
             }
-            else if (!backspinePos.IsNaN()) // prio 2, Sacrum to 12th Thoracic
-            {
-                Yaxis = backspinePos - Sacrum;
-            }
-            else if (!neckPos.IsNaN()) // prio 3, Sacrum to 2nd Thoracic
+            else if (!neckPos.IsNaN()) // prio 2, Sacrum to 2nd Thoracic
             {
                 Yaxis = neckPos - Sacrum;
             }
-            else if (!mid.IsNaN()) // prio 4, Sacrum to middle of left and right Scapula
+            else if (!backspinePos.IsNaN()) // prio 3, Sacrum to 12th Thoracic
             {
-                Yaxis = mid - Sacrum;
+                Yaxis = backspinePos - Sacrum;
+            }
+            else if (!mid.IsNaN()) // prio 4, middle of left and right Scapula to 
+            {
+                Vector3 backMid = (LIAS - RIAS) * 0.5f + RIAS;
+                Yaxis = mid - (Sacrum + (backMid - Sacrum) * 2 / 3);
             }
             else // last resort, use hip orientation
             {

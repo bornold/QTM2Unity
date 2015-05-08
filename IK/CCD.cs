@@ -10,24 +10,25 @@ namespace QTM2Unity
 
             int numberOfBones = bones.Length;
             int iter = 0;
+            float test = 0.1f;
+            bool toggle = false;
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length; 
             int samePosIterations = 0;
             while (distToTarget > threshold && iter++ < maxIterations)
             {
-                if (distToTarget >= lastDistToTarget)
+
+                if (distToTarget >= lastDistToTarget && samePosIterations > 10)
                 {
-                    if (++samePosIterations > 10)
-                    {
-                        samePosIterations = 0;
-                        ForwardKinematics(ref bones, QuaternionHelper.RotationZ(MathHelper.PiOver6));
-                    }
+                    ForwardKinematics(ref bones, QuaternionHelper.RotationZ(toggle ? -1 : 1 * MathHelper.PiOver6 * test));
+                    test += .01f;
+                    toggle = !toggle;
+                    samePosIterations = 0;
                 }
                 else
                 {
-                    samePosIterations = 0;
+                    samePosIterations++;
                 }
-
                 // Check if target is on the chain
                 if (IsTargetOnChain(ref bones, ref target))
                 {
@@ -72,9 +73,7 @@ namespace QTM2Unity
                     {
                         Quaternion rotation2;
                         if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation2))
-
                         {
-                            //bones[i].Rotate(rotation2);
                             ForwardKinematics(ref bones, rotation2, i);
                         }
                     }

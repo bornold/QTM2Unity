@@ -89,11 +89,8 @@ namespace QTM2Unity
                 if (Constraint.CheckRotationalConstraints(joint, propparent, nextJointPos, out res, out rot))
                 { }
                 else { UnityEngine.Debug.Log("inside"); }
-                //Quaternion q = QuaternionHelper.GetRotationBetween(targ, res);
                 Vector3 test = propparent.Pos - joint.Pos;
-                //Vector3 testNoting = joint.Pos + Vector3.Transform(test, rot);
                 Vector3 testInvert = joint.Pos + Vector3.Transform(test, Quaternion.Invert(rot));
-                //UnityDebug.DrawLine(joint.Pos, testNoting, UnityEngine.Color.black);
                 UnityDebug.DrawLine(joint.Pos, testInvert, UnityEngine.Color.white);
                 UpdateGOS("ParentJoint", testInvert.Convert());
 
@@ -107,6 +104,7 @@ namespace QTM2Unity
             }
             
             //UnityDebug.DrawRays(parentRot, parentPos, 2f);
+            UnityDebug.DrawLine(joint.Pos, targ, UnityEngine.Color.cyan);
 
             if (printCone)
             {
@@ -119,7 +117,6 @@ namespace QTM2Unity
                         (float)(nextJointPos - joint.Pos).Length * 0.8f
                 );
             }
-            UnityEngine.Vector3 tests;
             if (backwards)
                 {
                     Vector4 constraints = parent.Constraints;
@@ -141,11 +138,10 @@ namespace QTM2Unity
                 UnityDebug.DrawRays(parent.Orientation, parent.Pos, (joint.Pos - parent.Pos).Length*0.5f);
             }
 
-            UnityDebug.DrawLine(joint.Pos, parent.Pos, UnityEngine.Color.white);
+            UnityDebug.DrawLine(joint.Pos, parent.Pos, UnityEngine.Color.black);
             UnityDebug.DrawLine(joint.Pos, nextJointPos, UnityEngine.Color.black);
-            UnityDebug.DrawLine(joint.Pos, targ, UnityEngine.Color.cyan);
             UnityDebug.DrawLine(joint.Pos, res, UnityEngine.Color.magenta);
-            DrawLine(joint.Pos);
+            //DrawLine(joint.Pos);
         }
         Vector3 UpdateTarget(Vector3 targetPos, Vector3 jointPos)
         {

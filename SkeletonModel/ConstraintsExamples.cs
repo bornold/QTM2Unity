@@ -4,12 +4,12 @@ namespace QTM2Unity
     class ConstraintsExamples
     {
         //Vector4(blue, red, green, yellow);
-        public Vector4 Femur = new Vector4(15, 150, 50, 40);
-        public Vector2 FemurTwist = new Vector2(330, 30);
+        public Vector4 Femur = new Vector4(15, 150, 40, 40);
         public Vector4 Knee = new Vector4(10, 0, 10, 160);
-        public Vector2 KneeTwist = new Vector2(315, 45);
-        public Vector4 Ankle = new Vector4(15, 30, 5, 70);
-        public Vector2 AnkleTwist = new Vector2(315, 45);
+        public Vector4 Ankle = new Vector4(15, 30, 5, 40);
+        public Vector2 FemurTwist = new Vector2(345, 15);
+        public Vector2 KneeTwist = new Vector2(345, 15);
+        public Vector2 AnkleTwist = new Vector2(320, 40);
 
         public Vector4 Spine = new Vector4(20, 30, 20, 20);
         public Vector2 SpineTwist = new Vector2(350, 10);
@@ -17,12 +17,12 @@ namespace QTM2Unity
         public Vector2 NeckTwist = new Vector2(270, 90);
 
         public Vector4 Clavicula = new Vector4(15, 40, 50, 10); //down, front, up, back
-        public Vector2 ClaviculaTwist = new Vector2(355, 5);
-        public Vector4 Shoulder = new Vector4(90, 140, 120, 60); // down, front, up, back 
-        public Vector2 ShoulderTwist = new Vector2(270, 90);
+        public Vector4 Shoulder = new Vector4(90, 120, 120, 60); // down, front, up, back 
         public Vector4 Elbow = new Vector4(20, 175, 20, 10); // Adduktion, , Abduktion 
-        public Vector2 ElbowTwist = new Vector2(270, 180);
         public Vector4 Wrist = new Vector4(75, 45, 85, 45); //dorsalflexion, radialflexion, palmarflexion, ulnarflexion
+        public Vector2 ClaviculaTwist = new Vector2(355, 5);
+        public Vector2 ShoulderTwist = new Vector2(340, 20);
+        public Vector2 ElbowTwist = new Vector2(300, 60);
         public Vector2 WristTwist = new Vector2(350, 10);
 
         private Vector2 NoTwist = new Vector2(359, 1);

@@ -364,26 +364,6 @@ namespace QTM2Unity
         /// <param name="source">Front vector</param>
         /// <param name="target">right vector</param>
         /// <returns>Quaternion with rotation</returns>
-        public static Quaternion GetOrientationFromZX(Vector3 front, Vector3 right)
-        {
-            Vector3[] normal = { front, right };
-            Vector3Helper.OrthoNormalize(ref normal);
-            Vector3 z = normal[0];
-            Vector3 x = normal[1];
-            Vector3 y = Vector3.Cross(z, x);
-            Quaternion yRot = GetRotation2(Vector3.UnitY, y);
-
-            Vector3 possibleZ = Vector3.Transform(Vector3.UnitZ, yRot);
-            Quaternion zRot = GetRotation2(possibleZ, z);
-            Quaternion orientation = zRot * yRot;
-            return orientation;
-        }
-        /// <summary>
-        /// Get quaternion with front and right vector
-        /// </summary>
-        /// <param name="source">Front vector</param>
-        /// <param name="target">right vector</param>
-        /// <returns>Quaternion with rotation</returns>
         public static Quaternion GetOrientationFromYX(Vector3 y, Vector3 x)
         {
             Vector3[] normal = { y, x };

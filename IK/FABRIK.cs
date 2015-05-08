@@ -23,13 +23,17 @@ namespace QTM2Unity
             bones[numberOfBones - 1].Orientation = target.Orientation;
             Vector3 root = bones[0].Pos;
             int iterations = 0;
+            float test = 0.1f;
+            bool toggle = false;
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             while (distToTarget > threshold && iterations++ < maxIterations)
             {
                 if (distToTarget >= lastDistToTarget)
                 {
-                    ForwardKinematics(ref bones, QuaternionHelper.RotationZ(MathHelper.PiOver6));
+                    ForwardKinematics(ref bones, QuaternionHelper.RotationZ(toggle ? -1 : 1 * MathHelper.PiOver6*test));
+                    test += .01f;
+                    toggle = !toggle;
                 }
                 // Check if target is on the chain
                 if (IsTargetOnChain(ref bones, ref target))

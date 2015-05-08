@@ -490,7 +490,7 @@ namespace QTM2Unity
             L2.Normalize();
             return L2;
         }
-        private static Vector2 NearestPoint(float radiusX, float radiusY, Vector2 target2D)//, Quadrant q)
+        private static Vector2 NearestPoint(float radiusX, float radiusY, Vector2 target2D)
         {
             Vector2 newPoint;
             float xRad, yRad, pX, pY;
