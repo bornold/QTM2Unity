@@ -9,7 +9,7 @@ namespace QTM2Unity
         private bool exists = false;
         public bool Exists
         {
-            get { return exists; }
+            get { return !pos.IsNaN(); }
         }
 
         private string name;
