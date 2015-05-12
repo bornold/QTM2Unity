@@ -8,6 +8,7 @@ using OpenTK;
 using QTM2Unity;
 using Newtonsoft.Json;
 using System.IO;
+using System.Collections;
 namespace TestForQTM2UnityProject
 {
     class Program
@@ -15,13 +16,114 @@ namespace TestForQTM2UnityProject
         static RTClient rtClient;
 
         static short portUDP = 4545;
-        static int streamFreq = 100;// 30;
+        static int streamFreq = 60;// 30;
         static int streammode = 1;
         static int server = 0;
         static string gpath = @"C:\Users\Jonas\Desktop\result\";
         static bool stream6d = false;
         static bool stream3d = true;
 
+        public static void Main(string[] args)
+        {
+            Connect();
+            int intervall = Math.Max(1, (int)Math.Ceiling((decimal)1000 / streamFreq));
+            var completeMarkerRun = GetCompleteSetOfMarkers(verbose: true, intervall:intervall);
+            var jl = new JointLocalization();
+            var GoldenStandard = new List<BipedSkeleton>();
+            Console.WriteLine("Getting golden standard...");
+            foreach (var list in completeMarkerRun)
+            {
+                var tempSkel = new BipedSkeleton();
+                jl.GetJointLocation(list.Item2, ref tempSkel);
+                GoldenStandard.Add(tempSkel);
+            }
+            //Console.WriteLine("Saving golden standard to file");
+            //SaveToFile(GoldenStandard, "GoldenStandard");
+            Console.WriteLine("Enter any key to run RemoveAJointTest or empty string to run RemoveRandomMarkerTest  ");
+            if (string.IsNullOrEmpty(Console.ReadLine())) {
+                RemoveRandomMarkerTest(completeMarkerRun, GoldenStandard);
+
+            } else {
+                RemoveAJointTest(GoldenStandard);
+            }
+            Disconnect();
+        }
+
+        private static void RemoveAJointTest(List<BipedSkeleton> GoldenStandard)
+        {
+            int jointnumber = 0;
+            var map = new Dictionary<int,string>();
+            Console.WriteLine("Choose joint to remove:");
+            foreach (TreeNode<Bone> j in GoldenStandard[0])
+            {
+                Console.WriteLine("{0}: {1}",jointnumber++, j.Data.Name);
+                map.Add(jointnumber,j.Data.Name);
+            }
+            int chosenJoint;
+            var jointNames = new List<string>();
+            while (int.TryParse(Console.ReadLine(), out chosenJoint))
+            {
+                jointNames.Add(map[chosenJoint+1]);
+                Console.WriteLine("Removing all position data from Joint {0} ", map[chosenJoint+1]);
+                Console.WriteLine("More?");
+            }
+
+            IKApplier applier = new IKApplier();
+            ConstraintsExamples konstig = new ConstraintsExamples();
+            do {
+                bool constriants;
+                applier.IKSolver = ChooseIKSolver(out constriants);
+                var facit = new List<Vector3>();
+                var result = new List<Vector3>();
+                var time = new List<long>();
+                Stopwatch sw = new Stopwatch();
+                bool first = true;
+                foreach (var skel in GoldenStandard)
+                {
+                    if (first)
+                    { 
+                        first = false; 
+                        var tmp = skel;
+                        applier.ApplyIK(ref tmp);
+                        continue; 
+                    }
+                    BipedSkeleton tempskel = new BipedSkeleton();
+                    if (constriants) konstig.SetConstraints(ref tempskel);
+                    IEnumerator tempE = tempskel.GetEnumerator();
+                    IEnumerator skelE = skel.GetEnumerator();
+                    while (tempE.MoveNext() && skelE.MoveNext())
+                    {
+                        TreeNode<Bone> skelB = (TreeNode<Bone>)skelE.Current;
+                        if (jointNames.Contains(skelB.Data.Name))
+                        {
+                            ((TreeNode<Bone>)tempE.Current).Data.Pos = new Vector3(float.NaN, float.NaN, float.NaN);
+                            ((TreeNode<Bone>)tempE.Current).Data.Orientation = new Quaternion(float.NaN, float.NaN, float.NaN, float.NaN);
+                        }
+                        else
+                        {
+                            ((TreeNode<Bone>)tempE.Current).Data.Pos = new Vector3(skelB.Data.Pos);
+                            ((TreeNode<Bone>)tempE.Current).Data.Orientation = new Quaternion(new Vector3(skelB.Data.Orientation.Xyz), skelB.Data.Orientation.W);
+                        }
+                    }
+                    sw.Restart();
+                    applier.ApplyIK(ref tempskel);
+                    sw.Stop();
+                    foreach (var jointname in jointNames)
+                    {
+                        facit.Add(new Vector3(skel[jointname].Pos));
+                        result.Add(new Vector3(tempskel[jointname].Pos));
+                        time.Add(sw.ElapsedMilliseconds);
+                    }
+                }
+                for (int i = 0; i < result.Count; i++)
+			    {
+			        float dist = (facit[i]-result[i]).Length;
+                    Console.WriteLine("{0,-30}  {1,-30}", dist, time[i]);
+			    }
+                Console.WriteLine("Done with test ");
+            } while (string.IsNullOrEmpty(Console.ReadLine()));
+
+        }
         static void Connect()
         {
             string[] servers;
@@ -42,8 +144,8 @@ namespace TestForQTM2UnityProject
                 if (rtClient.getServers(out servers)) break;
                 Console.Clear();
             }
-            Console.Out.WriteLine("Servers found:");
-            for (int i = 0; i < servers.Length; i++) Console.Out.WriteLine(string.Format("{1,-10}", i++, servers[i]));
+           // Console.Out.WriteLine("Servers found:");
+           // for (int i = 0; i < servers.Length; i++) Console.Out.WriteLine(string.Format("{1,-10}", i++, servers[i]));
 
             Console.Out.WriteLine("Connecting to: " + servers[server]);
             while (!RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d))
@@ -69,43 +171,54 @@ namespace TestForQTM2UnityProject
             Console.Out.WriteLine("Disconnecting...");
             RTClient.getInstance().disconnect();
             Console.Out.WriteLine("Disconnected");
-
         }
 
-        public static void Main(string[] args)
+        static IKSolver ChooseIKSolver(out bool constraints)
         {
-            Connect();
-            int intervall = Math.Max(1, (int)Math.Ceiling((decimal)1000 / streamFreq));
-            var metaList = GetCompleteSetOfMarkers(verbose: true, intervall:intervall);
-            Disconnect();
-
-            var jl = new JointLocalization();
-
-            var skeleton = new BipedSkeleton();
-            var konstigt = new ConstraintsExamples();
-            konstigt.SetConstraints(ref skeleton);
-            var GoldenStandard = new List<BipedSkeleton>();
-            Console.WriteLine("Getting golden standard...");
-            foreach (var list in metaList)
+            Console.Out.WriteLine("Choose IK algorithm:");
+            int ikindex = 0;
+            foreach (IK ik in Enum.GetValues(typeof(IK)))
             {
-                var tempSkel = new BipedSkeleton();
-                jl.GetJointLocation(list.Item2, ref tempSkel);
-                GoldenStandard.Add(tempSkel);
+                Console.Out.WriteLine(ikindex++ + " " + ik + "");
             }
-            Console.WriteLine("Saving golden standard to file");
-
-            SaveToFile(GoldenStandard, "GoldenStandard");
-
+            int parsed;
+            constraints = false;
+            while (!int.TryParse(Console.ReadLine(), out parsed) || parsed > ikindex-1) ;
+            
+            IK ikalg = (IK)parsed;
+            switch (ikalg)
+            {
+                case IK.CCD:
+                    Console.WriteLine("Use Constraints?");
+                    constraints = (string.IsNullOrEmpty(Console.ReadKey().KeyChar.ToString()));
+                    return new CCD();
+                case IK.FABRIK:
+                    Console.WriteLine("Use Constraints?");
+                    constraints = (string.IsNullOrEmpty(Console.ReadKey().KeyChar.ToString()));
+                    return new FABRIK();
+                case IK.DLS:
+                    return  new DampedLeastSquares();
+                case IK.TRANSPOSE:
+                    return new JacobianTranspose();
+                case IK.TT:
+                    return new TargetTriangleIK();
+                default:
+                return null;
+            }
+        }
+        private static void RemoveRandomMarkerTest(List<Tuple<int, List<LabeledMarker>>> metaList, List<BipedSkeleton> GoldenStandard)
+        {
             int size = metaList.Count;
             Console.WriteLine("Creating {0} random gaps with max length of {1}", size / 10, size / 20);
-            var gaps = GapMatrix(gaps:size/10, gapSizeMax:size/20, numberOfFrames:size, markers:metaList.First().Item2.Count);
-            int frameNo = 0;
+            var gaps = GapMatrix(gaps: size / 5, gapSizeMax: size / 20, numberOfFrames: size, markers: metaList.First().Item2.Count);
+
             Console.Write(string.Format("Frame "));
             foreach (var n in metaList.First().Item2)
             {
                 Console.Write(string.Format("{0,-36}", n.label)); ;
             }
             Console.WriteLine();
+            int frameNo = 0;
             foreach (var tpl in metaList)
             {
                 StringBuilder sb = new StringBuilder(string.Format("{0,-6}", tpl.Item1));
@@ -117,7 +230,7 @@ namespace TestForQTM2UnityProject
                         //sb.Append(string.Format("Creating gap in frame {0} for joint {1}\n", frameNo, lm.label));
                         lm.position = new OpenTK.Vector3(float.NaN, float.NaN, float.NaN);
                     }
-                    sb.Append(string.Format("{0,-36}",lm.position));
+                    sb.Append(string.Format("{0,-36}", lm.position));
                     jointNo++;
                 }
                 Console.WriteLine(sb);
@@ -144,17 +257,22 @@ namespace TestForQTM2UnityProject
                 {
                     continue;
                 }
-                if (!int.TryParse(input,out parsed) || parsed > ikindex)
+                if (!int.TryParse(input, out parsed) || parsed > ikindex)
                 {
                     break;
                 }
                 IK ikalg = (IK)parsed;
+                bool constraints = false;
                 switch (ikalg)
                 {
                     case IK.CCD:
+                        Console.WriteLine("Use Constraints?");
+                        constraints = (string.IsNullOrEmpty(Console.ReadKey().KeyChar.ToString()));
                         ikapplier.IKSolver = new CCD();
                         break;
                     case IK.FABRIK:
+                        Console.WriteLine("Use Constraints?");
+                        constraints = (string.IsNullOrEmpty(Console.ReadKey().KeyChar.ToString()));
                         ikapplier.IKSolver = new FABRIK();
                         break;
                     case IK.DLS:
@@ -188,23 +306,37 @@ namespace TestForQTM2UnityProject
                 var result = new List<List<float[]>>();
                 //var result = new List<List<Tuple<float[], float[]>>>();
 
-                skeleton = new BipedSkeleton();
+                var skeleton = new BipedSkeleton();
                 var skeleton2 = new BipedSkeleton();
-
-                konstigt.SetConstraints(ref skeleton);
-                konstigt.SetConstraints(ref skeleton2);
+                var konstigt = new ConstraintsExamples();
+                var jl = new JointLocalization();
+                if (constraints)
+                {
+                    konstigt.SetConstraints(ref skeleton);
+                    konstigt.SetConstraints(ref skeleton2);
+                }
+                Stopwatch stopWatch = new Stopwatch();
                 foreach (var list in metaList)
                 {
                     Console.Write("solving frame " + list.Item1);
                     GC.Collect();
-                    Stopwatch stopWatch = new Stopwatch();
-                    stopWatch.Start();
+                    stopWatch.Restart();
                     BipedSkeleton temp = skeleton;
                     skeleton = skeleton2;
                     skeleton2 = temp;
                     jl.GetJointLocation(list.Item2, ref skeleton);
                     ikapplier.ApplyIK(ref skeleton);
                     stopWatch.Stop();
+                    if (skeleton.Any(x => x.Data.Pos.IsNaN()))
+                    {
+                        TreeNode<Bone> nanBone = skeleton.First(z => z.Data.Pos.IsNaN());
+                        Console.WriteLine("ERROR");
+                    }
+                    if (skeleton.Any(x => x.Data.Orientation.Xyz.IsNaN()))
+                    {
+                        TreeNode<Bone> nanBone = skeleton.First(z => z.Data.Orientation.Xyz.IsNaN());
+                        Console.WriteLine("ERROR2");
+                    }
                     long duration = stopWatch.ElapsedMilliseconds;
                     Console.WriteLine(" in " + duration + "ms");
                     if (duration > max)
@@ -213,7 +345,7 @@ namespace TestForQTM2UnityProject
                         maxFrame = list.Item1;
                     }
                     var theres = ToNotSkeleton(skeleton);
-                    if (theres.Any(c => c.Any(d => float.IsNaN(d))) )
+                    if (theres.Any(c => c.Any(d => float.IsNaN(d))))
                     {
                         StringBuilder sb = new StringBuilder();
                         foreach (TreeNode<Bone> t in skeleton)
@@ -223,7 +355,7 @@ namespace TestForQTM2UnityProject
                                 sb.Append(t.Data.ToString() + "\n");
                             }
                         }
-                        sb.Insert(0, string.Format("\nA NaN at frame: {0}\n",list.Item1));
+                        sb.Insert(0, string.Format("\nA NaN at frame: {0}\n", list.Item1));
                         foreach (var lm in list.Item2)
                         {
                             if (lm.position.IsNaN())
@@ -239,7 +371,7 @@ namespace TestForQTM2UnityProject
                 }
                 Console.WriteLine("Saving result to file...");
                 Console.WriteLine("Calculating diffrence to golden...");
-                var resDiff = DiffToGolden(result, GoldenStandard);
+                var resDiff = DiffToGolden(result, GoldenStandard, verbose: true);
                 Console.WriteLine("Maximum time for " + ikalg + " was " + max + "ms at frame: " + maxFrame);
                 Console.WriteLine("Save data? (y)");
                 if (Console.ReadKey().KeyChar == 'y')
@@ -251,7 +383,7 @@ namespace TestForQTM2UnityProject
             } while (true);
         }
 
-        private static List<List<float>> DiffToGolden(List<List<float[]>> result, List<BipedSkeleton> GoldenStandard)
+        private static List<List<float>> DiffToGolden(List<List<float[]>> result, List<BipedSkeleton> GoldenStandard, bool verbose = false)
         {
             var gs = GoldenStandard.ConvertAll(x => ToNotSkeleton(x));
             var gsenum = gs.GetEnumerator();
@@ -262,10 +394,11 @@ namespace TestForQTM2UnityProject
             string maxName = "max";
             int maxFrame = 0;
             int frame = 0;
-            foreach (TreeNode<Bone> n in GoldenStandard.First())
-            {
-                Console.Write(string.Format("{0,-10}", n.Data.Name)); ;
-            }
+            if (verbose)
+                foreach (TreeNode<Bone> n in GoldenStandard.First())
+                {
+                    Console.Write(string.Format("{0,-10}", n.Data.Name)); ;
+                }
             Console.WriteLine();
             while (gsenum.MoveNext() && resenum.MoveNext() && bsenum.MoveNext())
             {
@@ -289,21 +422,24 @@ namespace TestForQTM2UnityProject
                         max = dist;
                         maxName = ((TreeNode<Bone>)bsframeenum.Current).Data.Name;
                     }
-                    sb.Append(string.Format ("{0,-10}",Math.Round(dist,6)));
+                    if (verbose) sb.Append(string.Format ("{0,-10}",Math.Round(dist,6)));
 
                     listoffloats.Add(dist);
                 }
-                Console.WriteLine(sb);
+                if (verbose) Console.WriteLine(sb);
                 returnthis.Add(listoffloats);
                 frame++;
             }
-            Console.WriteLine("\n" + maxName + " was at distance from golden: " + max + " at frame: " + maxFrame);
-            StringBuilder sb2 = new StringBuilder();
-            foreach (var some in returnthis[maxFrame])
+            if (verbose)
             {
-                sb2.Append(string.Format("{0,-10}", Math.Round(some, 6)));
+                Console.WriteLine("\n" + maxName + " was at distance from golden: " + max + " at frame: " + maxFrame);
+                StringBuilder sb2 = new StringBuilder();
+                foreach (var some in returnthis[maxFrame])
+                {
+                    sb2.Append(string.Format("{0,-10}", Math.Round(some, 6)));
+                }
+                Console.WriteLine(sb2);
             }
-            Console.WriteLine(sb2);
             return returnthis;
         }
         private static void SaveToFile(List<BipedSkeleton> skel, string name)
@@ -316,22 +452,14 @@ namespace TestForQTM2UnityProject
             }
             SaveToFile(tofile, name);
         }
-        private static void SaveToFile(List<List<float[]>> tofile, string name)
-        {
-            string json = JsonConvert.SerializeObject(tofile);
-            System.IO.File.WriteAllText(gpath + name + ".txt", json);
-        }
-        private static void SaveToFile(List<List<float>> tofile, string name)
+        private static void SaveToFile(Object tofile, string name)
         {
             string json = JsonConvert.SerializeObject(tofile);
             System.IO.File.WriteAllText(gpath + name + ".txt", json);
         }
         private static List<float[]> ToNotSkeleton(BipedSkeleton skel)
-            //private static List<Tuple<float[], float[]>> ToNotSkeleton(BipedSkeleton skel)
         {
                 var tempList = new List<float[]>();
-                //var tempList = new List<Tuple<float[], float[]>>();
-
                 foreach (TreeNode<Bone> joint in skel)
                 {
                     var p = joint.Data.Pos;
@@ -339,25 +467,18 @@ namespace TestForQTM2UnityProject
                     float[] pos = new float[] { p.X, p.Y, p.Z };
                     float[] rot = new float[] { q.X, q.Y, q.Z, q.W };
                     tempList.Add(pos);
-                    //tempList.Add(new Tuple<float[], float[]>(pos, rot));
                 }
                 return tempList;
         }
 
         private static bool[,] GapMatrix
             (
-            int numberOfFrames = 4000
-            ,
-            int gaps = 200
-            ,
-            int gapSizeMin = 5
-            ,
-            int gapSizeMax = 100
-            ,
-            int markers = 35
-            , 
-            bool verbose = false
-            ,
+            int numberOfFrames = 4000,
+            int gaps = 200,
+            int gapSizeMin = 5,
+            int gapSizeMax = 100,
+            int markers = 35, 
+            bool verbose = false,
             bool writeToFile = false
             )
         {
@@ -402,11 +523,7 @@ namespace TestForQTM2UnityProject
             return array;
         }
 
-        static List<Tuple<int, List<LabeledMarker>>> GetCompleteSetOfMarkers(
-            int intervall = 16
-            ,
-            bool verbose = true
-            )
+        static List<Tuple<int, List<LabeledMarker>>> GetCompleteSetOfMarkers(int intervall = 16, bool verbose = true)
         {
             var metaList = new List<Tuple<int, List<LabeledMarker>>>(500);
             int frame = rtClient.getFrame();
@@ -430,9 +547,9 @@ namespace TestForQTM2UnityProject
             {
                 if (thisframe > lastframe)
                 {
-                    var thing = rtClient.Markers;
+                    var things = rtClient.Markers;
                     var listthing = new List<LabeledMarker>();
-                    foreach (var lm in thing)
+                    foreach (var lm in things)
                     {
                         var lama = new LabeledMarker();
                         lama.position = new Vector3(lm.position);
@@ -446,16 +563,18 @@ namespace TestForQTM2UnityProject
                     metaList.Add(new Tuple<int, List<LabeledMarker>>(thisframe, listthing));
                     lastframe = thisframe;
                 }
+                else
+                {
+                    Thread.Sleep(1);
+                    continue;
+                }
                 Thread.Sleep(intervall);
             }
-
-
             if (verbose)
             {
                 Console.WriteLine(metaList.Count + " frames saved in test suit.");
             }
-
-            return metaList;//.ConvertAll<List<LabeledMarker>>(tpl => tpl.Item2); 
+            return metaList;
         }
     }
 }
