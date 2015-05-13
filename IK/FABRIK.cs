@@ -23,19 +23,25 @@ namespace QTM2Unity
             bones[numberOfBones - 1].Orientation = target.Orientation;
             Vector3 root = bones[0].Pos;
             int iterations = 0;
-            float test = 0.01f;
+            float test = 0.1f;
             bool toggle = false;
+            bool visited = false;
+            int samePosIterations = 0;
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             while (distToTarget > threshold && iterations++ < maxIterations)
             {
-                if (distToTarget >= lastDistToTarget)
-                {
-                    ForwardKinematics(ref bones, QuaternionHelper.RotationZ((toggle ? -1 : 1) * MathHelper.PiOver6 * test), i: 0); // best for left arm
-                    //ForwardKinematics(ref bones, QuaternionHelper.RotationX(toggle ? -1 : 1 * MathHelper.PiOver6 * test), i: 1); // best for legs
-                    test += .01f;
-                    toggle = !toggle;
-                }
+                bool closer = true;
+                if (distToTarget >= lastDistToTarget) {
+                    if (samePosIterations > 3)
+                    {
+                        closer = false;
+                    } else 
+                    {
+                        samePosIterations++;
+                    }
+                } else samePosIterations = 0;
+
 
                 // Check if target is on the chain
                 if (IsTargetOnChain(ref bones, ref target))
@@ -48,13 +54,42 @@ namespace QTM2Unity
 
                 // Forward reaching
                 ForwardReaching(ref bones, ref distances, target);
+                if (!closer)
+                {
+                    Quaternion q;
+                    float rad = ((toggle ? -1 : 1) * MathHelper.PiOver6 * test);
+                    if (rad > MathHelper.TwoPi)
+                    {
+                        UnityEngine.Debug.LogError("I borke...");
+                        break;
+                    }
+                    q = QuaternionHelper.RotationX(rad); // bra/ok på ben, kass på armar
+                    //q = QuaternionHelper.RotationY(rad); // kass överallt
+                    //q = QuaternionHelper.RotationZ(rad); // ok på ben, kass på armar
+                    //q = Quaternion.FromAxisAngle(bones[0].GetXAxis(), rad); // ok på ben, kass på armar
+                    //q = Quaternion.FromAxisAngle(bones[0].GetYAxis(), rad); // ok på ben, kass på armar
+                    //q = Quaternion.FromAxisAngle(bones[0].GetZAxis(), rad); // ok/kass på ben, kass på armar
+                    //q = QuaternionHelper.RotationBetween(bones[0].GetYAxis(), target.Pos - bones[0].Pos); // ok på ben, kass på armar
+                    //Vector3 tre = Vector3.Cross(bones[0].GetYAxis(), target.Pos - bones[0].Pos);
+                    //q = Quaternion.FromAxisAngle(tre, rad);
+                    ForwardKinematics(ref bones, q);
+                    //bones[0].Rotate(q);
+                    //bones[1].Rotate(q);
+                    //UnityEngine.Debug.Log(rad);
+                    if (toggle) test *= 1.05f;
+                    toggle = !toggle;
+                    visited = true;
+
+                }
                 // Backward reaching
                 BackwardReaching(ref bones, ref distances, root, parent);
                 
                 lastDistToTarget = distToTarget;
                 distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             }
+            float rad2 = (toggle ? 1 : -1) * MathHelper.PiOver6 * (test - .01f);
 
+            if (visited) UnityEngine.Debug.Log(MathHelper.RadiansToDegrees(rad2));
             return bones;
         }
 
@@ -121,15 +156,15 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
                   
                 // Constraints
-                //EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], true);
-                //if ( (i+2 < bones.Length) && (bones[i].Constraints != Vector4.Zero) )
+                EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], true);
+                //if (bones[i].Constraints != Vector4.Zero)
                 //{
                 //    Vector3 res;
                 //    Quaternion rot;
 
                 //    if (Constraint.CheckRotationalConstraints(bones[i + 1], bones[i], bones[i + 2].Pos, out res, out rot))
                 //    {
-                //        //bones[i].Pos = bones[i + 1].Pos + Vector3.Transform(bones[i].Pos - bones[i + 1].Pos, Quaternion.Invert(rot));
+                //        bones[i].Pos = bones[i + 1].Pos + Vector3.Transform(bones[i].Pos - bones[i + 1].Pos, Quaternion.Invert(rot));
                 //    }
                 //}
             }
