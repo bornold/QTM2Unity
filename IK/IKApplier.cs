@@ -65,7 +65,13 @@ namespace QTM2Unity
                 last = ((TreeNode<Bone>)lastSkelEnum.Current).Data;
                 if (curr.Data.Exists) // target found! it the last in list
                 {
-                    Bone target = new Bone(curr.Data.Name,new Vector3(curr.Data.Pos),new Quaternion(new Vector3(curr.Data.Orientation.Xyz), curr.Data.Orientation.W));
+                    Bone target = new Bone(
+                        curr.Data.Name,
+                        new Vector3(curr.Data.Pos),
+                        new Quaternion(new Vector3(curr.Data.Orientation.Xyz), curr.Data.Orientation.W),
+                        new Vector4(curr.Data.Constraints.Xyz,curr.Data.Constraints.Z)
+                        );
+                    target.SetOrientationalConstraints(curr.Data.StartTwistLimit, curr.Data.EndTwistLimit);
                     CopyFromLast(ref curr, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);

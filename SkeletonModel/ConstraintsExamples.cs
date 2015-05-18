@@ -6,7 +6,7 @@ namespace QTM2Unity
         //Vector4(blue, red, green, yellow);
         public Vector4 Femur = new Vector4(15, 150, 40, 55);
         public Vector4 Knee = new Vector4(5, 0, 5, 160);
-        public Vector4 Ankle = new Vector4(7, 30, 7, 60);
+        public Vector4 Ankle = new Vector4(7, 0, 7, 60);
         public Vector2 FemurTwist = new Vector2(345, 15);
         public Vector2 KneeTwist = new Vector2(345, 15);
         public Vector2 AnkleTwist = new Vector2(320, 40);
@@ -21,7 +21,7 @@ namespace QTM2Unity
         public Vector4 Elbow = new Vector4(10, 175, 10, 5); // Adduktion, , Abduktion 
         public Vector4 Wrist = new Vector4(75, 45, 85, 45); //dorsalflexion, radialflexion, palmarflexion, ulnarflexion
         public Vector2 ClaviculaTwist = new Vector2(355, 5);
-        public Vector2 ShoulderTwist = new Vector2(270, 90);
+        public Vector2 ShoulderTwist = new Vector2(330, 30);
         public Vector2 ElbowTwist = new Vector2(300, 60);
         public Vector2 WristTwist = new Vector2(350, 10);
 

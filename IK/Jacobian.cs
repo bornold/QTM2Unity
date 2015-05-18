@@ -20,19 +20,40 @@ namespace QTM2Unity
             Vector3[,] rotAxis = new Vector3[k, bones.Length - 1];
 
             int iter = 0;
-            while ((bones[bones.Length - 1].Pos - target.Pos).Length > threshold && iter < maxIterations)
+            int degrees = 2;
+            bool toggle = false;
+            float lastDistToTarget = float.MaxValue;
+            float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
+            while (distToTarget > threshold && iter < maxIterations)
             {
+                if (distToTarget >= lastDistToTarget)
+                {
+                    // rotate root 10 degrees
+                    if (toggle) degrees = +5;
+
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, 0],
+                        MathHelper.DegreesToRadians((toggle ? -1 : 1) * degrees));
+                    bones[0].Rotate(q);
+                    toggle = !toggle;
+                }
                 fillJacobian(out J, out rotAxis, ref bones, ref target);
                 float[,] dTheta;
                 calculateDTheta(out dTheta, ref J, ref bones, ref target);
-
                 bool allZero = true;
                 for (int i = 0; i < bones.Length - 1; i++) // go through all joints (not end effector)
                 {
                     if (dTheta[i, 0] > 0.0001f) // good values? TODO
                         allZero = false;
-                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, i], dTheta[i, 0]);
+                    Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, i], dTheta[i, 0]); // ¤ här kan man lägga in en weighted values om man skulle vilja
                     bones[i].Rotate(q); // Rotate bone i dTheta[i,0] radians around previously calculated axis
+                    if (bones[i].StartTwistLimit > -1 && bones[i].EndTwistLimit > -1)
+                    {
+                        Quaternion rot;
+                        if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rot))
+                        {
+                            bones[i].Rotate(rot);
+                        }
+                    }
                 }
 
                 // if we got (almost) no change in the angles we want to force change to not get stuck
@@ -47,11 +68,26 @@ namespace QTM2Unity
                 // set all positions
                 for (int i = 1; i < bones.Length; i++)
                 {
-                    bones[i].Pos = bones[i - 1].Pos + distances[i - 1] * bones[i - 1].GetYAxis();
+                    Vector3 newPos = bones[i - 1].Pos + distances[i - 1] * bones[i - 1].GetYAxis();
+
+                    if (bones[i - 1].Constraints != Vector4.Zero)
+                    {
+                        Vector3 res;
+                        Quaternion rot;
+                        Bone prevBone = (i > 1) ? bones[i - 2] : parent;
+                        if (Constraint.CheckRotationalConstraints(bones[i - 1], prevBone, newPos, out res, out rot))
+                        {
+                            newPos = res;
+                            bones[i - 1].RotateTowards(newPos - bones[i - 1].Pos);
+                        }
+                    }
+                    bones[i].Pos = newPos;
                 }
+
+                lastDistToTarget = distToTarget;
+                distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length; 
                 iter++;
             }
-            //Debug.Log("Iterations " + iter);
             return bones;
         }
 
