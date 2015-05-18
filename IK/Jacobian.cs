@@ -29,12 +29,13 @@ namespace QTM2Unity
                 if (distToTarget >= lastDistToTarget)
                 {
                     // rotate root 10 degrees
-                    if (toggle) degrees = +5;
-
+                    if (toggle) degrees = +10;
                     Quaternion q = Quaternion.FromAxisAngle(rotAxis[0, 0],
                         MathHelper.DegreesToRadians((toggle ? -1 : 1) * degrees));
-                    bones[0].Rotate(q);
+                    Quaternion q2 = QuaternionHelper.RotationY(MathHelper.DegreesToRadians((toggle ? 1 : -1) * degrees));
+                    bones[0].Rotate(q*q2);
                     toggle = !toggle;
+                    
                 }
                 fillJacobian(out J, out rotAxis, ref bones, ref target);
                 float[,] dTheta;
