@@ -9,23 +9,30 @@ using QTM2Unity;
 using Newtonsoft.Json;
 using System.IO;
 using System.Collections;
+using System.Globalization;
 namespace TestForQTM2UnityProject
 {
     class Program
     {
         static RTClient rtClient;
-
         static short portUDP = 4545;
         static int streamFreq = 60;// 30;
         static int streammode = 1;
         static int server = 0;
-        static string gpath = @"C:\Users\Jonas\Desktop\result\";
+        static string gpath = @"C:\Users\Jonas\Google Drive\Tests";
         static bool stream6d = false;
         static bool stream3d = true;
-
+        static string today;
         public static void Main(string[] args)
         {
             Connect();
+            Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("en-US");
+            today = DateTime.Now.ToString("ddMM_HHmm");
+            gpath = gpath + "/" + today + "/";
+            DirectoryInfo di = Directory.CreateDirectory(gpath);
+            Console.WriteLine("The directory was created successfully at {0}.", Directory.GetCreationTime(gpath));            
+            //Console.WriteLine("Name of the trail:");
+            //today = Console.ReadLine() + today;
             int intervall = Math.Max(1, (int)Math.Ceiling((decimal)1000 / streamFreq));
             var completeMarkerRun = GetCompleteSetOfMarkers(verbose: true, intervall:intervall);
             var jl = new JointLocalization();
@@ -37,15 +44,32 @@ namespace TestForQTM2UnityProject
                 jl.GetJointLocation(list.Item2, ref tempSkel);
                 GoldenStandard.Add(tempSkel);
             }
-            //Console.WriteLine("Saving golden standard to file");
-            //SaveToFile(GoldenStandard, "GoldenStandard");
-            Console.WriteLine("Enter any key to run RemoveAJointTest or empty string to run RemoveRandomMarkerTest  ");
-            if (string.IsNullOrEmpty(Console.ReadLine())) {
-                RemoveRandomMarkerTest(completeMarkerRun, GoldenStandard);
-
-            } else {
-                RemoveAJointTest(GoldenStandard);
-            }
+            //Console.WriteLine("Save Golden to file? (y)");
+            //if (Console.ReadKey().KeyChar == 'y')
+            //{
+            //    Console.WriteLine();
+            //    Console.WriteLine("Append to name?");
+            //    string appendtoname = Console.ReadLine();
+            //    SaveToFile(GoldenStandard, "Golden_" + appendtoname);
+            //}
+            do
+            {
+                Console.WriteLine("1 RemoveAJointTest \n2  RemoveRandomMarkerTest\n_ Exit");
+                string line = Console.ReadLine();
+                int n;
+                if (int.TryParse(line, out n))
+                {
+                    if (n == 1)
+                    {
+                        RemoveAJointTest(GoldenStandard);
+                    }
+                    else if (n == 2)
+                    {
+                        RemoveRandomMarkerTest(completeMarkerRun, GoldenStandard);
+                    }
+                }
+                else break;
+            } while (true);
             Disconnect();
         }
 
@@ -70,11 +94,18 @@ namespace TestForQTM2UnityProject
 
             IKApplier applier = new IKApplier();
             ConstraintsExamples konstig = new ConstraintsExamples();
-            do {
-                bool constriants;
-                applier.IKSolver = ChooseIKSolver(out constriants);
+            IKSolver[] solvers = { new CCD(), new CCD(), new FABRIK(), new FABRIK(), new DampedLeastSquares(), new DampedLeastSquares(), new JacobianTranspose(), new JacobianTranspose() };
+            string[] ikNamse = { "CCD", "CCD Constrained", "FABRIK", "FABRIK Constrained", "DLS", "DLS Constrained", "Transpose", "Transpose Constrained" };
+            int i = 0;
+            for (int p = 0; p < solvers.Length; p++)
+            {
+                var sol = solvers[p];
+                //bool constriants;
+                //IK ikalg;
+                applier.IKSolver = sol;// ChooseIKSolver(out constriants, out ikalg);
                 var facit = new List<Vector3>();
                 var result = new List<Vector3>();
+                var diff = new List<float>();
                 var time = new List<long>();
                 Stopwatch sw = new Stopwatch();
                 bool first = true;
@@ -88,7 +119,7 @@ namespace TestForQTM2UnityProject
                         continue; 
                     }
                     BipedSkeleton tempskel = new BipedSkeleton();
-                    if (constriants) konstig.SetConstraints(ref tempskel);
+                    if (ikNamse[p].EndsWith("Constrained")) konstig.SetConstraints(ref tempskel);
                     IEnumerator tempE = tempskel.GetEnumerator();
                     IEnumerator skelE = skel.GetEnumerator();
                     while (tempE.MoveNext() && skelE.MoveNext())
@@ -105,23 +136,40 @@ namespace TestForQTM2UnityProject
                             ((TreeNode<Bone>)tempE.Current).Data.Orientation = new Quaternion(new Vector3(skelB.Data.Orientation.Xyz), skelB.Data.Orientation.W);
                         }
                     }
+                    GC.Collect();
                     sw.Restart();
                     applier.ApplyIK(ref tempskel);
                     sw.Stop();
-                    foreach (var jointname in jointNames)
-                    {
-                        facit.Add(new Vector3(skel[jointname].Pos));
-                        result.Add(new Vector3(tempskel[jointname].Pos));
-                        time.Add(sw.ElapsedMilliseconds);
-                    }
+                    //foreach (var jointname in jointNames)
+                    //{
+                    facit.Add(new Vector3(skel[jointNames[0]].Pos));
+                    result.Add(new Vector3(tempskel[jointNames[0]].Pos));
+                    diff.Add((skel[jointNames[0]].Pos - tempskel[jointNames[0]].Pos).Length);
+                    //}
+                    time.Add(sw.ElapsedMilliseconds);
                 }
-                for (int i = 0; i < result.Count; i++)
-			    {
-			        float dist = (facit[i]-result[i]).Length;
-                    Console.WriteLine("{0,-30}  {1,-30}", dist, time[i]);
-			    }
-                Console.WriteLine("Done with test ");
-            } while (string.IsNullOrEmpty(Console.ReadLine()));
+                //for (int i = 0; i < result.Count; i++)
+                //{
+                //    float dist = (facit[i]-result[i]).Length;
+                //    Console.WriteLine("Distance: {0,-30}  Time: {1,-30}", dist, time[i]);
+                //}
+               //Console.WriteLine("Save data? (y)");
+               // if (Console.ReadKey().KeyChar == 'y')
+               // {
+                string name = ikNamse[i++]
+                    + jointNames.Aggregate(" ", (sofar, newone) => sofar + " " + newone)
+                    ;// +today;
+                    //Console.WriteLine("append to and of " + name + ".txt");
+                    //string appendtoname = Console.ReadLine();
+                    //SaveToFile(facit,  name + "_facit_" + appendtoname);
+                    //SaveToFile(result, name + "_result_" + appendtoname);
+                Console.WriteLine("Saving: \n " +  name);
+                SaveToFile(diff, "DIFF " + name );// + appendtoname);
+                SaveToFile(facit, result, "RES " + name);
+                SaveToFile(time, "TIME " + name);
+                    //SaveToFile(time,   name + "_time_" + appendtoname);
+                //}
+            }
 
         }
         static void Connect()
@@ -173,8 +221,9 @@ namespace TestForQTM2UnityProject
             Console.Out.WriteLine("Disconnected");
         }
 
-        static IKSolver ChooseIKSolver(out bool constraints)
+        static IKSolver ChooseIKSolver(out bool constraints, out IK ikalg)
         {
+            constraints = false;
             Console.Out.WriteLine("Choose IK algorithm:");
             int ikindex = 0;
             foreach (IK ik in Enum.GetValues(typeof(IK)))
@@ -182,19 +231,21 @@ namespace TestForQTM2UnityProject
                 Console.Out.WriteLine(ikindex++ + " " + ik + "");
             }
             int parsed;
-            constraints = false;
             while (!int.TryParse(Console.ReadLine(), out parsed) || parsed > ikindex-1) ;
             
-            IK ikalg = (IK)parsed;
+            ikalg = (IK)parsed;
             switch (ikalg)
             {
                 case IK.CCD:
-                    Console.WriteLine("Use Constraints?");
-                    constraints = (string.IsNullOrEmpty(Console.ReadKey().KeyChar.ToString()));
+                    Console.WriteLine("Use Constraints?\n'' Constraitns\n_ No constraints");
+                    constraints = (string.IsNullOrEmpty(Console.ReadLine()));
+                    Console.WriteLine(constraints ? "Using constriants" : "Will not use constraints");
+
                     return new CCD();
                 case IK.FABRIK:
-                    Console.WriteLine("Use Constraints?");
-                    constraints = (string.IsNullOrEmpty(Console.ReadKey().KeyChar.ToString()));
+                    Console.WriteLine("Use Constraints?\n'' Constraitns\n_ No constraints");
+                    Console.WriteLine(constraints ? "Using constriants" : "Will not use constraints");
+                    constraints = (string.IsNullOrEmpty(Console.ReadLine()));
                     return new FABRIK();
                 case IK.DLS:
                     return  new DampedLeastSquares();
@@ -209,8 +260,10 @@ namespace TestForQTM2UnityProject
         private static void RemoveRandomMarkerTest(List<Tuple<int, List<LabeledMarker>>> metaList, List<BipedSkeleton> GoldenStandard)
         {
             int size = metaList.Count;
-            Console.WriteLine("Creating {0} random gaps with max length of {1}", size / 10, size / 20);
-            var gaps = GapMatrix(gaps: size / 5, gapSizeMax: size / 20, numberOfFrames: size, markers: metaList.First().Item2.Count);
+            int numofgaps = size / 5;
+            int maxgaplength = size / 20;
+            Console.WriteLine("Creating {0} random gaps with max length of {1}", numofgaps, maxgaplength);
+            var gaps = GapMatrix(gaps: numofgaps, gapSizeMax: maxgaplength, numberOfFrames: size, markers: metaList[0].Item2.Count);
 
             Console.Write(string.Format("Frame "));
             foreach (var n in metaList.First().Item2)
@@ -227,7 +280,6 @@ namespace TestForQTM2UnityProject
                 {
                     if (gaps[frameNo, jointNo])
                     {
-                        //sb.Append(string.Format("Creating gap in frame {0} for joint {1}\n", frameNo, lm.label));
                         lm.position = new OpenTK.Vector3(float.NaN, float.NaN, float.NaN);
                     }
                     sb.Append(string.Format("{0,-36}", lm.position));
@@ -256,23 +308,20 @@ namespace TestForQTM2UnityProject
                 if (string.IsNullOrEmpty(input))
                 {
                     continue;
-                }
-                if (!int.TryParse(input, out parsed) || parsed > ikindex)
+                } else if (!int.TryParse(input, out parsed) || parsed > ikindex)
                 {
                     break;
                 }
                 IK ikalg = (IK)parsed;
-                bool constraints = false;
+                Console.WriteLine("Use Constraints?\n'' Constraitns\n_ No constraints");
+                bool constraints = (string.IsNullOrEmpty(Console.ReadLine()));
                 switch (ikalg)
                 {
                     case IK.CCD:
-                        Console.WriteLine("Use Constraints?");
-                        constraints = (string.IsNullOrEmpty(Console.ReadKey().KeyChar.ToString()));
+
                         ikapplier.IKSolver = new CCD();
                         break;
                     case IK.FABRIK:
-                        Console.WriteLine("Use Constraints?");
-                        constraints = (string.IsNullOrEmpty(Console.ReadKey().KeyChar.ToString()));
                         ikapplier.IKSolver = new FABRIK();
                         break;
                     case IK.DLS:
@@ -285,17 +334,15 @@ namespace TestForQTM2UnityProject
                         ikapplier.IKSolver = new TargetTriangleIK();
                         break;
                     default:
-                        //Console.Clear();
                         for (int i = 0; i <= gaps.GetUpperBound(0); i++)
                         {
                             StringBuilder sb = new StringBuilder(string.Format("{0,-4}", i + 1));
                             for (int j = 0; j <= gaps.GetUpperBound(1); j++)
                             {
                                 string p = (bool)gaps.GetValue(i, j) ? " " : "#";
-                                sb.Append(p);//string.Format("{0,-6}", p));
+                                sb.Append(p);
                             }
                             Console.WriteLine(sb);
-
                         }
                         Console.WriteLine("{0} random gaps with max length of {1}", size, size / 10);
                         continue;
@@ -304,8 +351,6 @@ namespace TestForQTM2UnityProject
                 long max = 0;
                 int maxFrame = 0;
                 var result = new List<List<float[]>>();
-                //var result = new List<List<Tuple<float[], float[]>>>();
-
                 var skeleton = new BipedSkeleton();
                 var skeleton2 = new BipedSkeleton();
                 var konstigt = new ConstraintsExamples();
@@ -327,16 +372,22 @@ namespace TestForQTM2UnityProject
                     jl.GetJointLocation(list.Item2, ref skeleton);
                     ikapplier.ApplyIK(ref skeleton);
                     stopWatch.Stop();
+                    #region debug for NaNs
                     if (skeleton.Any(x => x.Data.Pos.IsNaN()))
                     {
                         TreeNode<Bone> nanBone = skeleton.First(z => z.Data.Pos.IsNaN());
-                        Console.WriteLine("ERROR");
+                        Console.WriteLine("ERROR:");
+                        Console.WriteLine(nanBone.Data);
+                        Console.ReadLine();
                     }
                     if (skeleton.Any(x => x.Data.Orientation.Xyz.IsNaN()))
                     {
                         TreeNode<Bone> nanBone = skeleton.First(z => z.Data.Orientation.Xyz.IsNaN());
-                        Console.WriteLine("ERROR2");
+                        Console.WriteLine("ERROR2;");
+                        Console.WriteLine(nanBone.Data);
+                        Console.ReadLine();
                     }
+                    #endregion
                     long duration = stopWatch.ElapsedMilliseconds;
                     Console.WriteLine(" in " + duration + "ms");
                     if (duration > max)
@@ -345,6 +396,7 @@ namespace TestForQTM2UnityProject
                         maxFrame = list.Item1;
                     }
                     var theres = ToNotSkeleton(skeleton);
+                    #region debug for NAN
                     if (theres.Any(c => c.Any(d => float.IsNaN(d))))
                     {
                         StringBuilder sb = new StringBuilder();
@@ -367,17 +419,21 @@ namespace TestForQTM2UnityProject
                         Console.WriteLine(sb);
                         Console.ReadLine();
                     }
+                    #endregion
                     result.Add(theres);
                 }
-                Console.WriteLine("Saving result to file...");
                 Console.WriteLine("Calculating diffrence to golden...");
                 var resDiff = DiffToGolden(result, GoldenStandard, verbose: true);
                 Console.WriteLine("Maximum time for " + ikalg + " was " + max + "ms at frame: " + maxFrame);
                 Console.WriteLine("Save data? (y)");
                 if (Console.ReadKey().KeyChar == 'y')
                 {
-                    SaveToFile(result, ikalg.ToString());
-                    SaveToFile(resDiff, ikalg.ToString() + "_res");
+                    Console.WriteLine();
+                    string name = ikalg.ToString();
+                    Console.WriteLine("append to and of " + name + ".txt");
+                    string appendtoname = Console.ReadLine();
+                    SaveToFile(result, name + appendtoname);
+                    SaveToFile(resDiff, name + appendtoname + "_res");
                 }
                 Console.WriteLine();
             } while (true);
@@ -452,6 +508,48 @@ namespace TestForQTM2UnityProject
             }
             SaveToFile(tofile, name);
         }
+        private static void SaveToFile(List<Vector3> facit, List<Vector3> res, string name)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(name + "\n");
+            var zip = facit.Zip(res, (fa,re) => fa.X + "," + fa.Y + "," + fa.Z + "," + re.X + "," + re.Y + "," + re.Z);
+            foreach (var v in zip)
+            {
+                sb.Append(v);
+                sb.Append("\n");
+            }
+            System.IO.File.WriteAllText(gpath + name + ".txt", sb.ToString());
+        }
+        private static void SaveToFile(List<Vector3> tofile, string name)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var v in tofile)
+            {
+                sb.Append(v.X);
+                sb.Append(',');
+                sb.Append(v.Y);
+                sb.Append(',');
+                sb.Append(v.Z);
+                sb.Append('\n');
+            }
+            System.IO.File.WriteAllText(gpath + name + "nojson.txt", sb.ToString());
+            SaveToFile((Object)tofile, name);
+        
+        }
+        private static void SaveToFile(List<float> tofile, string name)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(name+"\n");
+            foreach (var v in tofile)
+            {
+                sb.Append(v);
+                sb.Append('\n');
+            }
+            System.IO.File.WriteAllText(gpath + name + ".txt", sb.ToString());
+            //SaveToFile((Object)tofile, name);
+        }
+
         private static void SaveToFile(Object tofile, string name)
         {
             string json = JsonConvert.SerializeObject(tofile);
