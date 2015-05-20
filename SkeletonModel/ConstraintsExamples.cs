@@ -16,12 +16,12 @@ namespace QTM2Unity
         public Vector4 Neck = new Vector4(60, 85, 60, 85); // right, front, left, back
         public Vector2 NeckTwist = new Vector2(270, 90);
 
-        public Vector4 Clavicula = new Vector4(15, 40, 50, 10); //down, front, up, back
+        public Vector4 Clavicula = new Vector4(15, 40, 30, 15); //down, front, up, back
         public Vector4 Shoulder = new Vector4(95, 110, 120, 70); // down, front, up, back 
         public Vector4 Elbow = new Vector4(10, 175, 10, 5); // Adduktion, , Abduktion 
         public Vector4 Wrist = new Vector4(75, 45, 85, 45); //dorsalflexion, radialflexion, palmarflexion, ulnarflexion
-        public Vector2 ClaviculaTwist = new Vector2(355, 5);
-        public Vector2 ShoulderTwist = new Vector2(300, 60);
+        public Vector2 ClaviculaTwist = new Vector2(330, 30);
+        public Vector2 ShoulderTwist = new Vector2(280, 80);
         public Vector2 ElbowTwist = new Vector2(300, 60);
         public Vector2 WristTwist = new Vector2(350, 10);
 

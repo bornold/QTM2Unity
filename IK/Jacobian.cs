@@ -88,6 +88,12 @@ namespace QTM2Unity
                 lastDistToTarget = distToTarget;
                 distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length; 
                 iter++;
+            } 
+            if ( bones[bones.Length - 1].Orientation.Xyz != Vector3.Zero)
+            {
+                bones[bones.Length - 1].Pos = target.Pos;
+                bones[bones.Length - 1].Orientation = target.Orientation;
+                bones[bones.Length - 2].RotateTowards(target.Pos - bones[bones.Length - 2].Pos);
             }
             return bones;
         }
