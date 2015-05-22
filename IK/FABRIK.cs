@@ -60,7 +60,6 @@ namespace QTM2Unity
                     float rad = MathHelper.DegreesToRadians(test);//* (toggle ? -1 : 1));//MathHelper.PiOver6 * test * (toggle ? -1 : 1);
                     if (rad > 360) //MathHelper.TwoPi)
                     {
-                        UnityEngine.Debug.LogError("I borke...");
                         break;
                     }
                     //q = QuaternionHelper.RotationX(rad); // bra/ok på ben, kass på armar

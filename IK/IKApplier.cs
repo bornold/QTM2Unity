@@ -6,6 +6,7 @@ namespace QTM2Unity
 {
     class IKApplier
     {
+        public IKApplier(IKSolver IKSolver) { this.IKSolver = IKSolver; }
         private BipedSkeleton lastSkel;
         public IKSolver IKSolver { private get; set; } 
         public void ApplyIK(ref BipedSkeleton skeleton)

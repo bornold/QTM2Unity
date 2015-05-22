@@ -12,7 +12,7 @@ using System.Collections;
 using System.Globalization;
 namespace TestForQTM2UnityProject
 {
-    class Program
+    public class Program
     {
         static RTClient rtClient;
         static short portUDP = 4545;
@@ -23,6 +23,14 @@ namespace TestForQTM2UnityProject
         static bool stream6d = false;
         static bool stream3d = true;
         static string today;
+        public static double ElapsedMilliS(Stopwatch sw)
+        {
+            return (1000.0 * (double)sw.ElapsedTicks / Stopwatch.Frequency);
+        }
+        public static double ElapsedNanoS(Stopwatch sw)
+        {
+            return 1000000000.0 * (double)sw.ElapsedTicks / Stopwatch.Frequency;
+        }
         public static void Main(string[] args)
         {
             Connect();
@@ -92,9 +100,9 @@ namespace TestForQTM2UnityProject
                 Console.WriteLine("More?");
             }
 
-            IKApplier applier = new IKApplier();
             ConstraintsExamples konstig = new ConstraintsExamples();
             IKSolver[] solvers = { new CCD(), new CCD(), new FABRIK(), new FABRIK(), new DampedLeastSquares(), new DampedLeastSquares(), new JacobianTranspose(), new JacobianTranspose() };
+            IKApplier applier = new IKApplier(solvers[0]);
             string[] ikNamse = { "CCD", "CCD Constrained", "FABRIK", "FABRIK Constrained", "DLS", "DLS Constrained", "Transpose", "Transpose Constrained" };
             int i = 0;
             for (int p = 0; p < solvers.Length; p++)
@@ -106,7 +114,7 @@ namespace TestForQTM2UnityProject
                 var facit = new List<Vector3>();
                 var result = new List<Vector3>();
                 var diff = new List<float>();
-                var time = new List<long>();
+                var time = new List<double>();
                 Stopwatch sw = new Stopwatch();
                 bool first = true;
                 foreach (var skel in GoldenStandard)
@@ -146,7 +154,7 @@ namespace TestForQTM2UnityProject
                     result.Add(new Vector3(tempskel[jointNames[0]].Pos));
                     diff.Add((skel[jointNames[0]].Pos - tempskel[jointNames[0]].Pos).Length);
                     //}
-                    time.Add(sw.ElapsedMilliseconds);
+                    time.Add(ElapsedMilliS(sw));
                 }
                 //for (int i = 0; i < result.Count; i++)
                 //{
@@ -157,15 +165,16 @@ namespace TestForQTM2UnityProject
                // if (Console.ReadKey().KeyChar == 'y')
                // {
                 string name = ikNamse[i++]
-                    + jointNames.Aggregate(" ", (sofar, newone) => sofar + " " + newone)
-                    ;// +today;
+                    + jointNames.Aggregate(" ", (sofar, newone) => sofar + " " + newone);
+                    // +today;
                     //Console.WriteLine("append to and of " + name + ".txt");
                     //string appendtoname = Console.ReadLine();
                     //SaveToFile(facit,  name + "_facit_" + appendtoname);
                     //SaveToFile(result, name + "_result_" + appendtoname);
                 Console.WriteLine("Saving: \n " +  name);
                 SaveToFile(diff, "DIFF " + name );// + appendtoname);
-                SaveToFile(facit, result, "RES " + name);
+                SaveToFile(result, "RES " + name);
+                SaveToFile(facit, "RES True position " + jointNames.Aggregate(" ", (sofar, newone) => sofar + " " + newone));
                 SaveToFile(time, "TIME " + name);
                     //SaveToFile(time,   name + "_time_" + appendtoname);
                 //}
@@ -257,7 +266,7 @@ namespace TestForQTM2UnityProject
                 return null;
             }
         }
-        private static void RemoveRandomMarkerTest(List<Tuple<int, List<LabeledMarker>>> metaList, List<BipedSkeleton> GoldenStandard)
+        static void RemoveRandomMarkerTest(List<Tuple<int, List<LabeledMarker>>> metaList, List<BipedSkeleton> GoldenStandard)
         {
             int size = metaList.Count;
             int numofgaps = size / 5;
@@ -289,11 +298,22 @@ namespace TestForQTM2UnityProject
                 frameNo++;
             }
             //Console.Clear();
-            var ikapplier = new IKApplier();
-            ikapplier.IKSolver = new JacobianTranspose();
-            do
+            var ikapplier = new IKApplier(new JacobianTranspose());
+            ConstraintsExamples konstig = new ConstraintsExamples();
+            bool constraints = true;
+            IKSolver[] solvers = { new CCD(), new CCD(), 
+                                     new FABRIK(), new FABRIK(), 
+                                     new DampedLeastSquares(), new DampedLeastSquares(), 
+                                     new JacobianTranspose(), new JacobianTranspose() 
+                                 };
+            string[] ikNamse = { "CCD", "CCD Constrained", "FABRIK", "FABRIK Constrained", "DLS", "DLS Constrained", "Transpose", "Transpose Constrained" };
+            int i = 0;
+            for (int p = 0; p < solvers.Length; p++)
             {
-                Console.Out.WriteLine(size + " frames in set..");
+                constraints = !constraints;
+                #region old ik chooser
+                /*
+                 * Console.Out.WriteLine(size + " frames in set..");
                 Console.Out.WriteLine("Choose IK algorithm:");
                 int ikindex = 0;
                 foreach (IK ik in Enum.GetValues(typeof(IK)))
@@ -347,9 +367,14 @@ namespace TestForQTM2UnityProject
                         Console.WriteLine("{0} random gaps with max length of {1}", size, size / 10);
                         continue;
                 }
+                 */
                 //Console.Clear();
-                long max = 0;
+                #endregion
+                ikapplier.IKSolver = solvers[p];
+
+                double max = 0;
                 int maxFrame = 0;
+                var elapsedTimes = new List<double>();
                 var result = new List<List<float[]>>();
                 var skeleton = new BipedSkeleton();
                 var skeleton2 = new BipedSkeleton();
@@ -373,70 +398,65 @@ namespace TestForQTM2UnityProject
                     ikapplier.ApplyIK(ref skeleton);
                     stopWatch.Stop();
                     #region debug for NaNs
-                    if (skeleton.Any(x => x.Data.Pos.IsNaN()))
-                    {
-                        TreeNode<Bone> nanBone = skeleton.First(z => z.Data.Pos.IsNaN());
-                        Console.WriteLine("ERROR:");
-                        Console.WriteLine(nanBone.Data);
-                        Console.ReadLine();
-                    }
-                    if (skeleton.Any(x => x.Data.Orientation.Xyz.IsNaN()))
-                    {
-                        TreeNode<Bone> nanBone = skeleton.First(z => z.Data.Orientation.Xyz.IsNaN());
-                        Console.WriteLine("ERROR2;");
-                        Console.WriteLine(nanBone.Data);
-                        Console.ReadLine();
-                    }
+                    //if (skeleton.Any(x => x.Data.Pos.IsNaN()))
+                    //{
+                    //    TreeNode<Bone> nanBone = skeleton.First(z => z.Data.Pos.IsNaN());
+                    //    Console.WriteLine("ERROR:");
+                    //    Console.WriteLine(nanBone.Data);
+                    //    Console.ReadLine();
+                    //}
+                    //if (skeleton.Any(x => x.Data.Orientation.Xyz.IsNaN()))
+                    //{
+                    //    TreeNode<Bone> nanBone = skeleton.First(z => z.Data.Orientation.Xyz.IsNaN());
+                    //    Console.WriteLine("ERROR2;");
+                    //    Console.WriteLine(nanBone.Data);
+                    //    Console.ReadLine();
+                    //}
                     #endregion
-                    long duration = stopWatch.ElapsedMilliseconds;
+                    double duration = ElapsedMilliS(stopWatch);// (1000.0 * (double)stopWatch.ElapsedTicks / Stopwatch.Frequency);
+                    elapsedTimes.Add(duration);
                     Console.WriteLine(" in " + duration + "ms");
                     if (duration > max)
                     {
                         max = duration;
                         maxFrame = list.Item1;
                     }
-                    var theres = ToNotSkeleton(skeleton);
+                    //var theres = ToNotSkeleton(skeleton);
                     #region debug for NAN
-                    if (theres.Any(c => c.Any(d => float.IsNaN(d))))
-                    {
-                        StringBuilder sb = new StringBuilder();
-                        foreach (TreeNode<Bone> t in skeleton)
-                        {
-                            if (t.Data.Pos.IsNaN())
-                            {
-                                sb.Append(t.Data.ToString() + "\n");
-                            }
-                        }
-                        sb.Insert(0, string.Format("\nA NaN at frame: {0}\n", list.Item1));
-                        foreach (var lm in list.Item2)
-                        {
-                            if (lm.position.IsNaN())
-                            {
-                                sb.Append(string.Format(lm.label + "\n\t Pos: {0}\n", lm.position));
-                            }
-                        }
-                        sb.Append("\n");
-                        Console.WriteLine(sb);
-                        Console.ReadLine();
-                    }
+                    //if (theres.Any(c => c.Any(d => float.IsNaN(d))))
+                    //{
+                    //    StringBuilder sb = new StringBuilder();
+                    //    foreach (TreeNode<Bone> t in skeleton)
+                    //    {
+                    //        if (t.Data.Pos.IsNaN())
+                    //        {
+                    //            sb.Append(t.Data.ToString() + "\n");
+                    //        }
+                    //    }
+                    //    sb.Insert(0, string.Format("\nA NaN at frame: {0}\n", list.Item1));
+                    //    foreach (var lm in list.Item2)
+                    //    {
+                    //        if (lm.position.IsNaN())
+                    //        {
+                    //            sb.Append(string.Format(lm.label + "\n\t Pos: {0}\n", lm.position));
+                    //        }
+                    //    }
+                    //    sb.Append("\n");
+                    //    Console.WriteLine(sb);
+                    //    Console.ReadLine();
+                    //}
                     #endregion
-                    result.Add(theres);
+                    result.Add(ToNotSkeleton(skeleton));
                 }
                 Console.WriteLine("Calculating diffrence to golden...");
                 var resDiff = DiffToGolden(result, GoldenStandard, verbose: true);
-                Console.WriteLine("Maximum time for " + ikalg + " was " + max + "ms at frame: " + maxFrame);
-                Console.WriteLine("Save data? (y)");
-                if (Console.ReadKey().KeyChar == 'y')
-                {
-                    Console.WriteLine();
-                    string name = ikalg.ToString();
-                    Console.WriteLine("append to and of " + name + ".txt");
-                    string appendtoname = Console.ReadLine();
-                    SaveToFile(result, name + appendtoname);
-                    SaveToFile(resDiff, name + appendtoname + "_res");
-                }
+                string name = ikNamse[p];
+                Console.WriteLine("Maximum time for " + name + " was " + max + "ms at frame: " + maxFrame);
+                SaveToFile(result, name);
+                SaveToFile(resDiff, name);
+
                 Console.WriteLine();
-            } while (true);
+            }
         }
 
         private static List<List<float>> DiffToGolden(List<List<float[]>> result, List<BipedSkeleton> GoldenStandard, bool verbose = false)
@@ -522,7 +542,7 @@ namespace TestForQTM2UnityProject
         }
         private static void SaveToFile(List<Vector3> tofile, string name)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(name + "\n");
             foreach (var v in tofile)
             {
                 sb.Append(v.X);
@@ -532,8 +552,8 @@ namespace TestForQTM2UnityProject
                 sb.Append(v.Z);
                 sb.Append('\n');
             }
-            System.IO.File.WriteAllText(gpath + name + "nojson.txt", sb.ToString());
-            SaveToFile((Object)tofile, name);
+            System.IO.File.WriteAllText(gpath + name + ".txt", sb.ToString());
+            //SaveToFile((Object)tofile, name);
         
         }
         private static void SaveToFile(List<float> tofile, string name)
