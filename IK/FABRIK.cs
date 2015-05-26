@@ -25,22 +25,26 @@ namespace QTM2Unity
             int iterations = 0;
             float test = 0.1f;
             bool toggle = false;
-            bool visited = false;
             int samePosIterations = 0;
+            int pushes = 0;
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             while (distToTarget > threshold && iterations++ < maxIterations)
             {
                 bool move = false;
-                if (distToTarget >= lastDistToTarget) {
-                    if (samePosIterations > 2)
+                if (distToTarget >= lastDistToTarget)
+                {
+                    if (samePosIterations > 3)
                     {
+                        if (pushes++ > 5) break;
                         move = true;
-                    } else 
+                    }
+                    else
                     {
                         samePosIterations++;
                     }
-                } else samePosIterations = 0;
+                }
+                else samePosIterations = 0;
 
 
                 // Check if target is on the chain
@@ -62,25 +66,23 @@ namespace QTM2Unity
                     {
                         break;
                     }
-                    //q = QuaternionHelper.RotationX(rad); // bra/ok på ben, kass på armar
+                    q = QuaternionHelper.RotationX(rad); // bra/ok på ben, kass på armar
                     //q = QuaternionHelper.RotationY(rad); // kass överallt
                     //q = QuaternionHelper.RotationZ(rad); // ok på ben, kass på armar
                     //q = Quaternion.FromAxisAngle(bones[0].GetXAxis(), rad); // ok på ben, kass på armar
-                    q = Quaternion.FromAxisAngle(bones[0].GetYAxis(), rad); // ok på ben, kass på armar
+                    //q = Quaternion.FromAxisAngle(bones[0].GetYAxis(), rad); // ok på ben, kass på armar
                     //q = Quaternion.FromAxisAngle(bones[0].GetZAxis(), rad); // ok/kass på ben, kass på armar
                     //q = QuaternionHelper.RotationBetween(bones[0].GetYAxis(), target.Pos - bones[0].Pos); // ok på ben, kass på armar
                     //Vector3 tre = Vector3.Cross(bones[0].GetYAxis(), target.Pos - bones[0].Pos);
                     //q = Quaternion.FromAxisAngle(tre, rad);
                     //q = Quaternion.Invert( bones[0].Orientation);
-                    ForwardKinematics(ref bones, q, i:(toggle ? 1 : 0));
+                    ForwardKinematics(ref bones, q, i: (toggle ? 1 : 0));
 
                     //bones[0].Rotate(q);
                     //bones[1].Rotate(q);
                     //UnityEngine.Debug.Log(rad);
                     if (toggle) test += 10f;
                     toggle = !toggle;
-                    visited = true;
-
                 }
                 // Backward reaching
                 BackwardReaching(ref bones, ref distances, root, parent);

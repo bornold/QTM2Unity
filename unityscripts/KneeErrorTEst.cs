@@ -24,8 +24,8 @@ public class KneeErrorTEst : MonoBehaviour
     private BipedSkeleton bones;
     private BipedSkeleton bones2;
 
-    private IKSolver solver = new FABRIK();
-    private IKApplier applier = new IKApplier();
+    private IKSolver solver;
+    private IKApplier applier;
     private Vector3 _pos;
     public enum IKS
 	    {
@@ -39,6 +39,7 @@ public class KneeErrorTEst : MonoBehaviour
 	// Use this for initialization
 	void Start () {
         solver = new CCD();
+        applier = new IKApplier(solver);
         bones = GetBones(this.gameObject.transform.position.Convert());
         _pos = this.gameObject.transform.position;
 	}

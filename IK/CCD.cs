@@ -15,17 +15,20 @@ namespace QTM2Unity
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length; 
             int samePosIterations = 0;
+            int numPushes = 0;
             while (distToTarget > threshold && iter++ < maxIterations)
             {
                 if (distToTarget >= lastDistToTarget) {
                     if (samePosIterations > 5)
                     {
-                        ForwardKinematics(ref bones, QuaternionHelper.RotationZ((toggle ? -1 : 1) * MathHelper.PiOver6 * test));
+                        ForwardKinematics(ref bones, QuaternionHelper.RotationX((toggle ? -1 : 1) * MathHelper.PiOver6 * test));
                         if (toggle) test += .01f;
                         toggle = !toggle;
                         samePosIterations = 0;
+                        numPushes++;
                     } else 
                     {
+                        if (numPushes > 10) break;
                         samePosIterations++;
                     }
                 } else samePosIterations = 0;

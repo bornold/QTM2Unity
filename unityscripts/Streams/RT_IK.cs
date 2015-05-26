@@ -8,16 +8,17 @@ namespace QTM2Unity
 {
     class RT_IK : RTwithJC
     {
-        private IKApplier ikApplier = new IKApplier();
+        private IKApplier ikApplier;
         public IK ikAlgorithm = IK.CCD;
         public override void StartNext()
         {
             base.StartNext();
-            ikApplier.IKSolver = new CCD();
+            ikApplier = new IKApplier(new CCD());
         }
         public override void UpdateNext()
         {
             base.UpdateNext();
+            if (ikApplier == null) ikApplier = new IKApplier(new CCD());
                 switch (ikAlgorithm)
                 {
                     case IK.CCD:
