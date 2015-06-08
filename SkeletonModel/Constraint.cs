@@ -296,9 +296,9 @@ namespace QTM2Unity
                 behind = true;
                 //some90 = constraints.X > 90 || constraints.Y > 90 || constraints.Z > 90 || constraints.W > 90;
             }
-
             //3.3 Find the distance between the point O and the joint position
             float S = O.Length;
+            //UnityDebug.DrawRay(jointPos, -O, UnityEngine.Color.blue, S*100);
             //UnityEngine.Debug.Log("O: " + O);
             //UnityEngine.Debug.Log("S: " + S);
             //UnityEngine.Debug.Log("OPos: " + OPos);
@@ -359,6 +359,9 @@ namespace QTM2Unity
             else if (radius.X > 90 || radius.Y > 90) // has one angle > 90, other not, very speciall case
             {
                 Vector3 L2 = GetNewL(rotation, q, radius);
+                //UnityDebug.DrawRay(jointPos, L2, UnityEngine.Color.red, 100);
+                //UnityDebug.DrawRay(jointPos, (L2 - L1) / 2 + L1, UnityEngine.Color.green, 100);
+
                 if (!behind) L2 = (L2 - L1) / 2 + L1;
                 float angle = Vector3.CalculateAngle(L2, L1);
                 Vector3 axis = Vector3.Cross(L2, L1);

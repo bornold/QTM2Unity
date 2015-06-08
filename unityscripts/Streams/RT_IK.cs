@@ -6,7 +6,7 @@ using UnityEngine;
 using System.Collections;
 namespace QTM2Unity
 {
-    class RT_IK : RTwithJC
+    class RT_IK : RT_JC
     {
         private IKApplier ikApplier;
         public IK ikAlgorithm = IK.CCD;
@@ -39,7 +39,20 @@ namespace QTM2Unity
                     default:
                         break;
             }
+                if (debug) { 
+                    skeleton[BipedSkeleton.LOWERLEG_L].Pos = new OpenTK.Vector3(float.NaN, float.NaN, float.NaN);
+                    skeleton[BipedSkeleton.FOOT_L].Pos = new OpenTK.Vector3(float.NaN, float.NaN, float.NaN); 
+                }
             ikApplier.ApplyIK(ref skeleton);
+        }
+        public override void Draw()
+        {
+            base.Draw();
+        }
+        void OnDrawGizmos()
+        {
+            if (!Application.isPlaying || !streaming) return;            
+            Draw();
         }
     }
 }

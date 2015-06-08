@@ -443,7 +443,8 @@ namespace QTM2Unity
             front = markers[leftElbow];
             left = markers[leftInnerElbow];
             right = markers[leftOuterElbow];
-            pos = Vector3Helper.MidPoint(left, right, front);
+            pos = Vector3Helper.MidPoint(left, right);//, front); // stop changing this to left,right stupid, no arm ori will be
+
             dic.Add(BipedSkeleton.LOWERARM_L, pos);
             //////////////////////////////////////////
 
@@ -451,7 +452,7 @@ namespace QTM2Unity
             front = markers[rightElbow];
             left = markers[rightInnerElbow];
             right = markers[rightOuterElbow];
-            pos = Vector3Helper.MidPoint(left, right, front);
+            pos = Vector3Helper.MidPoint(left, right);//, front);
             dic.Add(BipedSkeleton.LOWERARM_R, pos);
             //////////////////////////////////////////
 
@@ -788,14 +789,29 @@ namespace QTM2Unity
             Vector3 pos = joints[BipedSkeleton.UPPERARM_L];
             Vector3 target = joints[BipedSkeleton.LOWERARM_L];
             b.Pos = pos;
-            b.Orientation = QuaternionHelper.LookAtUp(pos, target, UpperArmForwardLeft);
+            if (!UpperArmForwardLeft.IsNaN())
+            {
+                b.Orientation = QuaternionHelper.LookAtUp(pos, target, UpperArmForwardLeft);
+            }
+            else
+            {
+
+                b.Orientation = QuaternionHelper.LookAtRight(pos, target, markers[leftInnerElbow] - markers[leftOuterElbow]);
+            }
         }
         private void GetUpperArmRight(Bone b)
         {
             Vector3 pos = joints[BipedSkeleton.UPPERARM_R];
             Vector3 target = joints[BipedSkeleton.LOWERARM_R];
-            b.Pos = pos;
-            b.Orientation = QuaternionHelper.LookAtUp(pos, target, UpperArmForwardRight);
+            b.Pos = pos; 
+            if (!UpperArmForwardRight.IsNaN())
+            {
+                b.Orientation = QuaternionHelper.LookAtUp(pos, target, UpperArmForwardRight);
+            }
+            else
+            {
+                b.Orientation = QuaternionHelper.LookAtRight(pos, target, markers[rightInnerElbow] - markers[rightOuterElbow]);
+            }
         }
         private void GetLowerArmLeft(Bone b)
         {

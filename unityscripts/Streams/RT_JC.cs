@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 namespace QTM2Unity
 {
-    class RTwithJC : RT
+    class RT_JC : RT
     {
         public bool showSkeleton = true;
         public Color skelettColor = Color.white;
@@ -9,7 +9,6 @@ namespace QTM2Unity
         public float jointScale = 0.015f;
         public bool showRotationTrace = false;
         public float traceLength = 0.08f;
-        public Vector3 debugOffset = new Vector3(0, 0, 0);
         protected BipedSkeleton skeleton;
         protected BipedSkeleton skeletonBuffer;
 
@@ -33,26 +32,19 @@ namespace QTM2Unity
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
             joints.GetJointLocation(markerData, ref skeleton);
-            pos += debugOffset.Convert();
+            
         }
         void OnDrawGizmos()
         {
-            if (!Application.isPlaying)
-                return;
+            if (!Application.isPlaying || !streaming) return;
             if (skeleton != null)
             {
-                if (showJoints)
-                {
-                    foreach (TreeNode<Bone> b in skeleton)
-                    {
-                        Gizmos.DrawSphere((b.Data.Pos + pos).Convert(), jointScale);
-                    }
-                }
                 Draw();
             }
         }
-        public void Draw()
+        public override void Draw()
         {
+            base.Draw();
             foreach (TreeNode<Bone> b in skeleton)
             {
                 if (showRotationTrace && (!b.IsLeaf || b.Data.Name.Equals(BipedSkeleton.HEAD)))
@@ -66,6 +58,10 @@ namespace QTM2Unity
                     {
                         UnityDebug.DrawLine(b.Data.Pos + pos, child.Data.Pos + pos, skelettColor);
                     }
+                }
+                if (showJoints)
+                {
+                    Gizmos.DrawSphere((b.Data.Pos + pos).Convert(), jointScale);
                 }
             }
         }

@@ -3,15 +3,21 @@ using UnityEngine;
 using QTM2Unity.Unity;
 namespace QTM2Unity
 {
-    public abstract class RT : MonoBehaviour
+    public class RT : MonoBehaviour
     {
+        public Vector3 offset = new Vector3(0, 0, 0);
+        public Color gizmosColor = Color.cyan;
         public bool debug = false;
+        public bool drawMarkers = false;
+        public bool drawMarkerBones = false;
+        public Color markerBonesColor = Color.blue;
+        public float markersScale = 0.01f;
         protected RTClient rtClient;
         protected OpenTK.Vector3 pos;
         protected bool streaming = false;
         protected List<LabeledMarker> markerData;
-        public abstract void StartNext();
-        public abstract void UpdateNext();
+        public virtual void StartNext(){}
+        public virtual void UpdateNext(){}
         void Start()
         {
             rtClient = RTClient.getInstance();
@@ -48,10 +54,38 @@ namespace QTM2Unity
                 markerData = rtClient.Markers;
                 if (markerData == null && markerData.Count == 0) return;
                 pos = this.transform.position.Convert();
+                pos += offset.Convert();
                 UpdateNext();
             }
             else if (_connected)
                 _connected = rtClient.connect(_pickedServer, _udpPort, _streammode, _streamval, _stream6d, _stream3d);
+        }
+        public virtual void Draw()
+        {
+            Gizmos.color = gizmosColor;
+            if (markerData != null)
+            {
+                if (drawMarkers)
+                {
+                    foreach (var lb in markerData)
+                    {
+                        Gizmos.DrawSphere((lb.position + pos ).Convert(), markersScale);
+                    }
+                }
+                if (drawMarkerBones && rtClient.Bones != null)
+                {
+				    var boneData = rtClient.Bones;
+				    foreach( var bd in boneData)
+	                {
+					    Debug.DrawLine(bd.fromMarker.position.Convert() + pos.Convert(),
+                                        bd.toMarker.position.Convert() + pos.Convert(), markerBonesColor);
+	                }
+                }
+            }
+        }
+        void OnDrawGizmos()
+        {
+            Draw();
         }
     }
 }

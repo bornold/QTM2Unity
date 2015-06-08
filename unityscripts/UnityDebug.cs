@@ -200,6 +200,7 @@ namespace QTM2Unity
             positions.AddRange(GetQuarter(strains.X, strains.W, top, L1, rot, resolution, 4, scale));
             OpenTK.Vector3 prev = positions.First();
             Color c;
+            Color c2 = Color.black;
             int i = 0;
             foreach (OpenTK.Vector3 v in positions)
             {
@@ -221,7 +222,7 @@ namespace QTM2Unity
                     c = Color.Lerp(Color.yellow, Color.blue, part);
                 }
                 i++;
-                DrawLine(v, prev , c);
+                DrawLine(v, prev , c2);
                 DrawLine(top, v , c);
                 prev = v;
             }

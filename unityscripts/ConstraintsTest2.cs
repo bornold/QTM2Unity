@@ -14,6 +14,7 @@ namespace QTM2Unity
         public bool spinAroundX = false;
         public bool spinAroundY = false;
         public bool spinAroundZ = false;
+        public bool showL1 = false;
         public int spins = 360;
         public UnityEngine.Vector4 Constraints = new UnityEngine.Vector4(110, 20, 30, 40);
         public float twist = 0;
@@ -137,7 +138,7 @@ namespace QTM2Unity
                 UnityDebug.DrawRays(joint.Orientation, joint.Pos, (joint.Pos-parent.Pos).Length * 0.5f);
                 UnityDebug.DrawRays(parent.Orientation, parent.Pos, (joint.Pos - parent.Pos).Length*0.5f);
             }
-
+            if (showL1) UnityDebug.DrawRay(joint.Pos, parent.GetYAxis(), UnityEngine.Color.gray, (parent.Pos - joint.Pos).Length);
             UnityDebug.DrawLine(joint.Pos, parent.Pos, UnityEngine.Color.black);
             UnityDebug.DrawLine(joint.Pos, nextJointPos, UnityEngine.Color.black);
             UnityDebug.DrawLine(joint.Pos, res, UnityEngine.Color.magenta);
