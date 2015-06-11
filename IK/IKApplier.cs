@@ -89,7 +89,7 @@ namespace QTM2Unity
             }
             if (first.Data.Constraints.Xyz != Vector3.Zero)
             {
-                ConstraintsBeforeReturn(first);
+                ConstraintsBeforeReturn(first, missingChain.Count);
             }
         }
         private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)
@@ -97,20 +97,22 @@ namespace QTM2Unity
             curr.Data.Pos = new Vector3(last.Pos);
             curr.Data.Orientation = new Quaternion(new Vector3(last.Orientation.Xyz), last.Orientation.W);
         }
-        private void ConstraintsBeforeReturn(TreeNode<Bone> bone)
+        private void ConstraintsBeforeReturn(TreeNode<Bone> bone, int depth)
         {
+            int count = 0;
             foreach (var tnb in bone)
             {
-                if (tnb.IsLeaf) break;
+                if (tnb.IsLeaf || count++ >= depth) break;
                 Quaternion rot;
                 if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                 {
                     tnb.Data.Rotate(rot);
                 }
             }
+            count = 0;
             foreach (var tnb in bone)
             {
-                if (tnb.IsLeaf) break;
+                if (tnb.IsLeaf || count++ >= depth) break;
                 Vector3 res;
                 Quaternion rot;
                 if (Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data, tnb.Children.First().Data.Pos, out res, out rot ))
@@ -118,9 +120,10 @@ namespace QTM2Unity
                     ForwardKinematics(tnb.Children.First(), rot);
                 }
             }
+            count = 0;
             foreach (var tnb in bone)
             {
-                if (tnb.IsLeaf) break;
+                if (tnb.IsLeaf || count++ >= depth) break;
                 Quaternion rot;
                 if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                 {
