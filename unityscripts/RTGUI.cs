@@ -21,7 +21,7 @@ namespace QTM2Unity.Unity
         bool stream3d = true;
 
         GUIContent[] popuplist;
-
+        GUIContent refreshlist;
         private List<sixDOFBody> Availablebodies;
             
         [MenuItem("Window/Qualisys/RTClient")]
@@ -32,15 +32,19 @@ namespace QTM2Unity.Unity
 
         public void OnEnable()
         {
+            if (Application.isPlaying)
+            {
+                refreshServerList();
+            }
+        }
+        private void refreshServerList()
+        {
             String[] servers;
             RTClient.getInstance().getServers(out servers);
-            if (connected)
+            popuplist = new GUIContent[servers.Length];
+            for (int i = 0; i < servers.Length; i++)
             {
-                popuplist = new GUIContent[servers.Length];
-                for (int i = 0; i < servers.Length; i++)
-                {
-                    popuplist[i] = new GUIContent(servers[i]);
-                }
+                popuplist[i] = new GUIContent(servers[i]);
             }
         }
 
@@ -49,7 +53,7 @@ namespace QTM2Unity.Unity
         void OnInspectorUpdate()
         {
             Repaint();
-            if (!Application.isPlaying)
+            if (!Application.isPlaying && connected)
             {
                 onDisconnect();
                 connected = false;
@@ -57,22 +61,34 @@ namespace QTM2Unity.Unity
             }
         }
 
-
         void OnGUI()
         {
             title = "QTM Streaming";
             GUILayout.Label("Server Settings", EditorStyles.boldLabel);
             if (Application.isPlaying)
             {
-                GUILayout.Label("QTM Servers:");
-                server = EditorGUILayout.Popup(server, popuplist);
+                if (!connected)
+                {
+                    GUILayout.Label("QTM Servers:");
+                    server = EditorGUILayout.Popup(server, popuplist);
+                    if (GUILayout.Button("Refresh Server List"))
+                    {
+                        refreshServerList();
+                    }
+                }
+                else
+                {
+                    GUILayout.Label("Connected to: " + popuplist[server].text);
+                }
             }
             else
             {
                 GUILayout.Label("(Unity needs to be in play mode to set server)");
             }
             if (connected)
+            {
                 GUI.enabled = false;
+            }
             GUILayout.Label("Stream Settings", EditorStyles.boldLabel);
             portUDP = (short)EditorGUILayout.IntField("UDP Port:", portUDP);
             string[] popupStrings = new string[3] { "All Frames", "Frequency", "Frequency divisor" };
@@ -134,7 +150,6 @@ namespace QTM2Unity.Unity
         void onConnect()
         {
             connected = RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d);
-
             if (connected)
             {
                 connectionStatus = "Connected";
