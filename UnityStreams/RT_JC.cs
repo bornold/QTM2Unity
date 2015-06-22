@@ -7,6 +7,7 @@ namespace QTM2Unity
         public Color skelettColor = Color.white;
         public bool showJoints = false;
         public float jointScale = 0.015f;
+        public Color jointColor = Color.green;
         public bool showRotationTrace = false;
         public float traceLength = 0.08f;
         protected BipedSkeleton skeleton;
@@ -61,6 +62,7 @@ namespace QTM2Unity
                 }
                 if (showJoints)
                 {
+                    Gizmos.color = jointColor;
                     Gizmos.DrawSphere((b.Data.Pos + pos).Convert(), jointScale);
                 }
             }

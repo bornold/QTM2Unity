@@ -27,7 +27,7 @@ namespace QTM2Unity
         private Quaternion HipOrientation
         {
             get
-            {
+            {                
                 if (hipOrientation == Quaternion.Identity)
                 {
                     hipOrientation = QuaternionHelper.GetHipOrientation(Sacrum, LIAS, RIAS);
@@ -629,7 +629,7 @@ namespace QTM2Unity
             }
             else // last resort, use hip orientation
             {
-                Xaxis = Vector3.Transform(Vector3.UnitX, HipOrientation);
+                Xaxis = -Vector3.Transform(Vector3.UnitX, HipOrientation);
             }
 
             rotation = QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis);

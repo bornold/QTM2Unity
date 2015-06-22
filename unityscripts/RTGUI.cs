@@ -34,7 +34,6 @@ namespace QTM2Unity.Unity
         {
             if (Application.isPlaying)
             {
-                Debug.Log("jaha");
                 refreshServerList();
             }
         }
