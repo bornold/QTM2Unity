@@ -17,8 +17,21 @@ namespace QTM2Unity
                 rotation = Quaternion.Identity;
                 return false;
             }
-            Vector3 direction = b.GetYAxis();
-            float twistAngle = GetTwistAngle(b, refBone);
+            Vector3 thisY = b.GetYAxis();
+            Vector3 thisZ = b.GetZAxis();
+            Vector3 thisX = b.GetXAxis();
+
+            Quaternion referenceRotation = refBone.Orientation * b.ParentPointer;
+            Vector3 parentY = Vector3.Transform(Vector3.UnitY, referenceRotation);
+            Vector3 parentZ = Vector3.Transform(Vector3.UnitZ, referenceRotation);
+
+            Quaternion rot = QuaternionHelper.GetRotationBetween(parentY, thisY);
+            Vector3 reference = Vector3.Transform(parentZ, rot);
+
+            float twistAngle = MathHelper.RadiansToDegrees(Vector3.CalculateAngle(reference, thisZ));
+
+            if (Vector3.CalculateAngle(reference, thisX) > Mathf.PI / 2) // b is twisted left with respect to parent
+                twistAngle = 360 - twistAngle;
 
             float startLimit = b.StartTwistLimit;
             float endLimit = b.EndTwistLimit;
@@ -28,17 +41,19 @@ namespace QTM2Unity
                 // Create a rotation to the closest limit
                 float toLeft = Math.Min(360 - Math.Abs(twistAngle - startLimit), Math.Abs(twistAngle - startLimit));
                 float toRight = Math.Min(360 - Math.Abs(twistAngle - endLimit), Math.Abs(twistAngle - endLimit));
+                //UnityDebug.DrawRay(b.Pos, thisX);
+                //UnityDebug.DrawRay(b.Pos, reference, UnityEngine.Color.red);
                 if (toLeft < toRight)
                 {
                     // Anti-clockwise rotation to left limit
-                    rotation = Quaternion.FromAxisAngle(direction, -MathHelper.DegreesToRadians(toLeft));
+                    rotation = Quaternion.FromAxisAngle(thisY, -MathHelper.DegreesToRadians(toLeft));
                     //Debug.Log("Rotating " + toLeft + " degrees clockwise");
                     return true;
                 }
                 else
                 {
                     // Clockwise to right limit
-                    rotation = Quaternion.FromAxisAngle(direction, MathHelper.DegreesToRadians(toRight));
+                    rotation = Quaternion.FromAxisAngle(thisY, MathHelper.DegreesToRadians(toRight));
                     //Debug.Log("Rotating " + toRight + " degrees clockwise");
                     return true;
                 }
@@ -89,185 +104,6 @@ namespace QTM2Unity
 
         public enum Quadrant { q1, q2, q3, q4 }; //TODO private
         private static float precision = 0.01f;
-        // A constraint modeled as an irregular cone
-        // The direction vector is the direction the cone is opening up at
-
-        public static bool CheckRotationalConstraints(Bone joint, Vector3 target, Vector3 L1, Vector3 X1, out Quaternion res)
-        {
-            float precision = 0.01f;
-            res = OpenTK.Quaternion.Identity;
-            Vector3 newTarget = target;
-
-            OpenTK.Vector3 jointPos = joint.Pos;
-            OpenTK.Vector4 constraints = joint.Constraints;
-            OpenTK.Vector3 targetPos = new OpenTK.Vector3(target.X, target.Y, target.Z);
-            OpenTK.Vector3 joint2Target = (targetPos - jointPos);
-
-            bool behind = false;
-            bool reverseCone = false;
-            //bool sideCone = false;
-            bool someAngleAbove90 = constraints.X > 90 || constraints.Y > 90 || constraints.Z > 90 || constraints.W > 90;
-
-            //3.1 Find the line equation L1
-            //3.2 Find the projection O of the target t on line L1
-
-            OpenTK.Vector3 O = jointPos + Vector3Helper.ProjectOnVector(joint2Target, L1);
-            //OpenTK.Vector3 O2 = jointPos + Vector3Helper.Project(joint2Target, L1);
-            //Vector3 OPos = O + jointPos;
-
-            if (Math.Abs(OpenTK.Vector3.Dot(L1, joint2Target)) < precision) // target is orthogonal to L1
-            {
-                O = jointPos + OpenTK.Vector3.Normalize(L1) * precision;
-                //OPos = O + jointPos;
-            }
-            else if (OpenTK.Vector3.Dot(O, L1) < -(1 - precision)) // O and L1 are opposite
-            //else if (Math.Abs(Vector3.Dot(O, L1) - O.Length * L1.Length) >= precision) // O not same direction as L1
-            {
-                behind = true;
-            }
-
-            //3.3 Find the distance between the point O and the joint position
-            float S = (O - jointPos).Length;
-
-            //3.4 Map the target (rotate and translate) in such a
-            //way that O is now located at the axis origin and oriented
-            //according to the x and y-axis ) Now it is a 2D simplified problem
-            //  Translate target such that O is in origo
-            OpenTK.Vector3 targetTrans = target;
-            OpenTK.Quaternion mappingQuat = Constraint.mapToOrigin(ref targetTrans, O, L1, X1);
-            // Target will now be on z, x plane and its y coordinate will be 0
-            //Debug.Log("target after mapping " + targetTrans.X + "," + targetTrans.Y + "," + targetTrans.Z);
-            //OpenTK.Vector2 target2D = new OpenTK.Vector2(targetTrans.X, targetTrans.Z); // Want to look at x and z coordinate
-
-            //3.5 Locate target in a particular quadrant
-            // TODO extract to own method locateQuadrant(out Quadrant q, out Vector2 radii)
-            OpenTK.Vector2 radii;
-            Constraint.Quadrant q;
-            if (targetTrans.X >= 0 && targetTrans.Z >= 0)
-            {
-                q = Constraint.Quadrant.q1;
-                radii = new OpenTK.Vector2(S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.Z)),
-                    S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.Y)));
-            }
-            else if (targetTrans.X >= 0 && targetTrans.Z < 0)
-            {
-                q = Constraint.Quadrant.q2;
-                radii = new OpenTK.Vector2(S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.Z)),
-                    S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.W)));
-            }
-            else if (targetTrans.X < 0 && targetTrans.Z < 0)
-            {
-                q = Constraint.Quadrant.q3;
-                radii = new OpenTK.Vector2(S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.X)),
-                    S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.W)));
-            }
-            else /*if (targetTrans.X > 0 && targetTrans.Z < 0)*/
-            {
-                q = Constraint.Quadrant.q4;
-                radii = new OpenTK.Vector2(S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.X)),
-                    S * Mathf.Tan(MathHelper.DegreesToRadians(constraints.Y)));
-            }
-
-            //3.6 Find what conic section describes the allowed
-            //range of motion
-            //3.7 Find the conic section which is associated with
-            //that quadrant using the distances q[j] = S*tan(h[j]), where
-            //j = 1,..,4
-            if (someAngleAbove90 && !reverseCone)
-            {
-                // Parabola
-                //Debug.Log("Parabola");
-            }
-            else
-            {
-                // Ellipse
-                if (!Constraint.findClosestPointEllipse(targetTrans, q, radii, behind, out newTarget))
-                    return false;
-            }
-
-            /*UnityDebug.CreateEllipse(radii.X, radii.Y, UnityEngine.Vector3.zero,
-                (OpenTK.Quaternion.FromAxisAngle(X1, Mathf.PI / 2) * mappingQuat).Convert(),
-                400, UnityEngine.Color.cyan);
-            UnityDebug.DrawLine(newTarget, targetTrans, UnityEngine.Color.magenta);*/
-
-            //3.13 Map (rotate and translate) that point on the
-            //conic section via reverse of 3.4 and use that point as
-            //the new target position
-            newTarget = O + OpenTK.Vector3.Transform(newTarget, OpenTK.Quaternion.Invert(mappingQuat));
-            if (behind) // Mirror the new target to the right side if the cone were reversed
-            {
-                OpenTK.Quaternion mirror = OpenTK.Quaternion.FromAxisAngle(X1, Mathf.PI);
-                newTarget = OpenTK.Vector3.Transform(newTarget, mirror);
-            }
-
-            //UnityDebug.DrawLine(targetPos, targetTrans, UnityEngine.Color.magenta);
-            //UnityDebug.CreateEllipse(radii.X, radii.Y, O.Convert(),
-            //    OpenTK.Quaternion.Invert(mappingQuat).Convert(),
-            //    400, UnityEngine.Color.cyan);
-
-            // Calculate the rotation from the old target to the new
-            float angle = OpenTK.Vector3.CalculateAngle(target - jointPos, newTarget - jointPos);
-            OpenTK.Vector3 axis = OpenTK.Vector3.Cross(target - jointPos, newTarget - jointPos);
-            res = OpenTK.Quaternion.FromAxisAngle(axis, angle);
-            //newTarget = targetTrans; 
-            return true;
-        }
-
-        public static Quaternion mapToOrigin(ref Vector3 target, Vector3 O, Vector3 L1, Vector3 X1)
-        {
-            // Translate target such that O is in the origin
-            target = target.translate(O);
-            // Rotation 1: The rotation between L1 and world Y-axis
-            Quaternion rot1 = QuaternionHelper.GetRotationBetween(L1, Vector3.UnitY);
-            // Rotate target and X1 with this rotation
-            target = Vector3.Transform(target, rot1);
-            X1 = Vector3.Transform(X1, rot1);
-            // Rotation 2: The rotation between the rotated X1 and world X-axis
-            Quaternion rot2 = QuaternionHelper.GetRotationBetween(X1, Vector3.UnitX);
-            // Rotate target with this rotation
-            target = Vector3.Transform(target, rot2);
-            return rot2 * rot1;
-        }
-
-        // TODO private
-        public static bool findClosestPointEllipse(Vector3 target, Quadrant q, Vector2 radii,
-            bool behind, out Vector3 res)
-        {
-            // TODO 2d vector to make things more clear/harder to do wrong?
-            res = target;
-
-            //3.8 Check whether the target is within the conic section or not
-            bool inside = (target.X * target.X) / (radii.X * radii.X) +
-                (target.Z * target.Z) / (radii.Y * radii.Y) <= 1 + precision;
-
-            //3.9 if within the conic section then  
-            if (inside && !behind)
-            {
-                //3.10 use the true target position t
-                return false;
-            }
-            //3.11 else
-            //3.12 Find the nearest point on that conic section from the target
-            Vector2 nearest = NearestPoint(radii.X, radii.Y, new Vector2(target.X, target.Z));
-            res = new Vector3(nearest.X, 0, nearest.Y);
-
-            return true;
-        }
-
-        private static bool findClosestPointParabola(Vector3 target, Quadrant q, out Vector3 res)
-        {
-            res = target;
-
-            //3.8 Check whether the target is within the conic section or not
-
-            //3.9 if within the conic section then  
-            //3.10 use the true target position t
-            //3.11 else
-            //3.12 Find the nearest point on that conic section from the target
-
-            return false;
-        }
-
         public static bool CheckRotationalConstraints(Bone joint, Bone parent, Vector3 target, out Vector3 res, out Quaternion rot)
         {
             Quaternion referenceRotation = parent.Orientation * joint.ParentPointer;
@@ -523,94 +359,4 @@ namespace QTM2Unity
             return newPoint;
         }
     }
-
-#if f
-        // An orientational constraint is the twist of the bone around its own direction vector
-        // with respect to its parent
-        // It is defined as a range betwen angles [left,right]
-        public static bool CheckOrientationalConstraint(Bone b, Bone refer, out Quaternion rotation)
-        {
-            Vector3 reference = refer.GetZAxis();
-            Quaternion q = QuaternionHelper.LookAtUp(refer.Pos, b.Pos, b.GetZAxis());
-            float z2z = MathHelper.RadiansToDegrees(
-                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitZ, q), reference));
-            float x2z = MathHelper.RadiansToDegrees(
-                    Vector3.CalculateAngle(Vector3.Transform(Vector3.UnitX, q), reference));
-
-            Vector3 direction = b.GetYAxis();
-            if (x2z >= 90) // Z left of reference
-            {
-                float pew = z2z - b.LeftTwist;
-                if (pew > 1f) // angle larger then constraints angle
-                {
-                    //UnityEngine.Debug.Log("Z left of reference ROTATING: " + -pew);
-                    pew = MathHelper.DegreesToRadians(-pew);
-                    rotation = Quaternion.FromAxisAngle(direction, pew); ;
-                    return true;
-                }
-            }
-            else // Z right of reference
-            {
-                float pew = z2z - b.RightTwist;
-                if (pew > 1f) // angle larger constraints angle
-                {
-                    //UnityEngine.Debug.Log("Z right of reference ROTATING: " + pew);
-                    pew = MathHelper.DegreesToRadians(pew);
-                    rotation = Quaternion.FromAxisAngle(direction, pew);
-                    return  true;
-                }
-            }
-            rotation = Quaternion.Identity;
-            return false;
-        }
-
-        public static bool CheckOrientationalConstraint2(Bone b, Bone refBone, out Quaternion rotation)
-        {
-            Vector3 direction = b.GetYAxis();
-            float twistAngle = GetTwistAngle(b, refBone);
-
-            // The left limit is negative if it is less than 180 degrees, otherwise positive
-            float left = b.LeftTwist < 180 ? -b.LeftTwist : 360 - b.LeftTwist;
-            // The right limit is positive if it is less than 180 degrees, otherwise negative
-            float right = b.RightTwist < 180 ? b.RightTwist : -360 - b.RightTwist;
-
-            if (!(twistAngle >= left && twistAngle <= right)) // not inside constraints TODO: add some precision
-            {
-                // TODO: BLAH FUNKAR EJ
-
-                // rotate the bone around its direction vector to be inside
-                // the constraints (rotate it from its current angle to left or right angles)
-                /*if (Math.Abs(left - twistAngle) < Math.Abs(right - twistAngle))
-                {
-                    // Rotate to the left limit
-                    rotation = Quaternion.FromAxisAngle(direction, Math.Abs(MathHelper.DegreesToRadians(left - twistAngle)));
-                    Debug.Log("Rotating " + Math.Abs(left - twistAngle) + " degrees");
-                    return true;
-                }
-                else // Rotate to the right limit
-                {
-                    rotation = Quaternion.FromAxisAngle(direction, Math.Abs(MathHelper.DegreesToRadians(right - twistAngle)));
-                    Debug.Log("Rotating " + Math.Abs(left - twistAngle) + " degrees");
-                    return true;
-                }*/
-
-                if (twistAngle < left) // TODO add some precision (so it doesn't need to rotate eg 0,000324)
-                {
-                    // rotate clockwise
-                    rotation = Quaternion.FromAxisAngle(direction, -Math.Abs(MathHelper.DegreesToRadians(twistAngle - left)));
-                    Debug.Log("Rotating " + Math.Abs(twistAngle - left) + " degrees clockwise");
-                    return true;
-                }
-                else if (twistAngle > right)
-                {
-                    // rotate anticlockwise
-                    rotation = Quaternion.FromAxisAngle(direction, Math.Abs(MathHelper.DegreesToRadians(twistAngle - right)));
-                    Debug.Log("Rotating " + Math.Abs(twistAngle - right) + " degrees anticlockwise");
-                    return true;
-                }
-            }
-            rotation = Quaternion.Identity;
-            return false;
-        }
-#endif
 }

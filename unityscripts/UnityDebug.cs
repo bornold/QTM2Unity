@@ -8,6 +8,31 @@ namespace QTM2Unity
 {
     static class UnityDebug
     {
+        public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, Color c, float scale = 0.7f )
+        {
+            if (b.Orientation.Xyz.IsNaN() || refBone.Orientation.Xyz.IsNaN())
+            {
+                return;
+            }
+            OpenTK.Vector3 thisY = b.GetYAxis();
+
+            OpenTK.Quaternion referenceRotation = refBone.Orientation * b.ParentPointer;
+            OpenTK.Vector3 parentY = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, referenceRotation);
+            OpenTK.Vector3 parentZ = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, referenceRotation);
+
+            OpenTK.Quaternion rot = QuaternionHelper.GetRotationBetween(parentY, thisY);
+            OpenTK.Vector3 reference = OpenTK.Vector3.Transform(parentZ, rot);
+            OpenTK.Vector3.Normalize(reference);
+            for (float f = b.StartTwistLimit; f > 0; f--)
+            {
+                OpenTK.Vector3 test = OpenTK.Vector3.Transform(reference,OpenTK.Quaternion.FromAxisAngle(reference,f));
+                Debug.DrawRay(poss.Convert(), test.Convert(),c);
+            }
+        }
+        public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, float scale = 0.7f )
+        {
+            DrawTwistConstraints( b,  refBone, poss, Color.yellow, scale);
+        }
         public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos, float scale)
         {
 
@@ -134,62 +159,8 @@ namespace QTM2Unity
         {
             CreateEllipse(x, y, cv(pos), cq(rot), resolution,c);
         }
-        public static void CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 o, 
-            OpenTK.Quaternion rot, int resolution)
-        {
-            OpenTK.Vector3 center = top + o;//OpenTK.Vector3.Normalize(o); 
-            float S = o.Length;
-            strains.X = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.X)));
-            strains.Y = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.Y)));
-            strains.Z = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.Z)));
-            strains.W = S * Mathf.Tan(OpenTK.MathHelper.DegreesToRadians(Math.Min(89.9f,strains.W)));
 
-            OpenTK.Vector3[] positions = new OpenTK.Vector3[resolution];
-            for (int i = 0; i < resolution; i++)
-            {
-                float a, b;
-                Color c;
-                float angle = (float)i / (float)resolution * 2.0f * Mathf.PI;
-                if (i < resolution * 0.25)
-                {
-                    //Q1
-                    c = Color.blue;
-                    a = strains.X;
-                    b = strains.Y;
-                }
-                else if (i < resolution * 0.5)
-                {
-                    //Q4
-                    c = Color.red;
-                    a = strains.Z;
-                    b = strains.Y;
-                }
-                else if (i < resolution * 0.75)
-                {
-                    //Q3
-                    c = Color.green;
-                    a = strains.Z;
-                    b = strains.W;
-                }
-                else
-                {
-                    //Q2
-                    c = Color.yellow;
-                    a = strains.X;
-                    b = strains.W;
-
-                }
-                positions[i] = new OpenTK.Vector3(a * Mathf.Cos(angle), 0.0f, b * Mathf.Sin(angle));
-                positions[i] = OpenTK.Vector3.Transform(positions[i], rot) + center;
-                if (i > 0)
-                {
-                    DrawLine(positions[i], positions[i - 1], c);
-                    DrawLine(top, positions[i], c);
-                }
-            }
-        }
-
-        public static OpenTK.Vector3[] CreateIrregularCone3(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 L1, OpenTK.Quaternion rot, int resolution, float scale)
+        public static OpenTK.Vector3[] CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 L1, OpenTK.Quaternion rot, int resolution, float scale)
         {
             //L1 = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
             L1.Normalize();

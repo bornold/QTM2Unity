@@ -90,7 +90,7 @@ namespace QTM2Unity
                 lastDistToTarget = distToTarget;
                 distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             }
-            float rad2 = (toggle ? 1 : -1) * MathHelper.PiOver6 * (test - .01f);
+//            float rad2 = (toggle ? 1 : -1) * MathHelper.PiOver6 * (test - .01f);
 
             //if (visited) UnityEngine.Debug.Log((test));
             return bones;

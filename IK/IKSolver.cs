@@ -5,7 +5,7 @@ namespace QTM2Unity
     abstract class IKSolver
     {
         abstract public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent);
-        protected float threshold = 0.015f; 
+        protected float threshold = 0.005f; 
         protected int maxIterations = 400;
 
         // TODO probably better if we just keep length in bones... oor is it...

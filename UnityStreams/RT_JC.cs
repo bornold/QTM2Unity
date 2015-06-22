@@ -47,7 +47,7 @@ namespace QTM2Unity
             base.Draw();
             foreach (TreeNode<Bone> b in skeleton)
             {
-                if (showRotationTrace && (!b.IsLeaf || b.Data.Name.Equals(BipedSkeleton.HEAD)))
+                if (showRotationTrace && (!b.IsLeaf || b.Data.Name.Equals(BipedSkeleton.HEAD)) )//&& b.Data.Name.EndsWith("L"))
                 {
                     UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos + pos, traceLength);
                 }

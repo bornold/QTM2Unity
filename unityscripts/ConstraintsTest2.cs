@@ -109,7 +109,7 @@ namespace QTM2Unity
 
             if (printCone)
             {
-                UnityDebug.CreateIrregularCone3(
+                UnityDebug.CreateIrregularCone(
                         joint.Constraints,
                         joint.Pos,
                         parent.GetYAxis(),
@@ -123,7 +123,7 @@ namespace QTM2Unity
                     Vector4 constraints = parent.Constraints;
                     MathHelper.Swap(ref constraints.X, ref constraints.Z); MathHelper.Swap(ref constraints.Y, ref constraints.W);
 
-                    UnityDebug.CreateIrregularCone3(
+                    UnityDebug.CreateIrregularCone(
                             joint.Constraints,
                             joint.Pos,
                             propparent.GetYAxis(),

@@ -6,7 +6,6 @@ namespace QTM2Unity
     public class Bone : IEquatable<Bone>
     {
         #region Name, pos, rot and constraints getters and setters
-        private bool exists = false;
         public bool Exists
         {
             get { return !pos.IsNaN(); }
@@ -24,15 +23,14 @@ namespace QTM2Unity
             get { return pos; }
             set
             {
-                pos = value;
-                FlagExists();
+                pos = new Vector3(value);
             }
         }
         private Quaternion orientation;
         public Quaternion Orientation
         {
             get { return orientation; }
-            set { orientation = value; }
+            set { orientation = new Quaternion(new Vector3(value.Xyz), value.W); }
         }
         #region constraints getters and setters
 
@@ -41,52 +39,40 @@ namespace QTM2Unity
         // It is defined as an allowed range betwen angles [start,end]
         // where start != end && 0 < start, end <= 360
         // If both start and end is 0 no twist constraint exist
-        private float startTwistLimit = -1;
+        private Vector2 twistLimit = new Vector2(-1, -1);
+
+        public Vector2 TwistLimit
+        {
+            get { return twistLimit; }
+            set { twistLimit = new Vector2(value.X,value.Y); }
+        }
+        public bool HasTwistConstraints
+        {
+            get { return (twistLimit.X >= 0 && twistLimit.Y >= 0); }
+        }
         public float StartTwistLimit
         {
-            get { return startTwistLimit; }
+            get { return twistLimit.X; }
         }
-        private float endTwistLimit = -1;
         public float EndTwistLimit
         {
-            get { return endTwistLimit; }
+            get { return twistLimit.Y; }
         }
 
-        public void SetOrientationalConstraints(float startAngle, float endAngle)
-        {
-            this.startTwistLimit = startAngle;
-            this.endTwistLimit = endAngle;
-        }
-        public void SetOrientationalConstraints(Vector2 twist)
-        {
-            this.startTwistLimit = twist.X;
-            this.endTwistLimit = twist.Y;
-        }
-
-        private float right, up, left, down;
+        private Vector4 constraints;
         public Vector4 Constraints
         {
-            get { return new Vector4(right, up, left, down); }
-            set { right = value.X; up = value.Y; left = value.Z; down = value.W; }
+            get { return new Vector4(constraints); } //TODO Checka all values > 0
+            set { constraints = new Vector4(value); }
         }
-        public void SetRotationalConstraints(float _right, float _up, float _left, float _down)
+        public bool HasConstraints
         {
-            this.right = _right;
-            this.up = _up;
-            this.left = _left;
-            this.down = _down;
-        }
-        public void SetRotationalConstraints(Vector4 givenConstraints)
-        {
-            this.right = givenConstraints.X;
-            this.up = givenConstraints.Y;
-            this.left = givenConstraints.Z;
-            this.down = givenConstraints.W;
+            get { return (constraints != null && constraints != Vector4.Zero); }
         }
         private Quaternion parentPointer = Quaternion.Identity;
         public Quaternion ParentPointer
         {
-            get{return parentPointer;}
+            get {return parentPointer;}
             set {parentPointer = value;}
         }
 
@@ -97,15 +83,12 @@ namespace QTM2Unity
         public Bone(string name)
         {
             this.name = name;
-            startTwistLimit = -1;
-            endTwistLimit = -1;
         }
 
         public Bone(string name, Vector3 position)
             : this(name)
         {
             pos = position;
-            FlagExists();
         }
 
         public Bone(string name, Vector3 position, Quaternion orientation)
@@ -113,15 +96,11 @@ namespace QTM2Unity
         {
             this.orientation = orientation;
         }
-        public Bone(string name, Vector3 position, Quaternion orientation,
-            float constraintRight, float constraintUp, float constraintLeft, float constraintDown)
-            : this(name, position, orientation)
-        {
-            SetRotationalConstraints(constraintRight, constraintUp, constraintLeft, constraintDown);
-        }
         public Bone(string name, Vector3 position, Quaternion orientation, Vector4 constriants)
-            : this(name, position, orientation, constriants.X, constriants.Y, constriants.Z, constriants.W)
-        { }
+            : this(name, position, orientation)
+        { 
+            Constraints = constriants;
+        }
         #endregion
 
         // Directions 
@@ -154,22 +133,9 @@ namespace QTM2Unity
 
         public void RotateTowards(Vector3 v)
         {
-            Quaternion rot = QuaternionHelper.GetRotationBetween(GetYAxis(), v);
-            Rotate(rot);
-
-            /*float angle = Vector3.CalculateAngle(GetYAxis(), v);
-            Vector3 axis = Vector3.Cross(GetYAxis(), v);
-            Rotate(angle, axis);*/
+            Rotate(QuaternionHelper.GetRotationBetween(GetYAxis(), v));
         }
         #endregion
-        private void FlagExists()
-        {
-            exists = true;
-            if (pos.IsNaN())
-            {
-                exists = false;
-            }
-        }
         public bool Equals(Bone other)
         {
             return name.Equals(other.Name) && orientation.Equals(other.Orientation) && pos.Equals(other.Pos);

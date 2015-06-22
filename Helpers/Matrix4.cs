@@ -17,21 +17,15 @@ namespace QTM2Unity
         /// <returns>Transformation matrix of middle of hip and a its rotation, scale 1</returns>
         public static Matrix4 GetHipOrientation(Vector3 sacrum, Vector3 leftHip, Vector3 rightHip)
         {
-            
             Vector3 hipMarkerMid = (leftHip - rightHip ) * 0.5f + rightHip;
             Vector3 hipMid = sacrum + (hipMarkerMid - sacrum) * 2 / 3;
             Vector3 right = hipMarkerMid - rightHip;
             Vector3 front = hipMid - sacrum;
-
             front.Normalize();
             right.Normalize();
-
             Vector3 up = Vector3.Cross(right, front);
-
             Matrix4 hip = GetMatrix(hipMid, front, up, right);
-
             return hip;
-        
         }
         /// <summary>
         /// Create a transformation matrix for a coordinate system based off of three points

@@ -116,7 +116,7 @@ namespace QTM2Unity
             int iter = 0;
             while (!targetReached(ref endEffectors, ref targets) && iter < maxIterations)
             {
-                Vector3[] positions = getPositions(ref bones, ref endEffectors); // TEST
+//                Vector3[] positions = getPositions(ref bones, ref endEffectors); // TEST
                 fillJacobian(out J, out rotAxis, ref root, ref endEffectors, ref targets);
                 float[] dTheta;
                 calculateDTheta(out dTheta, ref J, ref endEffectors, ref targets);

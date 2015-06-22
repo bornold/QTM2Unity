@@ -789,13 +789,12 @@ namespace QTM2Unity
             Vector3 pos = joints[BipedSkeleton.UPPERARM_L];
             Vector3 target = joints[BipedSkeleton.LOWERARM_L];
             b.Pos = pos;
-            if (!UpperArmForwardLeft.IsNaN())
+            //if (!UpperArmForwardLeft.IsNaN())
+            //{
+            //    b.Orientation = QuaternionHelper.LookAtUp(pos, target, UpperArmForwardLeft);
+            //}
+            //else
             {
-                b.Orientation = QuaternionHelper.LookAtUp(pos, target, UpperArmForwardLeft);
-            }
-            else
-            {
-
                 b.Orientation = QuaternionHelper.LookAtRight(pos, target, markers[leftInnerElbow] - markers[leftOuterElbow]);
             }
         }
@@ -804,13 +803,13 @@ namespace QTM2Unity
             Vector3 pos = joints[BipedSkeleton.UPPERARM_R];
             Vector3 target = joints[BipedSkeleton.LOWERARM_R];
             b.Pos = pos; 
-            if (!UpperArmForwardRight.IsNaN())
+            //if (!UpperArmForwardRight.IsNaN())
+            //{
+            //    b.Orientation = QuaternionHelper.LookAtUp(pos, target, UpperArmForwardRight);
+            //}
+            //else
             {
-                b.Orientation = QuaternionHelper.LookAtUp(pos, target, UpperArmForwardRight);
-            }
-            else
-            {
-                b.Orientation = QuaternionHelper.LookAtRight(pos, target, markers[rightInnerElbow] - markers[rightOuterElbow]);
+                b.Orientation = QuaternionHelper.LookAtRight(pos, target, markers[rightOuterElbow] - markers[rightInnerElbow]);
             }
         }
         private void GetLowerArmLeft(Bone b)

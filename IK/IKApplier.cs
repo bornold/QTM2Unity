@@ -76,7 +76,7 @@ namespace QTM2Unity
                         new Quaternion(new Vector3(curr.Data.Orientation.Xyz), curr.Data.Orientation.W),
                         new Vector4(curr.Data.Constraints.Xyz,curr.Data.Constraints.Z)
                         );
-                    target.SetOrientationalConstraints(curr.Data.StartTwistLimit, curr.Data.EndTwistLimit);
+                    target.TwistLimit = curr.Data.TwistLimit;
                     CopyFromLast(ref curr, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);

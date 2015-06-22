@@ -101,7 +101,7 @@ public class IKChainTest : MonoBehaviour {
                     OpenTK.Quaternion rotaten = (curr == prev) ? grandpa.Orientation : prev.Orientation;
                     var L1 = (prev == curr) ? OpenTK.Vector3.UnitY : (curr.Pos - prev.Pos);
                     UnityDebug.DrawLine(curr.Pos, curr.Pos + L1, UnityEngine.Color.black);
-                    UnityDebug.CreateIrregularCone3(
+                    UnityDebug.CreateIrregularCone(
                         curr.Constraints,
                         curr.Pos,
                         L1,
@@ -129,8 +129,8 @@ public class IKChainTest : MonoBehaviour {
         {
             qwist = QuaternionHelper.RotationY(OpenTK.MathHelper.DegreesToRadians(twist));
             Bone b = new Bone("Bone " + i.ToString(), new OpenTK.Vector3(0f, (float)i * boneLength, 0f), qwist);
-            b.SetRotationalConstraints(constraints.Convert());
-            b.SetOrientationalConstraints(twistConstraints.x, twistConstraints.y);
+            b.Constraints = (constraints.Convert());
+            b.TwistLimit = new OpenTK.Vector2(twistConstraints.x, twistConstraints.y);
 
             twist += jointTwistDiffrence;
             newBones.Add(b);
@@ -138,8 +138,8 @@ public class IKChainTest : MonoBehaviour {
         qwist = new OpenTK.Quaternion(OpenTK.Vector3.UnitY, OpenTK.MathHelper.DegreesToRadians(twist));
         qwist.Normalize();
         Bone c = new Bone("endeffector", new OpenTK.Vector3(0f, _chains * boneLength, 0f),qwist);
-        c.SetRotationalConstraints(constraints.Convert());
-        c.SetOrientationalConstraints(twistConstraints.x, twistConstraints.y);
+        c.Constraints = (constraints.Convert());
+        c.TwistLimit = new OpenTK.Vector2(twistConstraints.x, twistConstraints.y);
 
         newBones.Add(c);
 
@@ -152,8 +152,8 @@ public class IKChainTest : MonoBehaviour {
         Debug.Log("constraints updated");
         foreach (Bone b in bones)
         {
-            b.SetRotationalConstraints(constraints.Convert());
-            b.SetOrientationalConstraints(twistConstraints.x, twistConstraints.y);
+            b.Constraints = (constraints.Convert());
+            b.TwistLimit = new OpenTK.Vector2(twistConstraints.x, twistConstraints.y);
         }
     }
 }

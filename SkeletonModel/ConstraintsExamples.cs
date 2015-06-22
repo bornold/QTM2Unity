@@ -6,8 +6,8 @@ namespace QTM2Unity
         //Vector4(blue, red, green, yellow);
         public Vector4 Femur = new Vector4(15, 150, 40, 55);
         public Vector4 Knee = new Vector4(15, 0, 15, 160);
-        public Vector4 Ankle = new Vector4(30, 0, 60, 60);
-        //public Vector4 Ankle = new Vector4(7, 0, 7, 60);
+        //public Vector4 Ankle = new Vector4(30, 0, 60, 60);
+        public Vector4 Ankle = new Vector4(7, 0, 7, 60);
 
         public Vector2 FemurTwist = new Vector2(345, 15);
         public Vector2 KneeTwist = new Vector2(345, 15);
@@ -22,7 +22,7 @@ namespace QTM2Unity
         public Vector4 Shoulder = new Vector4(95, 110, 120, 70); // down, front, up, back 
         public Vector4 Elbow = new Vector4(10, 175, 10, 5); // Adduktion, , Abduktion 
         public Vector4 Wrist = new Vector4(75, 45, 85, 45); //dorsalflexion, radialflexion, palmarflexion, ulnarflexion
-        public Vector2 ClaviculaTwist = new Vector2(330, 30);
+        public Vector2 ClaviculaTwist = new Vector2(350, 10);
         public Vector2 ShoulderTwist = new Vector2(280, 80);
         public Vector2 ElbowTwist = new Vector2(300, 60);
         public Vector2 WristTwist = new Vector2(350, 10);
@@ -32,31 +32,32 @@ namespace QTM2Unity
 
         public void SetConstraints(ref BipedSkeleton skeleton)
         {
-            skeleton[BipedSkeleton.SPINE3].SetRotationalConstraints(NoMovment);
-            skeleton[BipedSkeleton.SPINE3].SetOrientationalConstraints(NoTwist);
+
+            skeleton[BipedSkeleton.SPINE3].Constraints = (NoMovment);
+            skeleton[BipedSkeleton.SPINE3].TwistLimit = (NoTwist);
             #region Cone constraints
             #region Spine too head
-            skeleton[BipedSkeleton.SPINE0].SetRotationalConstraints(Spine);
-            skeleton[BipedSkeleton.SPINE1].SetRotationalConstraints(Spine);
-            skeleton[BipedSkeleton.NECK].SetRotationalConstraints(Neck);
+            skeleton[BipedSkeleton.SPINE0].Constraints = (Spine);
+            skeleton[BipedSkeleton.SPINE1].Constraints = (Spine);
+            skeleton[BipedSkeleton.NECK].Constraints = (Neck);
             #endregion
             #region Legs
-            skeleton[BipedSkeleton.UPPERLEG_L].SetRotationalConstraints(SwapXZ(Femur));
-            skeleton[BipedSkeleton.UPPERLEG_R].SetRotationalConstraints(Femur);
-            skeleton[BipedSkeleton.LOWERLEG_L].SetRotationalConstraints(SwapXZ(Knee));
-            skeleton[BipedSkeleton.LOWERLEG_R].SetRotationalConstraints(Knee);
-            skeleton[BipedSkeleton.FOOT_L].SetRotationalConstraints(SwapXZ(Ankle));
-            skeleton[BipedSkeleton.FOOT_R].SetRotationalConstraints(Ankle);
+            skeleton[BipedSkeleton.UPPERLEG_L].Constraints = (SwapXZ(Femur));
+            skeleton[BipedSkeleton.UPPERLEG_R].Constraints = (Femur);
+            skeleton[BipedSkeleton.LOWERLEG_L].Constraints = (SwapXZ(Knee));
+            skeleton[BipedSkeleton.LOWERLEG_R].Constraints = (Knee);
+            skeleton[BipedSkeleton.FOOT_L].Constraints = (SwapXZ(Ankle));
+            skeleton[BipedSkeleton.FOOT_R].Constraints = (Ankle);
             #endregion
             #region Arms
-            skeleton[BipedSkeleton.SHOULDER_L].SetRotationalConstraints(SwapXZ(Clavicula));
-            skeleton[BipedSkeleton.SHOULDER_R].SetRotationalConstraints(Clavicula);
-            skeleton[BipedSkeleton.UPPERARM_L].SetRotationalConstraints(SwapXZ(Shoulder));
-            skeleton[BipedSkeleton.UPPERARM_R].SetRotationalConstraints(Shoulder);
-            skeleton[BipedSkeleton.LOWERARM_L].SetRotationalConstraints(SwapXZ(Elbow));
-            skeleton[BipedSkeleton.LOWERARM_R].SetRotationalConstraints(Elbow);
-            skeleton[BipedSkeleton.HAND_L].SetRotationalConstraints(SwapXZ(Wrist));
-            skeleton[BipedSkeleton.HAND_R].SetRotationalConstraints(Wrist);
+            skeleton[BipedSkeleton.SHOULDER_L].Constraints = (SwapXZ(Clavicula));
+            skeleton[BipedSkeleton.SHOULDER_R].Constraints = (Clavicula);
+            skeleton[BipedSkeleton.UPPERARM_L].Constraints = (SwapXZ(Shoulder));
+            skeleton[BipedSkeleton.UPPERARM_R].Constraints = (Shoulder);
+            skeleton[BipedSkeleton.LOWERARM_L].Constraints = (SwapXZ(Elbow));
+            skeleton[BipedSkeleton.LOWERARM_R].Constraints = (Elbow);
+            skeleton[BipedSkeleton.HAND_L].Constraints = (SwapXZ(Wrist));
+            skeleton[BipedSkeleton.HAND_R].Constraints = (Wrist);
             #endregion
             #endregion
 
@@ -71,27 +72,27 @@ namespace QTM2Unity
 
             #region TwistConstraints
             #region Spine
-            skeleton[BipedSkeleton.SPINE0].SetOrientationalConstraints(SpineTwist);
-            skeleton[BipedSkeleton.SPINE1].SetOrientationalConstraints(SpineTwist);
-            skeleton[BipedSkeleton.NECK].SetOrientationalConstraints(NeckTwist);
+            skeleton[BipedSkeleton.SPINE0].TwistLimit = (SpineTwist);
+            skeleton[BipedSkeleton.SPINE1].TwistLimit = (SpineTwist);
+            skeleton[BipedSkeleton.NECK].TwistLimit = (NeckTwist);
             #endregion
             #region Legs
-            skeleton[BipedSkeleton.UPPERLEG_L].SetOrientationalConstraints(FemurTwist);
-            skeleton[BipedSkeleton.UPPERLEG_R].SetOrientationalConstraints(FemurTwist);
-            skeleton[BipedSkeleton.LOWERLEG_L].SetOrientationalConstraints(KneeTwist);
-            skeleton[BipedSkeleton.LOWERLEG_R].SetOrientationalConstraints(KneeTwist);
-            skeleton[BipedSkeleton.FOOT_L].SetOrientationalConstraints(AnkleTwist);
-            skeleton[BipedSkeleton.FOOT_R].SetOrientationalConstraints(AnkleTwist);
+            skeleton[BipedSkeleton.UPPERLEG_L].TwistLimit = (FemurTwist);
+            skeleton[BipedSkeleton.UPPERLEG_R].TwistLimit = (FemurTwist);
+            skeleton[BipedSkeleton.LOWERLEG_L].TwistLimit = (KneeTwist);
+            skeleton[BipedSkeleton.LOWERLEG_R].TwistLimit = (KneeTwist);
+            skeleton[BipedSkeleton.FOOT_L].TwistLimit = (AnkleTwist);
+            skeleton[BipedSkeleton.FOOT_R].TwistLimit = (AnkleTwist);
             #endregion
             #region Arms
-            skeleton[BipedSkeleton.SHOULDER_L].SetOrientationalConstraints(ClaviculaTwist);
-            skeleton[BipedSkeleton.SHOULDER_R].SetOrientationalConstraints(ClaviculaTwist);
-            skeleton[BipedSkeleton.UPPERARM_L].SetOrientationalConstraints(ShoulderTwist);
-            skeleton[BipedSkeleton.UPPERARM_R].SetOrientationalConstraints(ShoulderTwist);
-            skeleton[BipedSkeleton.LOWERARM_L].SetOrientationalConstraints(ElbowTwist);
-            skeleton[BipedSkeleton.LOWERARM_R].SetOrientationalConstraints(ElbowTwist);
-            skeleton[BipedSkeleton.HAND_L].SetOrientationalConstraints(WristTwist);
-            skeleton[BipedSkeleton.HAND_R].SetOrientationalConstraints(WristTwist);
+            skeleton[BipedSkeleton.SHOULDER_L].TwistLimit = SwapXY(ClaviculaTwist);
+            skeleton[BipedSkeleton.UPPERARM_L].TwistLimit = SwapXY(ShoulderTwist);
+            skeleton[BipedSkeleton.LOWERARM_L].TwistLimit = SwapXY(ElbowTwist);
+            skeleton[BipedSkeleton.HAND_L].TwistLimit = SwapXY(WristTwist);
+            skeleton[BipedSkeleton.SHOULDER_R].TwistLimit = (ClaviculaTwist);
+            skeleton[BipedSkeleton.UPPERARM_R].TwistLimit = (ShoulderTwist);
+            skeleton[BipedSkeleton.LOWERARM_R].TwistLimit = (ElbowTwist);
+            skeleton[BipedSkeleton.HAND_R].TwistLimit = (WristTwist);
             #endregion
             #endregion
         }
