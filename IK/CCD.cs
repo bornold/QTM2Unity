@@ -1,5 +1,4 @@
 ﻿using OpenTK;
-
 namespace QTM2Unity
 {
     class CCD : IKSolver
@@ -8,27 +7,42 @@ namespace QTM2Unity
         override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
 
+            if (IsReachable(bones,target))
+            {
+                return TargetUnreachable(bones, target.Pos, parent);
+            }
+
             int numberOfBones = bones.Length;
             int iter = 0;
-            int degrees = 1;
-            int toggle = 0;
+            int degrees = 2;
+            int loopsWithSameDist = 0;
+            bool toggle = false;
+            bool doneOneLapAroundYAxis = false;
+            int maxdegrees = 120;
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
-            while (distToTarget > threshold && iter++ < maxIterations && degrees < 362)
+            while (distToTarget > threshold && iter++ < maxIterations && (!doneOneLapAroundYAxis || degrees < maxdegrees))
             {
-                if (distToTarget >= lastDistToTarget)
+                loopsWithSameDist = (distToTarget >= lastDistToTarget) ? loopsWithSameDist + 1 : 0;
+                if (loopsWithSameDist > 2)
                 {
-                    Quaternion q = (toggle > 1) ?
-                         QuaternionHelper.RotationX((toggle > 2 ? -1 : 1) * MathHelper.DegreesToRadians(degrees))
-                        :
-                         QuaternionHelper.RotationY((toggle > 0 ? -1 : 1) * MathHelper.DegreesToRadians(degrees));
-                    ForwardKinematics(ref bones, q);
-                    if (++toggle > 3)
+                    if (!doneOneLapAroundYAxis && degrees > maxdegrees)
                     {
-                        toggle = 0;
-                        degrees++;
-//                        UnityEngine.Debug.Log(degrees);
+                        doneOneLapAroundYAxis = true;
+                        degrees = 2;
+                    }   
+                    Quaternion q = doneOneLapAroundYAxis ?
+                        QuaternionHelper.RotationX(MathHelper.DegreesToRadians(toggle ? degrees : -degrees))
+                      :
+                       QuaternionHelper.RotationY(MathHelper.DegreesToRadians(toggle ? degrees : -degrees));
+                    ForwardKinematics(ref bones, q);
+                    if (toggle)
+                    {
+                        degrees = degrees + 2;
                     }
+                    toggle = !toggle;
+                    
+
                 }
 
                 // Check if target is on the chain
@@ -71,7 +85,7 @@ namespace QTM2Unity
 
                     ForwardKinematics(ref bones, rotation, i);
 
-                    if (bones[i].HasTwistConstraints)
+                    if ( bones[i].HasTwistConstraints)
                     {
                         Quaternion rotation2;
                         if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rotation2))
@@ -83,8 +97,17 @@ namespace QTM2Unity
                 lastDistToTarget = distToTarget;
                 distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             }
-//            UnityEngine.Debug.Log(degrees);
+            //if (!(iter++ < maxIterations) || !(!doneOneLapAroundYAxis || degrees < maxdegrees))
+            //    UnityEngine.Debug.Log(
+            //        (!(iter++ < maxIterations) ? "iter++ >= maxIterations":"")
+            //        +
+            //        (!(!doneOneLapAroundYAxis || degrees < maxdegrees) ? 
+            //        ("doneOneLapAroundYAxis " + doneOneLapAroundYAxis + "degrees: " + maxdegrees) : 
+            //        "degrees: " + degrees)
+            //        );
+
             bones[bones.Length - 1].Orientation = target.Orientation;
+
             return bones;
         }
     }

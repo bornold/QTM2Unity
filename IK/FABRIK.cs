@@ -15,7 +15,7 @@ namespace QTM2Unity
             double dist = Math.Abs((bones[0].Pos - target.Pos).Length);
             if (dist > distances.Sum()) // the target is unreachable
             {
-                return TargetUnreachable(ref distances, bones, target.Pos, parent);
+                return TargetUnreachable(bones, target.Pos, parent);
             }
 
             // The target is reachable
@@ -96,33 +96,7 @@ namespace QTM2Unity
             return bones;
         }
 
-        private Bone[] TargetUnreachable(ref float[] distances, Bone[] bones, Vector3 target, Bone parent)
-        {
-            for (int i = 0; i < distances.Length; i++)
-            {
-                // Position
-                float r = (target - bones[i].Pos).Length;
-                float l = distances[i] / r;
-                Vector3 newPos = ((1 - l) * bones[i].Pos) + (l * target);
-                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
 
-                if (bones[i].Constraints != Vector4.Zero)
-                {
-                    Vector3 res;
-                    Quaternion rot;
-                    newPos = 
-                        Constraint.CheckRotationalConstraints(bones[i], prevBone, newPos, out res, out rot) ? 
-                        res : newPos;
-                }
-                bones[i + 1].Pos = newPos;
-                // Orientation
-                bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
-                // Constraints
-                EnsureOrientationalConstraints(ref bones[i], ref prevBone, false);
-
-            }
-            return bones;
-        }
 
         private void ForwardReaching(ref Bone[] bones, ref float[] distances, Bone target)
         {

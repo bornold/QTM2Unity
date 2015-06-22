@@ -9,8 +9,8 @@ namespace QTM2Unity
         //public Vector4 Ankle = new Vector4(30, 0, 60, 60);
         public Vector4 Ankle = new Vector4(7, 0, 7, 60);
 
-        public Vector2 FemurTwist = new Vector2(345, 15);
-        public Vector2 KneeTwist = new Vector2(345, 15);
+        public Vector2 FemurTwist = new Vector2(335, 25);
+        public Vector2 KneeTwist = new Vector2(335, 25);
         public Vector2 AnkleTwist = new Vector2(320, 40);
 
         public Vector4 Spine = new Vector4(10, 40, 10, 20);
@@ -19,7 +19,7 @@ namespace QTM2Unity
         public Vector2 NeckTwist = new Vector2(270, 90);
 
         public Vector4 Clavicula = new Vector4(15, 40, 30, 15); //down, front, up, back
-        public Vector4 Shoulder = new Vector4(95, 110, 120, 70); // down, front, up, back 
+        public Vector4 Shoulder = new Vector4(80, 100, 120, 70); // down, front, up, back 
         public Vector4 Elbow = new Vector4(10, 175, 10, 5); // Adduktion, , Abduktion 
         public Vector4 Wrist = new Vector4(75, 45, 85, 45); //dorsalflexion, radialflexion, palmarflexion, ulnarflexion
         public Vector2 ClaviculaTwist = new Vector2(350, 10);
@@ -85,10 +85,10 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.FOOT_R].TwistLimit = (AnkleTwist);
             #endregion
             #region Arms
-            skeleton[BipedSkeleton.SHOULDER_L].TwistLimit = SwapXY(ClaviculaTwist);
-            skeleton[BipedSkeleton.UPPERARM_L].TwistLimit = SwapXY(ShoulderTwist);
-            skeleton[BipedSkeleton.LOWERARM_L].TwistLimit = SwapXY(ElbowTwist);
-            skeleton[BipedSkeleton.HAND_L].TwistLimit = SwapXY(WristTwist);
+            skeleton[BipedSkeleton.SHOULDER_L].TwistLimit = (ClaviculaTwist);
+            skeleton[BipedSkeleton.UPPERARM_L].TwistLimit = (ShoulderTwist);
+            skeleton[BipedSkeleton.LOWERARM_L].TwistLimit = (ElbowTwist);
+            skeleton[BipedSkeleton.HAND_L].TwistLimit = (WristTwist);
             skeleton[BipedSkeleton.SHOULDER_R].TwistLimit = (ClaviculaTwist);
             skeleton[BipedSkeleton.UPPERARM_R].TwistLimit = (ShoulderTwist);
             skeleton[BipedSkeleton.LOWERARM_R].TwistLimit = (ElbowTwist);

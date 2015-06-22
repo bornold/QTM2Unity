@@ -1,14 +1,25 @@
 ﻿using OpenTK;
+using System;
+using System.Collections;
 
 namespace QTM2Unity
 {
     abstract class IKSolver
     {
         abstract public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent);
-        protected float threshold = 0.005f; 
-        protected int maxIterations = 400;
+        protected float threshold = 0.01f; 
+        protected int maxIterations = 1000;
+        protected bool IsReachable(Bone[] bones, Bone target)
+        {
+            float acc = 0;
+            for (int i = 0; i < bones.Length - 1; i++)
+            {
+                acc += (bones[i].Pos - bones[i + 1].Pos).Length;
+            }
+            float dist = Math.Abs((bones[0].Pos - target.Pos).Length);
+            return (dist > acc); // the target is unreachable
+        }
 
-        // TODO probably better if we just keep length in bones... oor is it...
         protected void GetDistances(out float[] distances, ref Bone[] bones)
         {
             distances = new float[bones.Length - 1];
@@ -17,7 +28,23 @@ namespace QTM2Unity
                 distances[i] = (bones[i].Pos - bones[i + 1].Pos).Length;
             }
         }
-
+        protected Bone[] TargetUnreachable(Bone[] bones, Vector3 target, Bone parent)
+        {
+            float[] distances;
+            GetDistances(out distances, ref bones);
+            
+            for (int i = 0; i < distances.Length; i++)
+            {
+                // Position
+                float r = (target - bones[i].Pos).Length;
+                float l = distances[i] / r;
+                Vector3 newPos = ((1 - l) * bones[i].Pos) + (l * target);
+                bones[i + 1].Pos = newPos;
+                // Orientation
+                bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos); 
+            }
+            return bones;
+        }
         protected void ForwardKinematics(ref Bone[] bones, Quaternion rotation, int i = 0)
         {
             ForwardKinematics(ref bones, rotation, i, bones.Length-1);

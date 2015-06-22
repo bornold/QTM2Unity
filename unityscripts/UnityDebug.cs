@@ -8,8 +8,10 @@ namespace QTM2Unity
 {
     static class UnityDebug
     {
-        public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, Color c, float scale = 0.7f )
+        public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, float scale)
         {
+            Color c = new Color(0.25f, 0.5f, 0.25f);
+
             if (b.Orientation.Xyz.IsNaN() || refBone.Orientation.Xyz.IsNaN())
             {
                 return;
@@ -22,16 +24,25 @@ namespace QTM2Unity
 
             OpenTK.Quaternion rot = QuaternionHelper.GetRotationBetween(parentY, thisY);
             OpenTK.Vector3 reference = OpenTK.Vector3.Transform(parentZ, rot);
-            OpenTK.Vector3.Normalize(reference);
-            for (float f = b.StartTwistLimit; f > 0; f--)
-            {
-                OpenTK.Vector3 test = OpenTK.Vector3.Transform(reference,OpenTK.Quaternion.FromAxisAngle(reference,f));
-                Debug.DrawRay(poss.Convert(), test.Convert(),c);
-            }
+            reference.Normalize();
+            Debug.DrawRay(poss.Convert(), (b.GetZAxis() * scale*2).Convert(), Color.cyan);
+
+
+            float startTwistLimit = OpenTK.MathHelper.DegreesToRadians(b.StartTwistLimit);
+            OpenTK.Vector3 m = OpenTK.Vector3.Transform(reference, OpenTK.Quaternion.FromAxisAngle(thisY, startTwistLimit));
+            m.Normalize();
+            Debug.DrawRay(poss.Convert(), m.Convert() * scale, c);
+
+            float endTwistLimit = OpenTK.MathHelper.DegreesToRadians(b.EndTwistLimit);
+            OpenTK.Vector3 m2 = OpenTK.Vector3.Transform(reference, OpenTK.Quaternion.FromAxisAngle(thisY, endTwistLimit));
+            m2.Normalize();
+            Debug.DrawRay(poss.Convert(), m2.Convert() * scale, c);
+
+            Debug.DrawLine((poss + (m*scale)).Convert(), (poss + (m2*scale)).Convert(), c);
         }
-        public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, float scale = 0.7f )
+        public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss)
         {
-            DrawTwistConstraints( b,  refBone, poss, Color.yellow, scale);
+            DrawTwistConstraints(b, refBone, poss, 0.1f);
         }
         public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos, float scale)
         {

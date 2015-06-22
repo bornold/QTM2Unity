@@ -59,7 +59,7 @@ namespace QTM2Unity
             get { return twistLimit.Y; }
         }
 
-        private Vector4 constraints;
+        private Vector4 constraints = Vector4.Zero;
         public Vector4 Constraints
         {
             get { return new Vector4(constraints); } //TODO Checka all values > 0
@@ -67,7 +67,7 @@ namespace QTM2Unity
         }
         public bool HasConstraints
         {
-            get { return (constraints != null && constraints != Vector4.Zero); }
+            get { return (constraints != Vector4.Zero); }
         }
         private Quaternion parentPointer = Quaternion.Identity;
         public Quaternion ParentPointer
