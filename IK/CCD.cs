@@ -58,12 +58,13 @@ namespace QTM2Unity
                     // Get the vectors between the points
                     Vector3 a = bones[numberOfBones - 1].Pos - bones[i].Pos;
                     Vector3 b = target.Pos - bones[i].Pos;
+                    float weight = bones[i].Weight;
                     Quaternion rotation;
                     // Make a rotation quaternion and rotate 
                     // - first the endEffector
                     // - then the rest of the affected joints
                     rotation = (a.LengthFast == 0 || b.LengthFast == 0) ? Quaternion.Identity
-                        : QuaternionHelper.GetRotationBetween(a, b);
+                        : QuaternionHelper.GetRotationBetween(a, b, weight);
 
                     if (bones[i].HasConstraints)
                     {
@@ -72,7 +73,6 @@ namespace QTM2Unity
                         Bone reference = (i > 0) ? bones[i - 1] : parent;
                         Vector3 res;
                         Quaternion rot;
-
                         if (Constraint.CheckRotationalConstraints(bones[i], reference, trg, out res, out rot))
                         {
                             a = bones[i + 1].Pos - bones[i].Pos;

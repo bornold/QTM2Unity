@@ -85,7 +85,10 @@ namespace QTM2Unity
         }
         void OnDrawGizmos()
         {
-            Draw();
+            if (Application.isPlaying)
+            {
+                Draw();
+            }
         }
     }
 }

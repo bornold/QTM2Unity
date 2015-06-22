@@ -56,7 +56,7 @@ namespace QTM2Unity
             CopyFromLast(ref curr, last); 
             curr.Data.Pos += offset;
             missingChain.Add(curr.Data); 
-
+            
             // first missing, copy data from last frame
             curr = ((TreeNode<Bone>)skelEnum.Current);
             last = ((TreeNode<Bone>)lastSkelEnum.Current).Data;
@@ -100,6 +100,7 @@ namespace QTM2Unity
         private void ConstraintsBeforeReturn(TreeNode<Bone> bone, int depth)
         {
             int count = 0;
+
             foreach (var tnb in bone)
             {
                 if (tnb.IsLeaf || count++ >= depth) break;
@@ -128,6 +129,25 @@ namespace QTM2Unity
                 if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                 {
                     tnb.Data.Rotate(rot);
+                }
+            }
+            foreach (TreeNode<Bone> bvn in bone)
+            {
+                if (bvn.IsLeaf) break;
+                Quaternion a = bvn.Parent.Data.Orientation;
+                Quaternion b = lastSkel[bvn.Parent.Data.Name].Orientation;
+                float test = QuaternionHelper.DiffrenceBetween(a, b);
+                if (test > 0.05f)
+                {
+                    //UnityEngine.Debug.LogError(bvn.Data.Name + " " + test * 180);
+                    //UnityDebug.DrawRays(a, bvn.Data.Pos, 0.8f);
+
+                    //UnityDebug.DrawRays(b, bvn.Data.Pos, 0.5f);
+                    //UnityDebug.DrawRays2(Quaternion.Slerp(a, b, test), bvn.Data.Pos, 1f);
+                }
+                else
+                {
+//                    UnityEngine.Debug.Log(test * 180);
                 }
             }
         }

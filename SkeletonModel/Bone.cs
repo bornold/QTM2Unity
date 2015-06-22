@@ -75,7 +75,12 @@ namespace QTM2Unity
             get {return parentPointer;}
             set {parentPointer = value;}
         }
-
+        private float weight = 1;
+        public float Weight
+        {
+            get { return weight; }
+            set { weight = value; }
+        }
         #endregion
         #endregion
 

@@ -21,6 +21,20 @@ namespace QTM2Unity
             c = Mathf.Cos(angle);
             return new Quaternion(s, 0.0f, 0.0f, c);
         }
+        /// <summary>
+        /// Calculates the difference in rotation between two Quaternions
+        /// if result is 0, there is no diffrence between the Quaternions
+        /// if the results is 1, the diffrence is 180 degrees diffrence 
+        /// </summary>
+        /// <param name="a">The first quaternion</param>
+        /// <param name="b">The secound quaternion</param>
+        /// <returns>float between 0 and 1 where 0 the Quaternions are the same, and 1 they are at a 180 degrees diffrences</returns>
+        public static float DiffrenceBetween(Quaternion right, Quaternion left)
+        {
+            float dot = left.X * right.X + left.Y * right.Y + left.Z * right.Z + left.W * right.W;
+
+            return 1f-Mathf.Sqrt(dot);
+        }
 
         /// <summary>
         /// Rotation around Y axis
@@ -220,7 +234,7 @@ namespace QTM2Unity
 	    }
 
         // Returns a quaternion representing the rotation from vector a to b
-        public static Quaternion GetRotationBetween(Vector3 a, Vector3 b)
+        public static Quaternion GetRotationBetween(Vector3 a, Vector3 b, float weight = 1f)
         {
             if (a == Vector3.Zero || b == Vector3.Zero)
                 return Quaternion.Identity; 
@@ -242,7 +256,7 @@ namespace QTM2Unity
             Vector3 axis = Vector3.Cross(a, b);
             axis.Normalize();
 
-            return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle));
+            return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle*weight));
         }
 
         //TODO TEMP idiotic 

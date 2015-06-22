@@ -72,9 +72,10 @@ namespace QTM2Unity
 
         void OnDrawGizmos()
         {
-            if (!Application.isPlaying) return;
-            if (!streaming) return;
-            Draw();
+            if (Application.isPlaying && streaming)
+            {
+                Draw();
+            }
         }
     }
 }

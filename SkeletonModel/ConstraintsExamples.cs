@@ -7,11 +7,11 @@ namespace QTM2Unity
         public Vector4 Femur = new Vector4(15, 150, 40, 55);
         public Vector4 Knee = new Vector4(15, 0, 15, 160);
         //public Vector4 Ankle = new Vector4(30, 0, 60, 60);
-        public Vector4 Ankle = new Vector4(7, 0, 7, 60);
+        public Vector4 Ankle = new Vector4(60, 0, 30, 60);
 
         public Vector2 FemurTwist = new Vector2(335, 25);
-        public Vector2 KneeTwist = new Vector2(335, 25);
-        public Vector2 AnkleTwist = new Vector2(320, 40);
+        public Vector2 KneeTwist = new Vector2(330, 30);
+        public Vector2 AnkleTwist = new Vector2(340, 20);
 
         public Vector4 Spine = new Vector4(10, 40, 10, 20);
         public Vector2 SpineTwist = new Vector2(350, 10);
@@ -29,10 +29,13 @@ namespace QTM2Unity
 
         private Vector2 NoTwist = new Vector2(359, 1);
         private Vector4 NoMovment = new Vector4(1,1,1,1);
-
+        private float verylight = 1.2f;
+        private float light = 1.1f;
+        private float heavy = 0.9f;
+        private float veryheavy = 0.8f;
+        
         public void SetConstraints(ref BipedSkeleton skeleton)
         {
-
             skeleton[BipedSkeleton.SPINE3].Constraints = (NoMovment);
             skeleton[BipedSkeleton.SPINE3].TwistLimit = (NoTwist);
             #region Cone constraints
@@ -93,6 +96,28 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.UPPERARM_R].TwistLimit = (ShoulderTwist);
             skeleton[BipedSkeleton.LOWERARM_R].TwistLimit = (ElbowTwist);
             skeleton[BipedSkeleton.HAND_R].TwistLimit = (WristTwist);
+            #endregion
+            #endregion
+            #region weights
+      /*
+        */
+            #region Arms
+            skeleton[BipedSkeleton.SHOULDER_L].Weight = (veryheavy);
+            //skeleton[BipedSkeleton.UPPERARM_L].Weight = (heavy);
+            skeleton[BipedSkeleton.LOWERARM_L].Weight = (light);
+            skeleton[BipedSkeleton.HAND_L].Weight = (heavy);
+            skeleton[BipedSkeleton.SHOULDER_R].Weight = (veryheavy);
+            //skeleton[BipedSkeleton.UPPERARM_R].Weight = (heavy);
+            skeleton[BipedSkeleton.LOWERARM_R].Weight = (light);
+            skeleton[BipedSkeleton.HAND_R].Weight = (veryheavy);
+            #endregion
+            #region Legs
+            skeleton[BipedSkeleton.UPPERLEG_L].Weight = verylight;
+            skeleton[BipedSkeleton.UPPERLEG_R].Weight = (verylight);
+            skeleton[BipedSkeleton.LOWERLEG_L].Weight = (light);
+            skeleton[BipedSkeleton.LOWERLEG_R].Weight = (light);
+            skeleton[BipedSkeleton.FOOT_L].Weight = (veryheavy);
+            skeleton[BipedSkeleton.FOOT_R].Weight = (veryheavy);
             #endregion
             #endregion
         }
