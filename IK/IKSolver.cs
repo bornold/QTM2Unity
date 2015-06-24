@@ -1,7 +1,4 @@
 ﻿using OpenTK;
-using System;
-using System.Collections;
-
 namespace QTM2Unity
 {
     abstract class IKSolver

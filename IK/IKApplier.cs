@@ -13,19 +13,19 @@ namespace QTM2Unity
         public bool thisOrThat = false;
         public void ApplyIK(ref BipedSkeleton skeleton)
         {
-            if (lastSkel == null) lastSkel = skeleton;
+            if (lastSkel == null) lastSkel = new BipedSkeleton();
+            if (lastSkel.Any(z => z.Data.HasNaN))
+            {
+                UnityEngine.Debug.LogError(lastSkel.First(c => c.Data.HasNaN));
+            }
             IEnumerator skelEnumer = skeleton.GetEnumerator();
             IEnumerator lastSkelEnumer = lastSkel.GetEnumerator();
             //Root and all of roots children MUST have set possition
             TreeNode<Bone> bone;
-            if (lastSkel.Any(z => z.Data.Pos.IsNaN()))
-            {
-                UnityEngine.Debug.LogError(lastSkel.First(c => c.Data.Pos.IsNaN()).Data);
-            }
             while (skelEnumer.MoveNext() && lastSkelEnumer.MoveNext())
             {
                 bone = (TreeNode<Bone>)skelEnumer.Current;
-                if (!bone.Data.Exists ) // Possition of joint no knowned, Solve with IK
+                if (!bone.Data.Exists  && !bone.IsRoot ) // Possition of joint no knowned, Solve with IK
                 {
                     ///////////////////////////////////////////////TEMPORARY/////////////////////////
                     if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
@@ -41,9 +41,9 @@ namespace QTM2Unity
                 }
             }
             fix(skeleton.First());
-            if (skeleton.Any(z => z.Data.Pos.IsNaN() || z.Data.Orientation.Xyz.IsNaN()))
+            if (skeleton.Any(z => z.Data.HasNaN))
             {
-                UnityEngine.Debug.LogError(skeleton.First(c => c.Data.Pos.IsNaN() || c.Data.Orientation.Xyz.IsNaN()).Data);
+                UnityEngine.Debug.LogError(skeleton.First(c => c.Data.HasNaN));
             }
             UnityDebug.sanity(skeleton);
             lastSkel = skeleton;
@@ -78,17 +78,11 @@ namespace QTM2Unity
                 TreeNode<Bone> fga = (TreeNode<Bone>)lastSkelEnum.Current;
                 if (curr.Data.Exists) // target found! it the last in list
                 {
-                    if (curr.Data.Orientation.Xyz.IsNaN())
-                    {
-                        
-                    }
                     target = new Bone(
                         curr.Data.Name,
-                        new Vector3(curr.Data.Pos),
-                        new Quaternion(new Vector3(curr.Data.Orientation.Xyz), curr.Data.Orientation.W),
-                        new Vector4(curr.Data.Constraints)
+                        new Vector3(curr.Data.Pos)
                         );
-                    target.TwistLimit = curr.Data.TwistLimit;
+                    target.Orientation = curr.Data.Orientation.IsNaN() ? Quaternion.Identity : new Quaternion(curr.Data.Orientation.Xyz, curr.Data.Orientation.W);
 
                     CopyFromLast(ref curr, last);
                     curr.Data.Pos += offset;
@@ -99,20 +93,11 @@ namespace QTM2Unity
 
                     break;
                 }
-
                 CopyFromLast(ref curr, last);
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
             }
-            if (missingChain.Any(z => z.Pos.IsNaN()))
-            {
-                UnityEngine.Debug.LogError(missingChain.First(c => c.Pos.IsNaN()));
-            }
             ConstraintsBeforeReturn(first, missingChain.Count());
-            if (missingChain.Any(z => z.Pos.IsNaN()))
-            {
-                UnityEngine.Debug.LogError(missingChain.First(c => c.Pos.IsNaN()));
-            }
         }
         private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)
         {
@@ -122,47 +107,21 @@ namespace QTM2Unity
 
         private void TestNewThing(Bone[] bones, Bone target, Bone referenceBone, TreeNode<Bone> first)
         {
+            fix(first);
             if (!thisOrThat)
             {
-
                bones = IKSolver.SolveBoneChain(bones, target, referenceBone); // solve with IK
-
-               fix(first);
-               if (bones.Any(z => z.Pos.IsNaN()))
-               {
-                   UnityEngine.Debug.LogError(bones.First(c => c.Pos.IsNaN()));
-               }
-               UnityDebug.sanity(bones, "VAFAN");
-               UnityDebug.sanity(first, "after ccd target: " + target.Name);
             }
-
             else
             {
                 fabrik.SolveBoneChain(bones, target, referenceBone); //first solve with fabrik
-
-                UnityDebug.sanity(first, "fab + " + target.Name);
                 if (ConstraintsBeforeReturn(first, bones.Count())) // then check if solution is valid
                 {
-
-                    //sanity(first,"tar");
-
-                    //JerkingTest(first, "first tots const");
-                    //UnityEngine.Debug.Log("Using Fabrik, and it gave an invalid solution, solving with " + IKSolver.ToString());
                     IKSolver.SolveBoneChain(bones, target, referenceBone); // //if not, solve with CCD 
-
                 }
-
-                if (ConstraintsBeforeReturn(first, bones.Count()))
-                {
-                }
-
-                UnityDebug.sanity(first, "sist" + target.Name);
-                //JerkingTest(first, "JERKIN'!"); // test for jerking movement
+                //JerkingTest(first, ":/");
             }
         }
-
-
-
         private void fix(TreeNode<Bone> test)
         {
             foreach (TreeNode<Bone> b in test)
@@ -191,13 +150,10 @@ namespace QTM2Unity
                 Vector3 oldYax = a.GetYAxis();
                 if (test > 0.03f)
                 {
-                    UnityDebug.DrawRay(a.Pos, oldYax, UnityEngine.Color.blue, 2f);
+                    //UnityDebug.DrawRay(a.Pos, oldYax, UnityEngine.Color.red, 2f);
+                    //UnityDebug.DrawRay(a.Pos, newYax, UnityEngine.Color.blue, 2f);
                     Quaternion rot =  QuaternionHelper.GetRotationBetween(oldYax, newYax);
-                    UnityDebug.DrawRays2(a.Orientation, a.Pos, 1f);
-                    //UnityDebug.DrawRay(a.Pos, newYax, UnityEngine.Color.red, 2f);
-                    //UnityDebug.DrawRays2(rot,a.Pos,0.5f);
-                    //ForwardKinematics(bvn.Parent, rot);
-                    UnityEngine.Debug.Log(a);
+                    //ForwardKinematics()
                 }
                 if (bvn.IsLeaf) break;
             }
@@ -209,7 +165,7 @@ namespace QTM2Unity
             bool anychange = false;
             foreach (var tnb in bone)
             {
-                if (tnb.IsLeaf || count++ >= depth || tnb.Data.Orientation.Xyz.IsNaN()) break;
+                if (tnb.IsLeaf || count++ >= depth) break;
                 Quaternion rot;
                 if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                 {
@@ -217,16 +173,13 @@ namespace QTM2Unity
                     tnb.Data.Rotate(rot);
                 }
                 Vector3 res;
-                if (tnb.Children.First().Data.Pos.IsNaN()) break;
-                if (Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data.Orientation, tnb.Children.First().Data.Pos, out res, out rot ))
+                if (tnb.Children.First().Data.HasNaN) break;
+                if (tnb.Parent.IsRoot) continue;
+                Vector3 child = tnb.Children.First().Data.Pos;
+                if (Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data.Orientation, child, out res, out rot ))
                 {
                     anychange = true;
-                    ForwardKinematics(tnb, rot);
-                }
-                if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
-                {
-                    anychange = true;
-                    tnb.Data.Rotate(rot);
+                    //ForwardKinematics(tnb, rot);
                 }
             }
             return anychange;
@@ -236,6 +189,7 @@ namespace QTM2Unity
             Vector3 oripos = bones.Parent.Data.Pos;
             foreach (var tnb in bones)
             {
+                if (tnb.Data.HasNaN) break;
                 tnb.Data.Pos = oripos + Vector3.Transform((tnb.Data.Pos - oripos), rotation);
                 tnb.Parent.Data.RotateTowards(tnb.Data.Pos - tnb.Parent.Data.Pos);
                 if (tnb.IsLeaf) break;

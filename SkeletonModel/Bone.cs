@@ -10,7 +10,10 @@ namespace QTM2Unity
         {
             get { return !pos.IsNaN(); }
         }
-
+        public bool HasNaN
+        {
+            get { return pos.IsNaN() || orientation.IsNaN(); }
+        }
         private string name;
         public string Name
         {

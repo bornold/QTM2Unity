@@ -8,6 +8,17 @@ namespace QTM2Unity
 {  
     public static class QuaternionHelper
     {
+
+        /// <summary>
+        /// Check if any element in quaternion is NaN
+        /// </summary>
+        /// <param name="quaternion"> Quaternion to be checked </param>
+        /// <returns>True if any of x, y, z, w is NaN</returns>
+        public static bool IsNaN(this Quaternion v)
+        {
+            return v.Xyz.IsNaN() || float.IsNaN(v.W);
+        }
+
         /// <summary>
         /// Rotation around X axis
         /// </summary>
@@ -236,7 +247,7 @@ namespace QTM2Unity
         // Returns a quaternion representing the rotation from vector a to b
         public static Quaternion GetRotationBetween(Vector3 a, Vector3 b, float stiffness = 1f)
         {
-            if (a == Vector3.Zero || b == Vector3.Zero)
+            if ((a == Vector3.Zero || b == Vector3.Zero) || (a == b))
                 return Quaternion.Identity; 
 
             a.NormalizeFast();

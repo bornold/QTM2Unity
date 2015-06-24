@@ -47,14 +47,14 @@ namespace QTM2Unity
                 //else samePosIterations = 0;
 
 
-                // Check if target is on the chain
-                if (IsTargetOnChain(ref bones, ref target))
-                {
-                    // Bend chain a small degree
-                    Quaternion rot = Quaternion.FromAxisAngle(bones[0].GetXAxis(), MathHelper.DegreesToRadians(1));
-                    //bones[0].Rotate(rot);
-                    ForwardKinematics(ref bones, rot, 0);
-                }
+                //// Check if target is on the chain
+                //if (IsTargetOnChain(ref bones, ref target))
+                //{
+                //    // Bend chain a small degree
+                //    Quaternion rot = Quaternion.FromAxisAngle(bones[0].GetXAxis(), MathHelper.DegreesToRadians(1));
+                //    //bones[0].Rotate(rot);
+                //    ForwardKinematics(ref bones, rot, 0);
+                //}
 
                 // Forward reaching
                 ForwardReaching(ref bones, ref distances, target);
@@ -86,13 +86,12 @@ namespace QTM2Unity
                 //}
                 // Backward reaching
                 BackwardReaching(ref bones, ref distances, root, parent);
-                
+
                 //lastDistToTarget = distToTarget;
                 distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             }
-//            float rad2 = (toggle ? 1 : -1) * MathHelper.PiOver6 * (test - .01f);
+            bones[bones.Length - 1].Orientation = target.Orientation;
 
-            //if (visited) UnityEngine.Debug.Log((test));
             return bones;
         }
 
