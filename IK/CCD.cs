@@ -6,7 +6,7 @@ namespace QTM2Unity
         // Note: The end effector is assumed to be the last element in bones
         override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
-
+            
             if (IsReachable(bones,target))
             {
                 return TargetUnreachable(bones, target.Pos, parent);
@@ -21,7 +21,7 @@ namespace QTM2Unity
             int maxdegrees = 120;
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
-            while (distToTarget > threshold && iter++ < maxIterations && (!doneOneLapAroundYAxis || degrees < maxdegrees))
+            while (distToTarget > threshold && ++iter < maxIterations && (!doneOneLapAroundYAxis || degrees < maxdegrees))
             {
                 loopsWithSameDist = (distToTarget >= lastDistToTarget) ? loopsWithSameDist + 1 : 0;
                 if (loopsWithSameDist > 2)
@@ -58,7 +58,7 @@ namespace QTM2Unity
                     // Get the vectors between the points
                     Vector3 a = bones[numberOfBones - 1].Pos - bones[i].Pos;
                     Vector3 b = target.Pos - bones[i].Pos;
-                    float weight = bones[i].Weight;
+                    float weight = bones[i].Stiffness;
                     Quaternion rotation;
                     // Make a rotation quaternion and rotate 
                     // - first the endEffector
@@ -73,7 +73,7 @@ namespace QTM2Unity
                         Bone reference = (i > 0) ? bones[i - 1] : parent;
                         Vector3 res;
                         Quaternion rot;
-                        if (Constraint.CheckRotationalConstraints(bones[i], reference, trg, out res, out rot))
+                        if (Constraint.CheckRotationalConstraints(bones[i], reference.Orientation, trg, out res, out rot))
                         {
                             a = bones[i + 1].Pos - bones[i].Pos;
                             b = res - bones[i].Pos;
@@ -104,7 +104,7 @@ namespace QTM2Unity
             //        "degrees: " + degrees)
             //        );
 
-            bones[bones.Length - 1].Orientation = target.Orientation;
+            bones[bones.Length - 1].Orientation = new Quaternion (target.Orientation.Xyz,target.Orientation.W);
 
             return bones;
         }

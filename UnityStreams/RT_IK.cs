@@ -10,6 +10,8 @@ namespace QTM2Unity
     {
         private IKApplier ikApplier;
         public IK ikAlgorithm = IK.CCD;
+        public bool testthis = false;
+        private IK lastTime = IK.CCD;
         public override void StartNext()
         {
             base.StartNext();
@@ -19,6 +21,8 @@ namespace QTM2Unity
         {
             base.UpdateNext();
             if (ikApplier == null) ikApplier = new IKApplier(new CCD());
+            if (lastTime != ikAlgorithm)
+            {
                 switch (ikAlgorithm)
                 {
                     case IK.CCD:
@@ -38,7 +42,10 @@ namespace QTM2Unity
                         break;
                     default:
                         break;
+                }
+                lastTime = ikAlgorithm;
             }
+            ikApplier.thisOrThat = testthis;
             ikApplier.ApplyIK(ref skeleton);
         }
         public override void Draw()

@@ -25,7 +25,7 @@ namespace QTM2Unity
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if (skeleton[BipedSkeleton.LOWERLEG_L].Constraints == OpenTK.Vector4.Zero) 
+            if (!skeleton[1].HasConstraints) 
             {
                 constraints.SetConstraints(ref skeleton);
                 constraints.SetConstraints(ref skeletonBuffer);
@@ -38,7 +38,7 @@ namespace QTM2Unity
             {
                 foreach (TreeNode<Bone> b in skeleton)
                 {
-                    if (!b.IsRoot && b.Data.Constraints != OpenTK.Vector4.Zero)
+                    if (!b.IsRoot && b.Data.HasConstraints)
                     {
                         OpenTK.Quaternion parentRotation = b.Parent.Data.Orientation * b.Data.ParentPointer;
                         Bone c = b.Data;

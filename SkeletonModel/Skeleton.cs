@@ -19,7 +19,18 @@ namespace QTM2Unity
             }
             set
             {
-                root.FindTreeNode(node => node.Data != null && node.Data.Name.Equals(key)).Data = value;
+                root.FindTreeNode(node => node.Data.Name.Equals(key)).Data = value;
+            }
+        }
+        public Bone this[int key]
+        {
+            get
+            {
+                return root.FindTreeNode(node => node.Data != null && node.Level == key).Data;
+            }
+            set
+            {
+                root.FindTreeNode(node =>  node.Level == key).Data = value;
             }
         }
 

@@ -87,7 +87,7 @@ namespace QTM2Unity
             Quaternion rot;
             if (backwards && !pause)
             {
-                if (Constraint.CheckRotationalConstraints(joint, propparent, nextJointPos, out res, out rot))
+                if (Constraint.CheckRotationalConstraints(joint, propparent.Orientation, nextJointPos, out res, out rot))
                 { }
                 else { UnityEngine.Debug.Log("inside"); }
                 Vector3 test = propparent.Pos - joint.Pos;
@@ -98,7 +98,7 @@ namespace QTM2Unity
             }
             else if (!pause)
             {
-                if (Constraint.CheckRotationalConstraints(joint, parent, targ, out res, out rot))
+                if (Constraint.CheckRotationalConstraints(joint, parent.Orientation, targ, out res, out rot))
                 {  }
                 UpdateGOS("NextJoint", res.Convert());
                 nextJointPos = res;

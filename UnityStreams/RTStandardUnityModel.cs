@@ -38,8 +38,11 @@ namespace QTM2Unity
         // Update is called once per frame
         public override void UpdateNext()
         {
-            base.UpdateNext();
-            SetAll();
+            if (streaming)
+            {
+                base.UpdateNext();
+                SetAll();
+            }
         }
 
         public void SetAll()

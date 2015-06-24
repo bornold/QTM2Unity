@@ -76,7 +76,7 @@ namespace QTM2Unity
                         Vector3 res;
                         Quaternion rot;
                         Bone prevBone = (i > 1) ? bones[i - 2] : parent;
-                        if (Constraint.CheckRotationalConstraints(bones[i - 1], prevBone, newPos, out res, out rot))
+                        if (Constraint.CheckRotationalConstraints(bones[i - 1], prevBone.Orientation, newPos, out res, out rot))
                         {
                             newPos = res;
                             bones[i - 1].RotateTowards(newPos - bones[i - 1].Pos);

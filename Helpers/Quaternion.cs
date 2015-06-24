@@ -234,15 +234,15 @@ namespace QTM2Unity
 	    }
 
         // Returns a quaternion representing the rotation from vector a to b
-        public static Quaternion GetRotationBetween(Vector3 a, Vector3 b, float weight = 1f)
+        public static Quaternion GetRotationBetween(Vector3 a, Vector3 b, float stiffness = 1f)
         {
             if (a == Vector3.Zero || b == Vector3.Zero)
                 return Quaternion.Identity; 
 
-            a.Normalize();
-            b.Normalize();
+            a.NormalizeFast();
+            b.NormalizeFast();
 
-            float precision = 0.99999f; // TODO not sure if good value
+            float precision = 0.9999f; 
             if (Vector3.Dot(a, b) > precision) // a and b are parallel
             {
                 return Quaternion.Identity;
@@ -256,7 +256,7 @@ namespace QTM2Unity
             Vector3 axis = Vector3.Cross(a, b);
             axis.Normalize();
 
-            return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle*weight));
+            return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle*stiffness));
         }
 
         //TODO TEMP idiotic 
@@ -265,7 +265,7 @@ namespace QTM2Unity
             a.Normalize();
             b.Normalize();
 
-            float precision = 0.9999999f; // TODO not sure if good value
+            float precision = 0.9999f; // DONT put lower then this!
             if (Vector3.Dot(a, b) > precision) // a and b are parallel
             {
                 return Quaternion.Identity;

@@ -145,7 +145,10 @@ namespace QTM2Unity
             {
                 if (kneeForwardLeft == Vector3.Zero)
                 {
-                    kneeForwardLeft = GetKneeForwardLeft();
+                    Vector3 knee = joints[BipedSkeleton.LOWERLEG_L];
+                    Vector3 kneeOuter = markers[leftOuterKnee];
+                    kneeForwardLeft = knee - kneeOuter;
+                    //kneeForwardLeft = GetKneeForwardLeft();
                 }
                 return kneeForwardLeft;
             }
@@ -158,7 +161,10 @@ namespace QTM2Unity
             {
                 if (kneeForwardRight == Vector3.Zero)
                 {
-                    kneeForwardRight = GetKneeForwardRight();
+                    Vector3 knee = joints[BipedSkeleton.LOWERLEG_R];
+                    Vector3 kneeOuter = markers[rightOuterKnee];
+                    kneeForwardRight = kneeOuter - knee;
+                    //kneeForwardRight = GetKneeForwardRight();
                 }
                 return kneeForwardRight;
             }
@@ -646,18 +652,7 @@ namespace QTM2Unity
             front.Normalize();
             return front;
         }
-        private Vector3 GetKneeForwardRight()
-        {
-            Vector3 knee = joints[BipedSkeleton.LOWERLEG_R];
-            Vector3 kneeOuter = markers[rightOuterKnee];
-            return kneeOuter - knee;
-        }
-        private Vector3 GetKneeForwardLeft()
-        {
-            Vector3 knee = joints[BipedSkeleton.LOWERLEG_L];
-            Vector3 kneeOuter = markers[leftOuterKnee];
-            return knee - kneeOuter;
-        }
+
         private Vector3 WritsOrientationRight()
         {
             Vector3 littleFingerSide = markers[rightWrist];

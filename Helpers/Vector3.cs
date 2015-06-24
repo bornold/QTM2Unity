@@ -144,12 +144,12 @@ namespace QTM2Unity
 
         public static bool Parallel(Vector3 a, Vector3 b)
         {
-            float precision = 0.99999f; // TODO not sure if good value
-            if (Vector3.Dot(a, b) > precision || Vector3.Dot(a, b) < -precision) // a and b are parallel
-            {
-                return true;
-            }
-            return false;
+            if (a.IsNaN() || b.IsNaN()) return true; // what?
+            float precision = 0.9999f;
+            a.NormalizeFast();
+            b.NormalizeFast();
+            float dot = Vector3.Dot(a, b);
+            return (dot < precision && dot > -precision); // a and b are parallel
         }
     }
 }

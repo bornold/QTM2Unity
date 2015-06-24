@@ -104,9 +104,9 @@ namespace QTM2Unity
 
         public enum Quadrant { q1, q2, q3, q4 }; //TODO private
         private static float precision = 0.01f;
-        public static bool CheckRotationalConstraints(Bone joint, Bone parent, Vector3 target, out Vector3 res, out Quaternion rot)
+        public static bool CheckRotationalConstraints(Bone joint, Quaternion parentsRots, Vector3 target, out Vector3 res, out Quaternion rot)
         {
-            Quaternion referenceRotation = parent.Orientation * joint.ParentPointer;
+            Quaternion referenceRotation = parentsRots * joint.ParentPointer;
             Vector3 L1 = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, referenceRotation));
 
             Vector3 jointPos = joint.Pos;

@@ -8,6 +8,35 @@ namespace QTM2Unity
 {
     static class UnityDebug
     {
+        public static void sanity(BipedSkeleton test, string message = "")
+        {
+            UnityDebug.sanity(test.First(), message);
+        }
+        public static void sanity(TreeNode<Bone> test, string message = "")
+        {
+            foreach (TreeNode<Bone> b in test)
+            {
+                if (b.IsRoot || b.Parent.IsRoot || !b.Data.Exists || !b.Parent.Data.Exists || b.Data.ParentPointer != OpenTK.Quaternion.Identity) continue;
+                OpenTK.Vector3 ray1 = b.Parent.Data.GetYAxis();
+                OpenTK.Vector3 ray2 = (b.Data.Pos - b.Parent.Data.Pos);
+                if (!Vector3Helper.Parallel(ray1, ray2))
+                {
+                    UnityEngine.Debug.LogError( message + '\n' + b.Parent.Data);
+                }
+            }
+        }
+        public static void sanity(Bone[] test, string message = "")
+        {
+            for (int i = 1; i < test.Length; i++)
+            {
+                OpenTK.Vector3 ray1 = test[i - 1].GetYAxis();
+                OpenTK.Vector3 ray2 = (test[i].Pos - test[i - 1].Pos);
+                if (!Vector3Helper.Parallel(ray1, ray2))
+                {
+                    UnityEngine.Debug.LogError(message + '\n' + test[i - 1]);
+                }
+            }
+        }
         public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, float scale)
         {
             Color c = new Color(0.25f, 0.5f, 0.25f);

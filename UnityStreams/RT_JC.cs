@@ -47,10 +47,6 @@ namespace QTM2Unity
             base.Draw();
             foreach (TreeNode<Bone> b in skeleton)
             {
-                if (showRotationTrace && (!b.IsLeaf || b.Data.Name.Equals(BipedSkeleton.HEAD)) )//&& b.Data.Name.EndsWith("L"))
-                {
-                    UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos + pos, traceLength);
-                }
 
                 if (showSkeleton)
                 {
@@ -58,6 +54,10 @@ namespace QTM2Unity
                     {
                         UnityDebug.DrawLine(b.Data.Pos + pos, child.Data.Pos + pos, skelettColor);
                     }
+                }
+                if (showRotationTrace && (!b.IsLeaf || b.Data.Name.Equals(BipedSkeleton.HEAD)) )//&& b.Data.Name.EndsWith("L"))
+                {
+                    UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos + pos, traceLength);
                 }
                 if (showJoints)
                 {

@@ -75,11 +75,11 @@ namespace QTM2Unity
             get {return parentPointer;}
             set {parentPointer = value;}
         }
-        private float weight = 1;
-        public float Weight
+        private float stiffness = 1;
+        public float Stiffness
         {
-            get { return weight; }
-            set { weight = value; }
+            get { return stiffness; }
+            set { stiffness = value; }
         }
         #endregion
         #endregion
@@ -136,9 +136,9 @@ namespace QTM2Unity
             orientation = rotation * orientation;
         }
 
-        public void RotateTowards(Vector3 v)
+        public void RotateTowards(Vector3 v, float stiffness = 1f)
         {
-            Rotate(QuaternionHelper.GetRotationBetween(GetYAxis(), v));
+            Rotate(QuaternionHelper.GetRotationBetween(GetYAxis(), v, stiffness = this.stiffness));
         }
         #endregion
         public bool Equals(Bone other)
