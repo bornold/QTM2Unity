@@ -104,33 +104,39 @@ namespace QTM2Unity
             bones[bones.Length - 1].Orientation = target.Orientation; //TODO if bone is endeffector, we should not look at rot constraints
             for (int i = bones.Length - 2; i >= 0; i--)
             {
-                if (bones[i+1].Pos == bones[i].Pos)
+                if (bones[i].HasNaN)
                 {
-                    // move one of them a small distance along the chain
-                    if (i+2 < bones.Length)
-                    {
-                        bones[i + 1].Pos = bones[i + 1].Pos +
-                            Vector3.Normalize(bones[i + 2].Pos - bones[i + 1].Pos) * 0.001f;
-                    }
-                    else if (i - 1 >= 0)
-                    {
-                        bones[i].Pos = bones[i - 1].Pos +
-                            Vector3.Normalize(bones[i - 1].Pos - bones[i].Pos) * 0.001f;
-                    }
-                    // else terminate
+                    UnityEngine.Debug.LogError(bones[i].HasNaN);
                 }
+                SamePosCheck(ref bones, i);
+
+                //if (bones[i+1].Pos == bones[i].Pos)
+                //{
+                //    // move one of them a small distance along the chain
+                //    if (i+2 < bones.Length)
+                //    {
+                //        bones[i + 1].Pos = bones[i + 1].Pos +
+                //            Vector3.Normalize(bones[i + 2].Pos - bones[i + 1].Pos) * 0.001f;
+                //    }
+                //    else if (i - 1 >= 0)
+                //    {
+                //        bones[i].Pos = bones[i - 1].Pos +
+                //            Vector3.Normalize(bones[i - 1].Pos - bones[i].Pos) * 0.001f;
+                //    }
+                //    // else terminate
+                //}
                 // Position
                 Vector3 newPos;
                 float r = (bones[i + 1].Pos - bones[i].Pos).Length;
                 float l = distances[i] / r;
                 // bones[i].Pos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
-
                 newPos = (1 - l) * bones[i + 1].Pos + l * bones[i].Pos;
+
                 bones[i].Pos = newPos;
 
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
-                  
+
                 // Constraints
                 //EnsureOrientationalConstraints(ref bones[i + 1], ref bones[i], true);
                 //if (bones[i].Constraints != Vector4.Zero)
@@ -148,24 +154,32 @@ namespace QTM2Unity
 
         private void BackwardReaching(ref Bone[] bones, ref float[] distances, Vector3 root, Bone parent)
         {
+
             bones[0].Pos = root;
+
             for (int i = 0; i < bones.Length - 1; i++)
             {
-                if (bones[i + 1].Pos == bones[i].Pos)
-                {
-                    // move one of them a small distance along the chain
-                    if (i + 2 < bones.Length)
-                    {
-                        bones[i + 1].Pos = bones[i + 1].Pos +
-                            Vector3.Normalize(bones[i + 2].Pos - bones[i + 1].Pos) * 0.001f;
-                    }
-                    else if (i - 1 >= 0)
-                    {
-                        bones[i].Pos = bones[i - 1].Pos +
-                            Vector3.Normalize(bones[i - 1].Pos - bones[i].Pos) * 0.001f;
-                    }
-                    // else terminate? TODO
-                }
+                SamePosCheck(ref bones, i);
+                //if (bones[i + 1].Pos == bones[i].Pos)
+                //{
+                //    // move one of them a small distance along the chain
+                //    if (i + 2 < bones.Length)
+                //    {
+                //        Vector3 t = bones[i + 1].Pos +
+                //            Vector3.Normalize(bones[i + 2].Pos - bones[i + 1].Pos) * 0.001f;
+                //        if (t.IsNaN())
+                //        {
+                //            UnityEngine.Debug.LogError(t);
+                //        }
+                //        bones[i + 1].Pos = bones[i + 1].Pos +
+                //            Vector3.Normalize(bones[i + 2].Pos - bones[i + 1].Pos) * 0.001f;
+                //    }
+                //    else if (i - 1 >= 0)
+                //    {
+                //        bones[i].Pos = bones[i - 1].Pos +
+                //            Vector3.Normalize(bones[i - 1].Pos - bones[i].Pos) * 0.001f;
+                //    }
+                //}
 
                 Vector3 newPos;
                 // Position
@@ -173,7 +187,7 @@ namespace QTM2Unity
                 float l = distances[i] / r;
 
                 newPos = (1 - l) * bones[i].Pos + l * bones[i + 1].Pos;
-                
+
                 //Bone prevBone = (i > 0) ? bones[i - 1] : parent;
                 //if (bones[i].Constraints != Vector4.Zero)
                 //{
@@ -191,26 +205,26 @@ namespace QTM2Unity
               
             }
         }
-
-        private bool EnsureOrientationalConstraints(ref Bone target, ref Bone reference, bool forward)
-        {
-            if (target.StartTwistLimit > -1 && target.EndTwistLimit > -1 && !target.Orientation.Xyz.IsNaN() && !reference.Orientation.Xyz.IsNaN())
+        private void SamePosCheck(ref Bone[] bones, int i) {
+            if (bones[i+1].Pos == bones[i].Pos)
             {
-                Quaternion rotation = Quaternion.Identity;
-                if (Constraint.CheckOrientationalConstraint(target, reference, out rotation))
+                float small = 0.001f;
+                // move one of them a small distance along the chain
+                if (i+2 < bones.Length)
                 {
-                    if (forward)
-                    {
-                        reference.Rotate(rotation);
-                    }
-                    else
-                    {
-                        target.Rotate(rotation);
-                    }
-                    return true;
+                    Vector3 pushed = Vector3.Normalize(bones[i + 2].Pos - bones[i + 1].Pos) * small;
+                        bones[i + 1].Pos += 
+                            !pushed.IsNaN() ? 
+                            pushed : 
+                            new Vector3(small, small, small); ;
+                }
+                else if (i - 1 >= 0)
+                {
+                    Vector3 pushed = bones[i - 1].Pos +
+                        Vector3.Normalize(bones[i - 1].Pos - bones[i].Pos) * small;
+                    bones[i].Pos += !pushed.IsNaN() ? pushed : new Vector3(small, small, small); ;
                 }
             }
-            return false;
         }
     }
 }

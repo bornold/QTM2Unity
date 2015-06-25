@@ -343,7 +343,7 @@ namespace QTM2Unity
         {
             var dic = new Dictionary<string, Vector3>();
 
-            Vector3 pos, target, right, left, front, back, up;
+            Vector3 pos, target, right, left, front, back;
             /////////////// FEMUR ///////////////
             Vector3 lf = GetFemurJoint(false);
             dic.Add(BipedSkeleton.UPPERLEG_L, lf);

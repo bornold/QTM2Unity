@@ -25,10 +25,15 @@ namespace QTM2Unity
             while (skelEnumer.MoveNext() && lastSkelEnumer.MoveNext())
             {
                 bone = (TreeNode<Bone>)skelEnumer.Current;
-                if (!bone.Data.Exists  && !bone.IsRoot ) // Possition of joint no knowned, Solve with IK
+                if (!bone.Data.Exists) // Possition of joint no knowned, Solve with IK
                 {
                     ///////////////////////////////////////////////TEMPORARY/////////////////////////
-                    if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
+                    if (bone.IsRoot || bone.Parent.IsRoot)
+                    {
+                        CopyFromLast(ref bone, lastSkel[bone.Data.Name]);
+                        continue;
+                    }
+                    else if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
                     {
                         bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
                         Vector3 forward = bone.Parent.Data.GetZAxis();
@@ -43,7 +48,7 @@ namespace QTM2Unity
             fix(skeleton.First());
             if (skeleton.Any(z => z.Data.HasNaN))
             {
-                UnityEngine.Debug.LogError(skeleton.First(c => c.Data.HasNaN));
+                UnityEngine.Debug.LogError(skeleton.First(c => c.Data.HasNaN)); 
             }
             UnityDebug.sanity(skeleton);
             lastSkel = skeleton;
@@ -75,7 +80,6 @@ namespace QTM2Unity
             {
                 curr = ((TreeNode<Bone>)skelEnum.Current);
                 last = ((TreeNode<Bone>)lastSkelEnum.Current).Data;
-                TreeNode<Bone> fga = (TreeNode<Bone>)lastSkelEnum.Current;
                 if (curr.Data.Exists) // target found! it the last in list
                 {
                     target = new Bone(
@@ -97,7 +101,7 @@ namespace QTM2Unity
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
             }
-            ConstraintsBeforeReturn(first, missingChain.Count());
+            //ConstraintsBeforeReturn(first, missingChain.Count());
         }
         private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)
         {
@@ -145,14 +149,14 @@ namespace QTM2Unity
                 Quaternion qa = a.Orientation;
                 Quaternion qb = b.Orientation;
                 float test = QuaternionHelper.DiffrenceBetween(qa, qb);
-                Quaternion c = Quaternion.Slerp(qa, qb, 0.03f);
-                Vector3 newYax = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, c));
-                Vector3 oldYax = a.GetYAxis();
+                //Quaternion c = Quaternion.Slerp(qa, qb, 0.03f);
+                //Vector3 newYax = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, c));
+                //Vector3 oldYax = a.GetYAxis();
                 if (test > 0.03f)
                 {
                     //UnityDebug.DrawRay(a.Pos, oldYax, UnityEngine.Color.red, 2f);
                     //UnityDebug.DrawRay(a.Pos, newYax, UnityEngine.Color.blue, 2f);
-                    Quaternion rot =  QuaternionHelper.GetRotationBetween(oldYax, newYax);
+                    //Quaternion rot =  QuaternionHelper.GetRotationBetween(oldYax, newYax);
                     //ForwardKinematics()
                 }
                 if (bvn.IsLeaf) break;
@@ -179,7 +183,7 @@ namespace QTM2Unity
                 if (Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data.Orientation, child, out res, out rot ))
                 {
                     anychange = true;
-                    //ForwardKinematics(tnb, rot);
+                    ForwardKinematics(tnb, rot);
                 }
             }
             return anychange;

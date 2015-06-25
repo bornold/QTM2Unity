@@ -13,7 +13,7 @@ namespace QTM2Unity
             {
                 acc += (bones[i].Pos - bones[i + 1].Pos).Length;
             }
-            float dist = Math.Abs((bones[0].Pos - target.Pos).Length);
+            float dist = System.Math.Abs((bones[0].Pos - target.Pos).Length);
             return (dist > acc); // the target is unreachable
         }
 

@@ -1716,6 +1716,7 @@ namespace QTMRealTimeSDK
         /// <returns>class with general settings from QTM</returns>
         public static SettingsGeneral readGeneralSettings(string xmldata)
         {
+            if (xmldata == null) return null;
             xmldata = xmldata.Replace("True", "true").Replace("False","false").Replace("None","-1");
 
             XmlSerializer serializer = new XmlSerializer(typeof(SettingsGeneral));
@@ -1745,6 +1746,7 @@ namespace QTMRealTimeSDK
         /// <returns>class with data of 3D settings from QTM</returns>
         public static Settings3D read3DSettings(string xmldata)
         {
+            if (xmldata == null) return null;
             xmldata = xmldata.Replace("True", "true").Replace("False", "false").Replace("None", "-1");
 
             XmlSerializer serializer = new XmlSerializer(typeof(Settings3D));
@@ -1763,7 +1765,6 @@ namespace QTMRealTimeSDK
                 settings = null;
             }
             red.Close();
-
             return settings;
         }
 

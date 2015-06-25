@@ -8,7 +8,7 @@ namespace QTM2Unity
         #region Name, pos, rot and constraints getters and setters
         public bool Exists
         {
-            get { return !pos.IsNaN(); }
+            get { return !pos.IsNaN() && pos != Vector3.Zero; }
         }
         public bool HasNaN
         {

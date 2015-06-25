@@ -69,7 +69,14 @@ namespace QTMRealTimeSDK.Network
             {
                 if (mTCPClient.Client != null)
                 {
-                    mTCPClient.Client.Shutdown(SocketShutdown.Send);
+                    try
+                    {
+                        mTCPClient.Client.Shutdown(SocketShutdown.Send);
+                    }
+                    catch (SocketException se)
+                    {
+                        return;
+                    }
                     // Empty receive buffer
                     while (mTCPClient.Available > 0)
                     {
