@@ -104,10 +104,6 @@ namespace QTM2Unity
             bones[bones.Length - 1].Orientation = target.Orientation; //TODO if bone is endeffector, we should not look at rot constraints
             for (int i = bones.Length - 2; i >= 0; i--)
             {
-                if (bones[i].HasNaN)
-                {
-                    UnityEngine.Debug.LogError(bones[i].HasNaN);
-                }
                 SamePosCheck(ref bones, i);
 
                 //if (bones[i+1].Pos == bones[i].Pos)

@@ -17,7 +17,6 @@ namespace QTM2Unity
         // these are removed once first complete frame is taken.
         private float height = 175; // cm
         private float mass = 75; // kg
-        private float chestDepth = 240; //mm
         private Vector3 neck2ChestVector = Vector3.Zero; 
         private float shoulderWidth = 400; // mm
         private Quaternion prevChestOri = Quaternion.Identity;
@@ -44,7 +43,77 @@ namespace QTM2Unity
             {
                 if (chestOrientation == Quaternion.Identity)
                 {
-                    chestOrientation = GetChestOrientation();
+                    Vector3 neckPos = markers[neck];
+                    Vector3 chestPos = markers[chest];
+                    Vector3 rightShoulderPos = markers[rightShoulder];
+                    Vector3 leftShoulderPos = markers[leftShoulder];
+                    Vector3 backspinePos = markers[spine];
+                    Vector3 Yaxis, Xaxis;
+                    Vector3 mid = Vector3Helper.MidPoint(rightShoulderPos, leftShoulderPos);
+                    Quaternion rotation;
+                    // Find Y axis
+                    if (!mid.IsNaN())
+                    {
+                        Yaxis = mid - Sacrum;
+                    }
+                    else if (!backspinePos.IsNaN() && !neckPos.IsNaN()) // prio 1, 12th Thoracic to 2nd Thoracic
+                    {
+                        Yaxis = Vector3Helper.MidPoint(neckPos, backspinePos) - Sacrum;
+                    }
+                    else if (!neckPos.IsNaN()) // prio 2, Sacrum to 2nd Thoracic
+                    {
+                        Yaxis = neckPos - Sacrum;
+                    }
+                    else if (!backspinePos.IsNaN()) // prio 3, Sacrum to 12th Thoracic
+                    {
+                        Yaxis = backspinePos - Sacrum;
+                    }
+                    else // last resort, use hip orientation
+                    {
+                        Yaxis = Vector3.Transform(Vector3.UnitY, prevChestOri);
+                    }
+
+                    if (!rightShoulderPos.IsNaN() || !leftShoulderPos.IsNaN())
+                    {
+                        if (!rightShoulderPos.IsNaN() && !leftShoulderPos.IsNaN()) // prio 1, use left and right scapula
+                        {
+                            Xaxis = leftShoulderPos - rightShoulderPos;
+                        }
+                        else if (!chestPos.IsNaN() && !neckPos.IsNaN())
+                        {
+                            mid = Vector3Helper.MidPoint(chestPos, neckPos);
+                            if (!rightShoulderPos.IsNaN()) // prio 2, use right scapula and mid of Sternum and 2nd Thoracic
+                            {
+                                Xaxis = mid - rightShoulderPos;
+                            }
+                            else // prio 3, use left scapula and mid of Sternum and 2nd Thoracic
+                            {
+                                Xaxis = leftShoulderPos - mid;
+                            }
+                        }
+                        else
+                        {
+                            //if (!rightShoulderPos.IsNaN()) // prio 4, from right scapula to projected line sacrum to right scapula on Yaxis 
+                            //{
+                            //    mid = Sacrum + Vector3Helper.Project((rightShoulderPos - Sacrum), Yaxis);
+                            //    Xaxis = mid - rightShoulderPos;
+                            //}
+                            //else // prio 5, from left scapula to projected line sacrum to left scapula on Yaxis
+                            //{
+                            //    mid = Sacrum + Vector3Helper.Project((leftShoulderPos - Sacrum), Yaxis);
+                            //    Xaxis = leftShoulderPos - mid;
+                            //}
+                            //Xaxis = -Vector3.Transform(Vector3.UnitX, HipOrientation);
+                            Xaxis = -Vector3.Transform(Vector3.UnitX, prevChestOri);
+                        }
+                    }
+                    else // last resort, use hip prev orientation
+                    {
+                        Xaxis = -Vector3.Transform(Vector3.UnitX, prevChestOri);
+                    }
+                    rotation = QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis);
+                    prevChestOri = rotation;
+                    chestOrientation = rotation;
                 }
                 return chestOrientation;
             }
@@ -312,7 +381,6 @@ namespace QTM2Unity
             if (!tmpV.IsNaN())
             {
                 neck2ChestVector = (neck2ChestVector * chestsFrames + tmpV) / (chestsFrames + 1);
-                chestDepth = neck2ChestVector.Length * 1000;  // to mm
                 chestsFrames++;
             }
 
@@ -373,49 +441,40 @@ namespace QTM2Unity
             back = markers[neck];
             front = markers[chest];
             Vector3 neckPos;
-            Vector3 neckToSternumVector = Vector3.Normalize(Vector3.Transform(neck2ChestVector, ChestOrientation));
+            Vector3 transformedNeckToChestVector = Vector3.Transform(neck2ChestVector, ChestOrientation) / 2;
             if (!back.IsNaN() && neck2ChestVector != Vector3.Zero)
-                neckPos = back + neckToSternumVector * markerToSpineDist;
+            {
+                neckPos = back + transformedNeckToChestVector;
+
+            }
             else if (!front.IsNaN() && neck2ChestVector != Vector3.Zero)
-                neckPos = front + (-neckToSternumVector * ((chestDepth / 1000) - markerToSpineDist));
+            {
+                neckPos = front - transformedNeckToChestVector;
+            }
             else
-                neckPos = Vector3Helper.MidPoint(markers[leftShoulder], markers[rightShoulder]);
+            {
+                back.Normalize();
+                neckPos = back * markerToSpineDist;
+            }
             dic.Add(BipedSkeleton.SPINE3, neckPos);
             //////////////////////////////////////////
 
             /////////////// SPINE1 //////////////
-            /*
-                Offset med z axel från ryggbas orientering med y axel roterad så TV12 mot TV2
-             */
-            //if (markers[spine].IsNaN())
-            //{
-            //    pos = Vector3Helper.MidPoint(neckPos, spine0);
-            //}
-            //else
+            if (markers[neck].IsNaN())
             {
-                if (markers[neck].IsNaN())
-                {
-                    pos = markers[bodyBase];
-                    target = markers[spine];
-                }
-                else
-                {
-                    pos = markers[spine];
-                    target = markers[neck];
-                }
-                front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, ChestForward));
-                front.Normalize();
-                pos = markers[spine];
-                pos += front * markerToSpineDist;
+                pos = markers[bodyBase];
+                target = markers[spine];
             }
+            else
+            {
+                pos = markers[spine];
+                target = markers[neck];
+            }
+            front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, ChestForward));
+            front.Normalize();
+            pos = markers[spine];
+            pos += front * markerToSpineDist;
             dic.Add(BipedSkeleton.SPINE1, pos);
-            //////////////////////////////////////////
-
-            /////////////// neck ///////////////
-            //up = Vector3.Transform(Vector3.UnitY, ChestOrientation);
-            //up.NormalizeFast();
-            //pos = neckPos + up * spineLength;
-            //dic.Add(BipedSkeleton.NECK, pos);
             //////////////////////////////////////////
 
             /////////////// HEAD ///////////////
@@ -570,81 +629,6 @@ namespace QTM2Unity
                     markers[bodyBase] = sacrumlastFrame;
                 }
             }
-        }
-        private Quaternion GetChestOrientation()
-        {
-            Vector3 neckPos = markers[neck];
-            Vector3 chestPos = markers[chest];
-            Vector3 rightShoulderPos = markers[rightShoulder];
-            Vector3 leftShoulderPos = markers[leftShoulder];
-            Vector3 backspinePos = markers[spine];
-            Vector3 Yaxis, Xaxis;
-            Vector3 mid = Vector3Helper.MidPoint(rightShoulderPos, leftShoulderPos);
-            Quaternion rotation;
-            // Find Y axis
-            if (!backspinePos.IsNaN() && !neckPos.IsNaN()) // prio 1, 12th Thoracic to 2nd Thoracic
-            {
-                Yaxis = neckPos - backspinePos;
-            }
-            else if (!neckPos.IsNaN()) // prio 2, Sacrum to 2nd Thoracic
-            {
-                Yaxis = neckPos - Sacrum;
-            }
-            else if (!backspinePos.IsNaN()) // prio 3, Sacrum to 12th Thoracic
-            {
-                Yaxis = backspinePos - Sacrum;
-            }
-            else if (!mid.IsNaN()) // prio 4, middle of left and right Scapula to 
-            {
-                Vector3 backMid = (LIAS - RIAS) * 0.5f + RIAS;
-                Yaxis = mid - (Sacrum + (backMid - Sacrum) * 2 / 3);
-            }
-            else // last resort, use hip orientation
-            {
-                Yaxis = Vector3.Transform(Vector3.UnitY, HipOrientation);
-            }
-
-            if (!rightShoulderPos.IsNaN() || !leftShoulderPos.IsNaN())
-            {
-                if (!rightShoulderPos.IsNaN() && !leftShoulderPos.IsNaN()) // prio 1, use left and right scapula
-                {
-                    Xaxis = leftShoulderPos - rightShoulderPos;
-                }
-                else if (!chestPos.IsNaN() && !neckPos.IsNaN())
-                {
-                    mid = Vector3Helper.MidPoint(chestPos, neckPos);
-                    if (!rightShoulderPos.IsNaN()) // prio 2, use right scapula and mid of Sternum and 2nd Thoracic
-                    {
-                        Xaxis = mid - rightShoulderPos;
-                    }
-                    else // prio 3, use left scapula and mid of Sternum and 2nd Thoracic
-                    {
-                        Xaxis = leftShoulderPos - mid;
-                    }
-                }
-                else
-                {
-                    //if (!rightShoulderPos.IsNaN()) // prio 4, from right scapula to projected line sacrum to right scapula on Yaxis 
-                    //{
-                    //    mid = Sacrum + Vector3Helper.Project((rightShoulderPos - Sacrum), Yaxis);
-                    //    Xaxis = mid - rightShoulderPos;
-                    //}
-                    //else // prio 5, from left scapula to projected line sacrum to left scapula on Yaxis
-                    //{
-                    //    mid = Sacrum + Vector3Helper.Project((leftShoulderPos - Sacrum), Yaxis);
-                    //    Xaxis = leftShoulderPos - mid;
-                    //}
-                    //Xaxis = -Vector3.Transform(Vector3.UnitX, HipOrientation);
-                    Xaxis = -Vector3.Transform(Vector3.UnitX, prevChestOri);
-                }
-            }
-            else // last resort, use hip prev orientation
-            {
-                Xaxis = -Vector3.Transform(Vector3.UnitX, prevChestOri);
-            }
-            rotation = QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis);
-            prevChestOri = rotation;
-            return rotation;
         }
         #endregion
         #region pelsvis too head getters
@@ -845,8 +829,8 @@ namespace QTM2Unity
             // glenohumeral joint centre location identification and comparison with
             // established techniques
             float
-                x = 96.2f - 0.302f * chestDepth - 0.364f * height + 0.385f * mass,
-                y = -66.32f + 0.30f * chestDepth - 0.432f * mass,
+                x = 96.2f - 0.302f * (neck2ChestVector.Length*1000) - 0.364f * height + 0.385f * mass,
+                y = -66.32f + 0.30f * (neck2ChestVector.Length * 1000) - 0.432f * mass,
                 z = 66.468f - 0.531f * shoulderWidth + 0.571f * mass;
             if (isRightShoulder) z = -z;
             Vector3 res = new Vector3(x, y, z) / 1000; // to mm

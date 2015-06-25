@@ -8,6 +8,7 @@ namespace QTM2Unity
         public Vector3 offset = new Vector3(0, 0, 0);
         public Color gizmosColor = Color.cyan;
         public bool debug = false;
+        public string removeMarker = "SME";
         public bool drawMarkers = false;
         public bool drawMarkerBones = false;
         public Color markerBonesColor = Color.blue;
@@ -55,6 +56,16 @@ namespace QTM2Unity
                 if (markerData == null && markerData.Count == 0) return;
                 pos = this.transform.position.Convert();
                 pos += offset.Convert();
+                if (debug)
+                {
+                    foreach (var v in markerData)
+                    {
+                        if (v.label == removeMarker)
+                        {
+                            v.position = (new OpenTK.Vector3(float.NaN, float.NaN, float.NaN));
+                        }
+                    }
+                }
                 UpdateNext();
             }
             else if (_connected)
