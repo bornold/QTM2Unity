@@ -3,8 +3,7 @@ namespace QTM2Unity
 {
     class RTStandardUnityModel : RT_IK_Constrained
     {
-        public bool useFirstSpine = false;
-
+        Quaternion localRotation;
         Transform hips;
         Transform upLegLeft;
         Transform upLegRight;
@@ -15,8 +14,8 @@ namespace QTM2Unity
         Transform spine;
         Transform spine1;
         Transform spine2;
-        //Transform neck;
-        Transform neck1;
+        Transform neck;
+        //Transform neck1;
         //Transform neck2;
         Transform head;
         Transform shoulderLeft;
@@ -41,6 +40,7 @@ namespace QTM2Unity
             if (streaming)
             {
                 base.UpdateNext();
+                localRotation = transform.gameObject.transform.rotation;
                 SetAll();
             }
         }
@@ -49,36 +49,36 @@ namespace QTM2Unity
         {
             setGO(hips, BipedSkeleton.PELVIS, true);
             setGO(spine, BipedSkeleton.SPINE0, false);
-            if (useFirstSpine) setGO(spine1, BipedSkeleton.SPINE1, false);
-            else setGO(spine2, BipedSkeleton.SPINE1, false);
-            
-            setGO(neck1, BipedSkeleton.NECK, false);
+            setGO(spine1, BipedSkeleton.SPINE1, false);
+            setGO(spine2, BipedSkeleton.SPINE3, false);
+
+            setGO(neck, BipedSkeleton.NECK, false);
             setGO(head, BipedSkeleton.HEAD, false);
 
-            setGOLeg(upLegLeft, BipedSkeleton.UPPERLEG_L);
-            setGOLeg(upLegRight, BipedSkeleton.UPPERLEG_R);
-            setGOLeg(legLeft, BipedSkeleton.LOWERLEG_L);
-            setGOLeg(legRight, BipedSkeleton.LOWERLEG_R);
-            setGOFoot(footLeft, BipedSkeleton.FOOT_L);
-            setGOFoot(footRight, BipedSkeleton.FOOT_R);
+            setGOLeg(upLegLeft, BipedSkeleton.HIP_L);
+            setGOLeg(upLegRight, BipedSkeleton.HIP_R);
+            setGOLeg(legLeft, BipedSkeleton.KNEE_L);
+            setGOLeg(legRight, BipedSkeleton.KNEE_R);
+            setGOFoot(footLeft, BipedSkeleton.ANKLE_L);
+            setGOFoot(footRight, BipedSkeleton.ANKLE_R);
 
 
-            setGOArmLeft(shoulderLeft, BipedSkeleton.SHOULDER_L);
-            setGOArmLeft(armLeft, BipedSkeleton.UPPERARM_L);
-            setGOArmLeft(foreArmLeft, BipedSkeleton.LOWERARM_L);
-            setGOArmLeft(handLeft, BipedSkeleton.HAND_L);
+            setGOArmLeft(shoulderLeft, BipedSkeleton.CLAVICLE_L);
+            setGOArmLeft(armLeft, BipedSkeleton.SHOULDER_L);
+            setGOArmLeft(foreArmLeft, BipedSkeleton.ELBOW_L);
+            setGOArmLeft(handLeft, BipedSkeleton.WRIST_L);
 
-            setGOArmRight(shoulderRight, BipedSkeleton.SHOULDER_R);
-            setGOArmRight(armRight, BipedSkeleton.UPPERARM_R);
-            setGOArmRight(foreArmRight, BipedSkeleton.LOWERARM_R);
-            setGOArmRight(handRight, BipedSkeleton.HAND_R);
+            setGOArmRight(shoulderRight, BipedSkeleton.CLAVICLE_R);
+            setGOArmRight(armRight, BipedSkeleton.SHOULDER_R);
+            setGOArmRight(foreArmRight, BipedSkeleton.ELBOW_R);
+            setGOArmRight(handRight, BipedSkeleton.WRIST_R);
         }
         private void setGO(Transform go, string name, Quaternion rot, bool setPos)
         {
             Bone b = skeleton[name];
             if (b != null && !float.IsNaN(b.Orientation.W))
             {
-                go.rotation = b.Orientation.Convert() * rot;
+                go.rotation = localRotation * b.Orientation.Convert() * rot ;
                 if (setPos && !float.IsNaN(b.Pos.X)) go.position = go.parent.position + b.Pos.Convert();
             }
         }
@@ -116,8 +116,8 @@ namespace QTM2Unity
             spine = transform.Search("Spine");
             spine1 = transform.Search("Spine1");
             spine2 = transform.Search("Spine2");
-            //neck = transform.Search("Neck");
-            neck1 = transform.Search("Neck1");
+            neck = transform.Search("Neck");
+            //neck1 = transform.Search("Neck1");
             //neck2 = transform.Search("Neck2");
             head = transform.Search("Head");
             shoulderLeft = transform.Search("LeftShoulder");

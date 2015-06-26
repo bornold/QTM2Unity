@@ -3,6 +3,7 @@ namespace QTM2Unity
 {
     class RT_JC : RT
     {
+        public bool resetSkeleton = false;
         public bool showSkeleton = true;
         public Color skelettColor = Color.white;
         public bool showJoints = false;
@@ -25,14 +26,17 @@ namespace QTM2Unity
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if (joints == null) joints = new JointLocalization(); 
-            if (skeleton == null) skeleton = new BipedSkeleton();
-            if (skeletonBuffer == null) skeletonBuffer = new BipedSkeleton();
-
+            if (resetSkeleton || joints == null || skeleton == null || skeletonBuffer == null)
+            {
+                joints = new JointLocalization(); 
+                skeleton = new BipedSkeleton();
+                skeletonBuffer = new BipedSkeleton();
+                resetSkeleton = false;
+            }
             BipedSkeleton temp = skeleton;
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
-            joints.GetJointLocation(markerData, ref skeleton);
+           joints.GetJointLocation(markerData, ref skeleton);
             
         }
         void OnDrawGizmos()

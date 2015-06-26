@@ -13,8 +13,6 @@ namespace QTM2Unity
         //public bool showL1 = false;
         public bool showParentRotation = false;
         public bool showTwistConstraints = false;
-        public bool leftSide = true;
-        public bool midToo = true;
         protected ConstraintsExamples constraints = new ConstraintsExamples();
         public override void StartNext()
         {
@@ -57,13 +55,7 @@ namespace QTM2Unity
                         }
                         if (showTwistConstraints)
                         {
-                            if (midToo)
-                            { 
-                                UnityDebug.DrawTwistConstraints(c, b.Parent.Data, poss, traceLength * 1.1f);
-                            } else if (leftSide ? b.Data.Name.EndsWith("L") : b.Data.Name.EndsWith("R"))
-                            {
-                                UnityDebug.DrawTwistConstraints(c, b.Parent.Data, poss, traceLength * 1.1f);
-                            }
+                            UnityDebug.DrawTwistConstraints(c, b.Parent.Data, poss, traceLength * 1.1f);
                         }
                     }
                 }

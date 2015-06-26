@@ -48,32 +48,32 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.NECK].Constraints = (Neck);
             #endregion
             #region Legs
-            skeleton[BipedSkeleton.UPPERLEG_L].Constraints = (SwapXZ(Femur));
-            skeleton[BipedSkeleton.UPPERLEG_R].Constraints = (Femur);
-            skeleton[BipedSkeleton.LOWERLEG_L].Constraints = (SwapXZ(Knee));
-            skeleton[BipedSkeleton.LOWERLEG_R].Constraints = (Knee);
-            skeleton[BipedSkeleton.FOOT_L].Constraints = (SwapXZ(Ankle));
-            skeleton[BipedSkeleton.FOOT_R].Constraints = (Ankle);
+            skeleton[BipedSkeleton.HIP_L].Constraints = (SwapXZ(Femur));
+            skeleton[BipedSkeleton.HIP_R].Constraints = (Femur);
+            skeleton[BipedSkeleton.KNEE_L].Constraints = (SwapXZ(Knee));
+            skeleton[BipedSkeleton.KNEE_R].Constraints = (Knee);
+            skeleton[BipedSkeleton.ANKLE_L].Constraints = (SwapXZ(Ankle));
+            skeleton[BipedSkeleton.ANKLE_R].Constraints = (Ankle);
             #endregion
             #region Arms
-            skeleton[BipedSkeleton.SHOULDER_L].Constraints = (SwapXZ(Clavicula));
-            skeleton[BipedSkeleton.SHOULDER_R].Constraints = (Clavicula);
-            skeleton[BipedSkeleton.UPPERARM_L].Constraints = (SwapXZ(Shoulder));
-            skeleton[BipedSkeleton.UPPERARM_R].Constraints = (Shoulder);
-            skeleton[BipedSkeleton.LOWERARM_L].Constraints = (SwapXZ(Elbow));
-            skeleton[BipedSkeleton.LOWERARM_R].Constraints = (Elbow);
-            skeleton[BipedSkeleton.HAND_L].Constraints = (SwapXZ(Wrist));
-            skeleton[BipedSkeleton.HAND_R].Constraints = (Wrist);
+            skeleton[BipedSkeleton.CLAVICLE_L].Constraints = (SwapXZ(Clavicula));
+            skeleton[BipedSkeleton.CLAVICLE_R].Constraints = (Clavicula);
+            skeleton[BipedSkeleton.SHOULDER_L].Constraints = (SwapXZ(Shoulder));
+            skeleton[BipedSkeleton.SHOULDER_R].Constraints = (Shoulder);
+            skeleton[BipedSkeleton.ELBOW_L].Constraints = (SwapXZ(Elbow));
+            skeleton[BipedSkeleton.ELBOW_R].Constraints = (Elbow);
+            skeleton[BipedSkeleton.WRIST_L].Constraints = (SwapXZ(Wrist));
+            skeleton[BipedSkeleton.WRIST_R].Constraints = (Wrist);
             #endregion
             #endregion
 
             #region ParentPointers
-            skeleton[BipedSkeleton.SHOULDER_R].ParentPointer = QuaternionHelper.RotationZ(-MathHelper.PiOver2);
-            skeleton[BipedSkeleton.SHOULDER_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.PiOver2);
-            skeleton[BipedSkeleton.UPPERLEG_R].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
-            skeleton[BipedSkeleton.UPPERLEG_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
-            skeleton[BipedSkeleton.FOOT_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver2);
-            skeleton[BipedSkeleton.FOOT_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver2);
+            skeleton[BipedSkeleton.CLAVICLE_R].ParentPointer = QuaternionHelper.RotationZ(-MathHelper.PiOver2);
+            skeleton[BipedSkeleton.CLAVICLE_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.PiOver2);
+            skeleton[BipedSkeleton.HIP_R].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
+            skeleton[BipedSkeleton.HIP_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
+            skeleton[BipedSkeleton.ANKLE_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver2);
+            skeleton[BipedSkeleton.ANKLE_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver2);
             #endregion
 
             #region TwistConstraints
@@ -83,44 +83,44 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.NECK].TwistLimit = (NeckTwist);
             #endregion
             #region Legs
-            skeleton[BipedSkeleton.UPPERLEG_L].TwistLimit = (FemurTwist);
-            skeleton[BipedSkeleton.UPPERLEG_R].TwistLimit = (FemurTwist);
-            skeleton[BipedSkeleton.LOWERLEG_L].TwistLimit = (KneeTwist);
-            skeleton[BipedSkeleton.LOWERLEG_R].TwistLimit = (KneeTwist);
-            skeleton[BipedSkeleton.FOOT_L].TwistLimit = (AnkleTwist);
-            skeleton[BipedSkeleton.FOOT_R].TwistLimit = (AnkleTwist);
+            skeleton[BipedSkeleton.HIP_L].TwistLimit = (FemurTwist);
+            skeleton[BipedSkeleton.HIP_R].TwistLimit = (FemurTwist);
+            skeleton[BipedSkeleton.KNEE_L].TwistLimit = (KneeTwist);
+            skeleton[BipedSkeleton.KNEE_R].TwistLimit = (KneeTwist);
+            skeleton[BipedSkeleton.ANKLE_L].TwistLimit = (AnkleTwist);
+            skeleton[BipedSkeleton.ANKLE_R].TwistLimit = (AnkleTwist);
             #endregion
             #region Arms
-            skeleton[BipedSkeleton.SHOULDER_L].TwistLimit = (ClaviculaTwist);
-            skeleton[BipedSkeleton.UPPERARM_L].TwistLimit = (ShoulderTwist);
-            skeleton[BipedSkeleton.LOWERARM_L].TwistLimit = (ElbowTwist);
-            skeleton[BipedSkeleton.HAND_L].TwistLimit = (WristTwist);
-            skeleton[BipedSkeleton.SHOULDER_R].TwistLimit = (ClaviculaTwist);
-            skeleton[BipedSkeleton.UPPERARM_R].TwistLimit = (ShoulderTwist);
-            skeleton[BipedSkeleton.LOWERARM_R].TwistLimit = (ElbowTwist);
-            skeleton[BipedSkeleton.HAND_R].TwistLimit = (WristTwist);
+            skeleton[BipedSkeleton.CLAVICLE_L].TwistLimit = (ClaviculaTwist);
+            skeleton[BipedSkeleton.SHOULDER_L].TwistLimit = (ShoulderTwist);
+            skeleton[BipedSkeleton.ELBOW_L].TwistLimit = (ElbowTwist);
+            skeleton[BipedSkeleton.WRIST_L].TwistLimit = (WristTwist);
+            skeleton[BipedSkeleton.CLAVICLE_R].TwistLimit = (ClaviculaTwist);
+            skeleton[BipedSkeleton.SHOULDER_R].TwistLimit = (ShoulderTwist);
+            skeleton[BipedSkeleton.ELBOW_R].TwistLimit = (ElbowTwist);
+            skeleton[BipedSkeleton.WRIST_R].TwistLimit = (WristTwist);
             #endregion
             #endregion
             #region stiffness
       /*
         */
             #region Arms
-            skeleton[BipedSkeleton.SHOULDER_L].Stiffness = (verystiff);
+            skeleton[BipedSkeleton.CLAVICLE_L].Stiffness = (verystiff);
             //skeleton[BipedSkeleton.UPPERARM_L].Weight = (heavy);
-            skeleton[BipedSkeleton.SHOULDER_R].Stiffness = (verystiff);
+            skeleton[BipedSkeleton.CLAVICLE_R].Stiffness = (verystiff);
             //skeleton[BipedSkeleton.UPPERARM_R].Weight = (heavy);
-            skeleton[BipedSkeleton.LOWERARM_L].Stiffness = (agile);
-            skeleton[BipedSkeleton.LOWERARM_R].Stiffness = (agile);
-            skeleton[BipedSkeleton.HAND_L].Stiffness = (barelymoving);
-            skeleton[BipedSkeleton.HAND_R].Stiffness = (barelymoving);
+            skeleton[BipedSkeleton.ELBOW_L].Stiffness = (agile);
+            skeleton[BipedSkeleton.ELBOW_R].Stiffness = (agile);
+            skeleton[BipedSkeleton.WRIST_L].Stiffness = (barelymoving);
+            skeleton[BipedSkeleton.WRIST_R].Stiffness = (barelymoving);
             #endregion
             #region Legs
-            skeleton[BipedSkeleton.UPPERLEG_L].Stiffness = veryagile;
-            skeleton[BipedSkeleton.UPPERLEG_R].Stiffness = (veryagile);
-            skeleton[BipedSkeleton.LOWERLEG_L].Stiffness = (agile);
-            skeleton[BipedSkeleton.LOWERLEG_R].Stiffness = (agile);
-            skeleton[BipedSkeleton.FOOT_L].Stiffness = (barelymoving);
-            skeleton[BipedSkeleton.FOOT_R].Stiffness = (barelymoving);
+            skeleton[BipedSkeleton.HIP_L].Stiffness = veryagile;
+            skeleton[BipedSkeleton.HIP_R].Stiffness = (veryagile);
+            skeleton[BipedSkeleton.KNEE_L].Stiffness = (agile);
+            skeleton[BipedSkeleton.KNEE_R].Stiffness = (agile);
+            skeleton[BipedSkeleton.ANKLE_L].Stiffness = (barelymoving);
+            skeleton[BipedSkeleton.ANKLE_R].Stiffness = (barelymoving);
             #endregion
             #endregion
         }
