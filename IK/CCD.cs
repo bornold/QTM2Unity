@@ -7,7 +7,7 @@ namespace QTM2Unity
         override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             
-            if (IsReachable(bones,target))
+            if (!IsReachable(bones,target))
             {
                 return TargetUnreachable(bones, target.Pos, parent);
             }
