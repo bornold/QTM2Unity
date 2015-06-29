@@ -535,13 +535,13 @@ namespace QTM2Unity
             if (isRightKnee)
             {
                M1 =  markers[MarkerNames.rightOuterKnee];//FLE
-               M2 = markers[MarkerNames.rightAnkle];//FAL
+               M2 = markers[MarkerNames.rightOuterAnkle];//FAL
                M3 = markers[MarkerNames.rightLowerKnee];//TTC
             }
             else
             {
                 M1 = markers[MarkerNames.leftOuterKnee];//FLE
-                M2 = markers[MarkerNames.leftAnkle];//FAL
+                M2 = markers[MarkerNames.leftOuterAnkle];//FAL
                 M3 = markers[MarkerNames.leftLowerKnee];//TTC
             }
             x = Vector3Helper.MidPoint(M1, M2) - M3;
@@ -564,13 +564,13 @@ namespace QTM2Unity
             {
                 M1 = markers[MarkerNames.rightOuterKnee];//FLE
                 M3 = markers[MarkerNames.rightLowerKnee];//TTC
-                M2 = markers[MarkerNames.rightAnkle];//FAL
+                M2 = markers[MarkerNames.rightOuterAnkle];//FAL
             }
             else
             {
                 M1 = markers[MarkerNames.leftOuterKnee];//FLE
                 M3 = markers[MarkerNames.leftLowerKnee];//TTC
-                M2 = markers[MarkerNames.leftAnkle];//FAL
+                M2 = markers[MarkerNames.leftOuterAnkle];//FAL
             }
             x = Vector3Helper.MidPoint(M1, M2) - M3;
             z = M2 - M1;
@@ -651,22 +651,22 @@ namespace QTM2Unity
             Vector3 pos = AnkleLeft;
             Vector3 up = KneeLeft - pos;
             b.Pos = pos;
-            b.Orientation = QuaternionHelper.LookAtUp(pos, markers[MarkerNames.leftFoot], up);
+            b.Orientation = QuaternionHelper.LookAtUp(pos, markers[MarkerNames.leftToe2], up);
         }
         private void GetAnkleRight(Bone b)
         {
             Vector3 pos = AnkleRight;
             Vector3 up = KneeRight - pos;
             b.Pos = pos;
-            b.Orientation = QuaternionHelper.LookAtUp(pos, markers[MarkerNames.rightFoot], up);
+            b.Orientation = QuaternionHelper.LookAtUp(pos, markers[MarkerNames.rightToe2], up);
         }
         private void GetFootLeft(Bone b)
         {
-            b.Pos = markers[MarkerNames.leftFoot];
+            b.Pos = markers[MarkerNames.leftToe2];
         }
         private void GetFootRight(Bone b)
         {
-            b.Pos = markers[MarkerNames.rightFoot];
+            b.Pos = markers[MarkerNames.rightToe2];
         }
         #endregion
         #region arm getters

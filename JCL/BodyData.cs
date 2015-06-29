@@ -44,7 +44,7 @@ namespace QTM2Unity
             }
             // height and mass
             tmp = (
-                    (markers[MarkerNames.rightAnkle] - markers[MarkerNames.rightOuterKnee]).Length +
+                    (markers[MarkerNames.rightOuterAnkle] - markers[MarkerNames.rightOuterKnee]).Length +
                     (markers[MarkerNames.rightOuterKnee] - markers[MarkerNames.rightHip]).Length +
                     (markers[MarkerNames.bodyBase] - markers[MarkerNames.spine]).Length +
                     (markers[MarkerNames.spine] - markers[MarkerNames.neck]).Length +

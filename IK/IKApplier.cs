@@ -6,12 +6,12 @@ namespace QTM2Unity
 {
     class IKApplier
     {
-        public IKApplier(IKSolver IKSolver) { this.IKSolver = IKSolver; }
         private BipedSkeleton lastSkel;
         public IKSolver IKSolver { private get; set; } 
         private IKSolver fabrik = new FABRIK();
         public bool thisOrThat = false;
-        public IKSolver() {
+        public IKApplier()
+        {
                 lastSkel = new BipedSkeleton();
                 IKSolver = new CCD();
                 fabrik.MaxIterations = 20;

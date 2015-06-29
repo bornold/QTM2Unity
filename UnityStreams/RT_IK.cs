@@ -15,12 +15,12 @@ namespace QTM2Unity
         public override void StartNext()
         {
             base.StartNext();
-            ikApplier = new IKApplier(new CCD());
+            ikApplier = new IKApplier();
         }
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if (ikApplier == null) ikApplier = new IKApplier(new CCD());
+            if (ikApplier == null) ikApplier = new IKApplier();
             if (lastTime != ikAlgorithm)
             {
                 switch (ikAlgorithm)
