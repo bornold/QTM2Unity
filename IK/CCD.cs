@@ -4,12 +4,13 @@ namespace QTM2Unity
     class CCD : IKSolver
     {
         // Note: The end effector is assumed to be the last element in bones
-        override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
+        override public bool SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             
             if (!IsReachable(bones,target))
             {
-                return TargetUnreachable(bones, target.Pos, parent);
+                TargetUnreachable(bones, target.Pos, parent);
+                return true;
             }
 
             int numberOfBones = bones.Length;
@@ -106,7 +107,7 @@ namespace QTM2Unity
 
             bones[bones.Length - 1].Orientation = new Quaternion (target.Orientation.Xyz,target.Orientation.W);
 
-            return bones;
+            return (distToTarget <= threshold);
         }
     }
 }

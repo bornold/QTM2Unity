@@ -8,7 +8,7 @@ namespace QTM2Unity
 {
     abstract class Jacobian : IKSolver
     {
-        override public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent)
+        override public bool SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             // Calculate the distances
             float[] distances;
@@ -95,7 +95,7 @@ namespace QTM2Unity
                 bones[bones.Length - 1].Orientation = target.Orientation;
                 bones[bones.Length - 2].RotateTowards(target.Pos - bones[bones.Length - 2].Pos);
             }
-            return bones;
+            return (distToTarget <= threshold);;
         }
 
         public void solveMultipleChains(ref TreeNode<Bone> root, ref Bone[] targets)

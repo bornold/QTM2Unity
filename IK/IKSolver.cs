@@ -3,9 +3,15 @@ namespace QTM2Unity
 {
     abstract class IKSolver
     {
-        abstract public Bone[] SolveBoneChain(Bone[] bones, Bone target, Bone parent);
-        protected float threshold = 0.01f; 
+        abstract public bool SolveBoneChain(Bone[] bones, Bone target, Bone parent);
+        protected float threshold = 0.01f;
         protected int maxIterations = 250;
+        public int MaxIterations 
+        {
+            get { return maxIterations; }
+            set { maxIterations = value;}
+        }
+        
         protected bool IsReachable(Bone[] bones, Bone target)
         {
             float acc = 0;
@@ -79,7 +85,7 @@ namespace QTM2Unity
             Vector3 a = bones[bones.Length - 1].Pos; // end effector
             Vector3 b = 2 * bones[0].Pos - a; // end effector reflected in root (ref = 2*root - endef)
 
-            if (Vector3Helper.Parallel(a - target.Pos, b - target.Pos))
+            if (Vector3Helper.Parallel(a - target.Pos, b - target.Pos,0.001f))
             {
                 // Since target is reachable it is on the line
                 return true;

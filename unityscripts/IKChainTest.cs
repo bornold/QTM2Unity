@@ -82,7 +82,7 @@ public class IKChainTest : MonoBehaviour {
             if (!_target.Equals(target))
             {
                 _target = target;
-                bones = solver.SolveBoneChain(bones.ToArray(), target, grandpa).ToList();
+                solver.SolveBoneChain(bones.ToArray(), target, grandpa);
             }
         }
 

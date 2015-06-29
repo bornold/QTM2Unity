@@ -247,17 +247,17 @@ namespace QTM2Unity
         // Returns a quaternion representing the rotation from vector a to b
         public static Quaternion GetRotationBetween(Vector3 a, Vector3 b, float stiffness = 1f)
         {
-            if ((a == Vector3.Zero || b == Vector3.Zero) || (a == b))
+            float precision = 0.9999f; 
+            if ((a == Vector3.Zero || b == Vector3.Zero) || (a == b) || Vector3Helper.Parallel(a,b,1-precision))
                 return Quaternion.Identity; 
 
             a.NormalizeFast();
             b.NormalizeFast();
 
-            float precision = 0.9999f; 
-            if (Vector3.Dot(a, b) > precision) // a and b are parallel
-            {
-                return Quaternion.Identity;
-            }
+            //if (Vector3.Dot(a, b) > precision) // a and b are parallel
+            //{
+            //    return Quaternion.Identity;
+            //}
             if (Vector3.Dot(a, b) < -precision) // a and b are opposite
             {
                 return Quaternion.Normalize(Quaternion.FromAxisAngle(Vector3.UnitZ, Mathf.PI));
@@ -265,9 +265,9 @@ namespace QTM2Unity
 
             float angle = Vector3.CalculateAngle(a, b);
             Vector3 axis = Vector3.Cross(a, b);
-            axis.Normalize();
+            //axis.Normalize();
 
-            return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle*stiffness));
+            return Quaternion.FromAxisAngle(axis, angle*stiffness);
         }
 
         //TODO TEMP idiotic 
@@ -286,7 +286,7 @@ namespace QTM2Unity
             Vector3 axis = Vector3.Cross(a, b);
             axis.Normalize();
 
-            return Quaternion.Normalize(Quaternion.FromAxisAngle(axis, angle));
+            return Quaternion.FromAxisAngle(axis, angle);
         }
         
 

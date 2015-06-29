@@ -16,12 +16,25 @@ namespace QTM2Unity
         {
             foreach (TreeNode<Bone> b in test)
             {
-                if (b.IsRoot || b.Parent.IsRoot || !b.Data.Exists || !b.Parent.Data.Exists || b.Data.ParentPointer != OpenTK.Quaternion.Identity) continue;
+                if (b.IsRoot || b.Parent.IsRoot || b.Data.ParentPointer != OpenTK.Quaternion.Identity) continue;
+                if (b.Data.Pos == b.Parent.Data.Pos)
+                {
+                    UnityEngine.Debug.LogWarning(b.Parent.Data + " and " + b.Data + " is the same");
+                    continue;
+                }
                 OpenTK.Vector3 ray1 = b.Parent.Data.GetYAxis();
                 OpenTK.Vector3 ray2 = (b.Data.Pos - b.Parent.Data.Pos);
-                if (!Vector3Helper.Parallel(ray1, ray2))
+                bool para = Vector3Helper.Parallel(ray1, ray2, 10.02f);
+                if (!para)
                 {
-                    UnityEngine.Debug.LogError( message + '\n' + b.Parent.Data);
+
+                    //UnityEngine.Debug.LogError(b.Parent.Data + " and " + b.Data);
+                    //UnityEngine.Debug.LogError(ray1 + " and " + ray2);
+                    ray1.NormalizeFast();
+                    ray2.NormalizeFast();
+                    UnityDebug.DrawRay(b.Parent.Data.Pos, ray1, UnityEngine.Color.black);
+                    UnityDebug.DrawRay(b.Parent.Data.Pos, ray2, UnityEngine.Color.blue);
+
                 }
             }
         }
@@ -31,7 +44,7 @@ namespace QTM2Unity
             {
                 OpenTK.Vector3 ray1 = test[i - 1].GetYAxis();
                 OpenTK.Vector3 ray2 = (test[i].Pos - test[i - 1].Pos);
-                if (!Vector3Helper.Parallel(ray1, ray2))
+                if (!Vector3Helper.Parallel(ray1, ray2, 0.02f))
                 {
                     UnityEngine.Debug.LogError(message + '\n' + test[i - 1]);
                 }

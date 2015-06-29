@@ -142,14 +142,11 @@ namespace QTM2Unity
             return float.IsNaN(v.X) || float.IsNaN(v.Y) ||  float.IsNaN(v.Z);
         }
 
-        public static bool Parallel(Vector3 a, Vector3 b)
+        public static bool Parallel(Vector3 a, Vector3 b, float precision)
         {
             if (a.IsNaN() || b.IsNaN()) return true; // what?
-            float precision = 0.9999f;
-            a.NormalizeFast();
-            b.NormalizeFast();
-            float dot = Vector3.Dot(a, b);
-            return (dot < precision && dot > -precision); // a and b are parallel
+            return Math.Abs((a.X / b.X) - (a.Y / b.Y)) < precision
+                && Math.Abs((a.X / b.X) - (a.Z / b.Z)) < precision;
         }
     }
 }

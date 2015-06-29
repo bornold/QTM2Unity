@@ -14,29 +14,32 @@ namespace QTM2Unity
         protected BipedSkeleton skeleton;
         protected BipedSkeleton skeletonBuffer;
 
+        protected MarkersPreprocessor mp;
         protected JointLocalization joints;
         
         public override void StartNext()
         {
-            joints = new JointLocalization();
             skeleton = new BipedSkeleton();
             skeletonBuffer = new BipedSkeleton();
+            mp = new MarkersPreprocessor();
+            joints = new JointLocalization();
         }
 
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if (resetSkeleton || joints == null || skeleton == null || skeletonBuffer == null)
+            if (resetSkeleton || joints == null || skeleton == null || skeletonBuffer == null || mp == null)
             {
-                joints = new JointLocalization(); 
                 skeleton = new BipedSkeleton();
                 skeletonBuffer = new BipedSkeleton();
+                mp = new MarkersPreprocessor();
+                joints = new JointLocalization(); 
                 resetSkeleton = false;
             }
             BipedSkeleton temp = skeleton;
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
-           joints.GetJointLocation(markerData, ref skeleton);
+           joints.GetJointLocation(mp.ProcessMarkers(markerData), ref skeleton);
             
         }
         void OnDrawGizmos()
