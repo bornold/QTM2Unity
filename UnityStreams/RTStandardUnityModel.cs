@@ -59,8 +59,8 @@ namespace QTM2Unity
             setGOLeg(upLegRight, BipedSkeleton.HIP_R);
             setGOLeg(legLeft, BipedSkeleton.KNEE_L);
             setGOLeg(legRight, BipedSkeleton.KNEE_R);
-            setGOFoot(footLeft, BipedSkeleton.ANKLE_L);
-            setGOFoot(footRight, BipedSkeleton.ANKLE_R);
+            setGOFoot(footLeft, BipedSkeleton.FOOTBASE_L);
+            setGOFoot(footRight, BipedSkeleton.FOOTBASE_R);
 
 
             setGOArmLeft(shoulderLeft, BipedSkeleton.CLAVICLE_L);
@@ -93,7 +93,8 @@ namespace QTM2Unity
 
         private void setGOFoot(Transform go, string name)
         {
-            setGO(go, name, Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180) * Quaternion.Euler(Vector3.right * -30), false);
+            setGO(go, name, Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180), false);
+                //Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180) * Quaternion.Euler(Vector3.right * -30), false);
         }
         private void setGOArmRight(Transform go, string name)
         {

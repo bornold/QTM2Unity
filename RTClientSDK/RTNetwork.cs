@@ -73,7 +73,7 @@ namespace QTMRealTimeSDK.Network
                     {
                         mTCPClient.Client.Shutdown(SocketShutdown.Send);
                     }
-                    catch (SocketException se)
+                    catch (SocketException)
                     {
                         return;
                     }

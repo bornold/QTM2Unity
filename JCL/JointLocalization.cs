@@ -18,6 +18,8 @@ namespace QTM2Unity
         public Vector3 lowerArmForwardRight;
         public Vector3 kneeForwardLeft;
         public Vector3 kneeForwardRight;
+        public Vector3 lowerLegUpLeft;
+        public Vector3 lowerLegUpRight;
         public Vector3 rightHipPos;
         public Vector3 leftHipPos;
         public Vector3 sternumClacicle;
@@ -31,6 +33,8 @@ namespace QTM2Unity
         public Vector3 handLeft;
         public Vector3 ankleRight;
         public Vector3 ankleLeft;
+        public Vector3 footBaseRight;
+        public Vector3 footBaseLeft;
         public Vector3 kneeRight;
         public Vector3 kneeLeft;
     }
@@ -68,13 +72,13 @@ namespace QTM2Unity
                     (b) => UpperLegLeft(b),       
                     (b) => LowerLegLeft(b),
                     (b) => GetAnkleLeft(b),
+                    (b) => GetFootBaseLeft(b),
                     (b) => GetFootLeft(b),
-                    (b) => GetHeelLeft(b),
                     (b) => UpperLegRight(b),
                     (b) => LowerLegRight(b), 
                     (b) => GetAnkleRight(b),    
+                    (b) => GetFootBaseRight(b),
                     (b) => GetFootRight(b),
-                    (b) => GetHeelRight(b),
                 };
         }
         public void GetJointLocation(Dictionary<string, Vector3> markerData, ref BipedSkeleton skeleton)
@@ -203,7 +207,6 @@ namespace QTM2Unity
                     o.hipForward = Vector3.Transform(Vector3.UnitZ, HipOrientation);
                 return o.hipForward;
             }
-            set { o.hipForward = value; }
         }
         private Vector3 ChestForward
         {
@@ -215,7 +218,6 @@ namespace QTM2Unity
                 }
                 return o.chestForward;
             }
-            set { o.chestForward = value; }
         }
         private Vector3 UpperArmForwardLeft
         {
@@ -229,7 +231,6 @@ namespace QTM2Unity
                 }
                 return o.upperArmForwardLeft;
             }
-            set { o.upperArmForwardLeft = value; }
         }
         private Vector3 UpperArmForwardRight
         {
@@ -242,7 +243,6 @@ namespace QTM2Unity
                 }
                 return o.upperArmForwardRight;
             }
-            set { o.upperArmForwardRight = value; }
         }
         private Vector3 LowerArmForwardLeft
         {
@@ -254,7 +254,6 @@ namespace QTM2Unity
                 }
                 return o.lowerArmForwardLeft;
             }
-            set { o.lowerArmForwardLeft = value; }
         }
         private Vector3 LowerArmForwardRight
         {
@@ -266,7 +265,6 @@ namespace QTM2Unity
                 }
                 return o.lowerArmForwardRight;
             }
-            set { o.lowerArmForwardRight = value; }
         }
         private Vector3 KneeForwardLeft
         {
@@ -280,7 +278,6 @@ namespace QTM2Unity
                 }
                 return o.kneeForwardLeft;
             }
-            set { o.kneeForwardLeft = value; }
         }
         private Vector3 KneeForwardRight
         {
@@ -295,7 +292,58 @@ namespace QTM2Unity
                 }
                 return o.kneeForwardRight;
             }
-            set { o.kneeForwardRight = value; }
+        }
+        private Vector3 LowerLegUpLeft
+        {
+            get
+            {
+                if (o.lowerLegUpLeft == Vector3.Zero)
+                {
+                    Vector3 belove =
+                       !FootBaseLeft.IsNaN() ? FootBaseLeft :
+                       !AnkleLeft.IsNaN() ? AnkleLeft :
+                       !markers[MarkerNames.leftHeel].IsNaN() ? markers[MarkerNames.leftHeel] :
+                       !markers[MarkerNames.leftOuterAnkle].IsNaN() ? markers[MarkerNames.leftOuterAnkle] :
+                       !markers[MarkerNames.leftInnerAnkle].IsNaN() ? markers[MarkerNames.leftInnerAnkle] :
+                       !markers[MarkerNames.leftToe2].IsNaN() ? markers[MarkerNames.leftToe2] :
+                       HipJointLeft - (Vector3.Transform(Vector3.UnitY, HipOrientation) * HipJointLeft.LengthFast);
+                    Vector3 above =
+                        !KneeLeft.IsNaN() ? KneeLeft :
+                        !markers[MarkerNames.leftLowerKnee].IsNaN() ? markers[MarkerNames.leftLowerKnee] :
+                        !markers[MarkerNames.leftUpperKnee].IsNaN() ? markers[MarkerNames.leftUpperKnee] :
+                        !markers[MarkerNames.leftInnerKnee].IsNaN() ? markers[MarkerNames.leftInnerKnee] :
+                        !markers[MarkerNames.leftOuterKnee].IsNaN() ? markers[MarkerNames.leftOuterKnee] :
+                        HipJointLeft;
+                    o.lowerLegUpLeft = above - belove;
+                }
+                return o.lowerLegUpLeft;
+            }
+        }
+        private Vector3 LowerLegUpRight
+        {
+            get
+            {
+                if (o.lowerLegUpRight == Vector3.Zero)
+                {
+                    Vector3 belove =
+                        !FootBaseRight.IsNaN() ? FootBaseRight :
+                        !AnkleRight.IsNaN() ? AnkleRight :
+                        !markers[MarkerNames.rightHeel].IsNaN() ? markers[MarkerNames.rightHeel] :
+                        !markers[MarkerNames.rightOuterAnkle].IsNaN() ? markers[MarkerNames.rightOuterAnkle] :
+                        !markers[MarkerNames.rightInnerAnkle].IsNaN() ? markers[MarkerNames.rightInnerAnkle] :
+                        !markers[MarkerNames.leftToe2].IsNaN() ? markers[MarkerNames.leftToe2] :
+                        HipJointRight - (Vector3.Transform(Vector3.UnitY,HipOrientation) * HipJointRight.LengthFast );
+                    Vector3 above =
+                        !KneeRight.IsNaN() ? KneeRight :
+                        !markers[MarkerNames.rightLowerKnee].IsNaN() ? markers[MarkerNames.rightLowerKnee] :
+                        !markers[MarkerNames.rightUpperKnee].IsNaN() ? markers[MarkerNames.rightUpperKnee] :
+                        !markers[MarkerNames.rightInnerKnee].IsNaN() ? markers[MarkerNames.rightInnerKnee] :
+                        !markers[MarkerNames.rightOuterKnee].IsNaN() ? markers[MarkerNames.rightOuterKnee] :
+                        HipJointRight;
+                    o.lowerLegUpRight = above - belove;
+                }
+                return o.lowerLegUpRight;
+            }
         }
         #endregion
         #region Special joints position
@@ -502,7 +550,28 @@ namespace QTM2Unity
                 return o.ankleRight;
             }
         }
-
+        private Vector3 FootBaseLeft
+        {
+            get
+            {
+                if (o.footBaseLeft == Vector3.Zero)
+                {
+                    o.footBaseLeft = Vector3Helper.PointBetween(markers[MarkerNames.leftHeel], markers[MarkerNames.leftToe2], 0.4f);
+                }
+                return o.footBaseLeft;
+            }
+        }
+        private Vector3 FootBaseRight
+        {
+            get
+            {
+                if (o.footBaseRight == Vector3.Zero)
+                {
+                    o.footBaseRight = Vector3Helper.PointBetween(markers[MarkerNames.rightHeel], markers[MarkerNames.rightToe2], 0.4f);
+                }
+                return o.footBaseRight;
+            }
+        }
         private Vector3 GetHipJoint(bool isRightHip)
         {
             // as described by Harrington et al. 2006
@@ -663,13 +732,23 @@ namespace QTM2Unity
         {
             Vector3 up = KneeLeft - AnkleLeft;
             b.Pos = AnkleLeft;
-            b.Orientation = QuaternionHelper.LookAtUp(AnkleLeft, markers[MarkerNames.leftToe2], up);
+            b.Orientation = QuaternionHelper.LookAtUp(AnkleLeft, FootBaseLeft, up);
         }
         private void GetAnkleRight(Bone b)
         {
             Vector3 up = KneeRight - AnkleRight;
             b.Pos = AnkleRight;
-            b.Orientation = QuaternionHelper.LookAtUp(AnkleRight, markers[MarkerNames.rightToe2], up);
+            b.Orientation = QuaternionHelper.LookAtUp(AnkleRight, FootBaseRight, up);
+        }
+        private void GetFootBaseLeft(Bone b)
+        {
+            b.Pos = FootBaseLeft;
+            b.Orientation = QuaternionHelper.LookAtUp(b.Pos, markers[MarkerNames.leftToe2], LowerLegUpLeft);
+        }
+        private void GetFootBaseRight(Bone b)
+        {
+            b.Pos = FootBaseRight;
+            b.Orientation = QuaternionHelper.LookAtUp(b.Pos, markers[MarkerNames.rightToe2], LowerLegUpRight);
         }
         private void GetFootLeft(Bone b)
         {
@@ -678,14 +757,6 @@ namespace QTM2Unity
         private void GetFootRight(Bone b)
         {
             b.Pos = markers[MarkerNames.rightToe2];
-        }
-        private void GetHeelLeft(Bone b)
-        {
-            b.Pos = markers[MarkerNames.leftHeel];
-        }
-        private void GetHeelRight(Bone b)
-        {
-            b.Pos = markers[MarkerNames.rightHeel];
         }
         
         #endregion

@@ -16,15 +16,15 @@ namespace QTM2Unity
         public const string HIP_L = "hip_L";
         public const string KNEE_L = "knee_L";
         public const string ANKLE_L = "ankle_L";
-        public const string FOOT_L = "foot_L";
-        public const string HEEL_L = "heel_L";
+        public const string FOOTBASE_L = "footBase_L";
+        public const string TOE_L = "toe_L";
 
         // Right leg chain
         public const string HIP_R = "hip_R";
         public const string KNEE_R = "knee_R";
         public const string ANKLE_R = "ankle_R";
-        public const string FOOT_R = "foot_R";
-        public const string HEEL_R = "heel_R";
+        public const string FOOTBASE_R = "footBase_R";
+        public const string TOE_R = "toe_R";
 
         //Spine chain
         public const string SPINE0 = "spine0";
@@ -82,10 +82,10 @@ namespace QTM2Unity
                 new Vector3(-0.0867f, 0.4913f, 0.0318f);
             Vector3 ankleLeftPos = 
                 new Vector3(-0.0801f, 0.0712f, -0.0766f);
-            Vector3 footLeftPos = 
+            Vector3 toeLeftPos = 
                 new Vector3(-0.0801f, 0.0039f, 0.0732f);
-            Vector3 heelLeftPos =
-                new Vector3(-0.0692f, 0.0297f, -0.1221f);
+            Vector3 footBaseLeftPos =
+                Vector3Helper.MidPoint(toeLeftPos, new Vector3(-0.0692f, 0.0297f, -0.1221f));
 
             Vector3 hipRightPos = 
                 new Vector3(0.0961f, 0.9124f, -0.0001f);
@@ -93,11 +93,10 @@ namespace QTM2Unity
                 new Vector3(0.1040f, 0.4867f, 0.0308f);
             Vector3 ankleRightPos =
                 new Vector3(0.1101f, 0.0656f, -0.0736f);
-            Vector3 footRightPos = 
+            Vector3 toeRightPos = 
                 new Vector3(0.1086f, 0.0000f, 0.0762f);
-            Vector3 heelRightPos =
-                new Vector3(0.0974f, 0.0259f, -0.1171f);
-
+            Vector3 footBaseRightPos =
+                Vector3Helper.MidPoint(toeRightPos, new Vector3(0.0974f, 0.0259f, -0.1171f));
 
             Vector3 pelvisPos = Vector3Helper.MidPoint(hipLeftPos, hipRightPos); //new Vector3(0f, 0.8240f, 0.0277f);
             #endregion JointPos
@@ -120,11 +119,14 @@ namespace QTM2Unity
 
             Quaternion hipLeftRot = QuaternionHelper.LookAtRight(hipLeftPos, kneeLeftPos, Vector3.UnitX);
             Quaternion kneeLeftRot = QuaternionHelper.LookAtRight(kneeLeftPos, ankleLeftPos, Vector3.UnitX);
-            Quaternion ankleLeftRot = QuaternionHelper.LookAtUp(ankleLeftPos, footLeftPos, (kneeLeftPos - ankleLeftPos));
+            Quaternion ankleLeftRot = QuaternionHelper.LookAtUp(ankleLeftPos, toeLeftPos, (kneeLeftPos - ankleLeftPos));
+            Quaternion footBaseLeftRot = QuaternionHelper.LookAtUp(footBaseLeftPos, toeLeftPos, (ankleLeftPos - footBaseLeftPos));
 
             Quaternion hipRightRot = QuaternionHelper.LookAtRight(hipRightPos, kneeRightPos, Vector3.UnitX);
             Quaternion kneeRightRot = QuaternionHelper.LookAtRight(kneeRightPos, ankleRightPos, Vector3.UnitX);
-            Quaternion ankleRightRot = QuaternionHelper.LookAtUp(ankleRightPos, footRightPos, (kneeRightPos - ankleRightPos));
+            Quaternion ankleRightRot = QuaternionHelper.LookAtUp(ankleRightPos, toeRightPos, (kneeRightPos - ankleRightPos));
+            Quaternion footBaseRightRot = QuaternionHelper.LookAtUp(footBaseRightPos, toeRightPos, (ankleRightPos - footBaseRightPos));
+
             #endregion
 
             root = new TreeNode<Bone>(new Bone(PELVIS,
@@ -225,8 +227,10 @@ namespace QTM2Unity
                             ankleLeftPos, 
                             ankleLeftRot));
                         {
-                            ankleLeft.AddChild(new Bone(FOOT_L, footLeftPos, QuaternionHelper.Zero));
-                            ankleLeft.AddChild(new Bone(HEEL_L, heelLeftPos, QuaternionHelper.Zero));
+                            TreeNode<Bone> footBaseLeft = ankleLeft.AddChild(new Bone(FOOTBASE_L, footBaseLeftPos, footBaseLeftRot));
+                            {
+                                footBaseLeft.AddChild(new Bone(TOE_L, toeLeftPos, QuaternionHelper.Zero));
+                            }
                         }
                     }
                 }
@@ -236,24 +240,22 @@ namespace QTM2Unity
                    hipRightPos, 
                     hipRightRot));
                 {
-                    //r_knee	-0.0867 0.4913 0.0318
                     TreeNode<Bone> kneeRight = hipRight.AddChild(new Bone(KNEE_R,
                            kneeRightPos, 
                             kneeRightRot));
                     {
-                        //r_ankle	-0.0801 0.0712 -0.0766
                         TreeNode<Bone> ankleRight = kneeRight.AddChild(new Bone(ANKLE_R,
                             ankleRightPos, 
                             ankleRightRot));
                         {
-                            //r_metatarsal	-0.0801 0.0039 0.0732
-                            ankleRight.AddChild(new Bone(FOOT_R, footRightPos, QuaternionHelper.Zero));
-                            ankleRight.AddChild(new Bone(HEEL_R, heelRightPos, QuaternionHelper.Zero));
+                            TreeNode<Bone> footBaseRight = ankleRight.AddChild(new Bone(FOOTBASE_R, footBaseRightPos, footBaseRightRot));
+                            {
+                                footBaseRight.AddChild(new Bone(TOE_R, toeRightPos, QuaternionHelper.Zero));
+                            }
                         }
                     }
                 }
                 #endregion
-
             }
             #endregion
         }

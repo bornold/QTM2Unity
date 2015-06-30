@@ -6,12 +6,13 @@ namespace QTM2Unity
         //Vector4(blue, red, green, yellow);
         public Vector4 Femur = new Vector4(15, 150, 40, 55);
         public Vector4 Knee = new Vector4(15, 0, 15, 160);
-        //public Vector4 Ankle = new Vector4(30, 0, 60, 60);
-        public Vector4 Ankle = new Vector4(60, 0, 30, 40);
+        public Vector4 Ankle = new Vector4(40, 0, 40, 15);
+        public Vector4 FootBase = new Vector4(30, 10, 30, 10);
 
         public Vector2 FemurTwist = new Vector2(335, 25);
         public Vector2 KneeTwist = new Vector2(330, 30);
         public Vector2 AnkleTwist = new Vector2(340, 20);
+        public Vector2 FootBaseTwist = new Vector2(350, 10);
 
         public Vector4 Spine = new Vector4(10, 30, 10, 20);
         public Vector2 SpineTwist = new Vector2(340, 20);
@@ -31,10 +32,10 @@ namespace QTM2Unity
         private Vector4 NoMovment = new Vector4(1,1,1,1);
         private float veryagile = 1.2f;
         private float agile = 1.1f;
-        private float stiff = 0.9f;
-        private float stiffer = 0.8f;
+    
+        //private float stiffer = 0.8f;
         private float verystiff = 0.7f;
-        private float extremlystiff = 0.6f;
+        //private float extremlystiff = 0.6f;
         private float barelymoving = 0.5f;
         
         public void SetConstraints(ref BipedSkeleton skeleton)
@@ -54,6 +55,8 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.KNEE_R].Constraints = (Knee);
             skeleton[BipedSkeleton.ANKLE_L].Constraints = (SwapXZ(Ankle));
             skeleton[BipedSkeleton.ANKLE_R].Constraints = (Ankle);
+            skeleton[BipedSkeleton.FOOTBASE_L].Constraints = (SwapXZ(FootBase));
+            skeleton[BipedSkeleton.FOOTBASE_R].Constraints = (FootBase);
             #endregion
             #region Arms
             skeleton[BipedSkeleton.CLAVICLE_L].Constraints = (SwapXZ(Clavicula));
@@ -72,8 +75,10 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.CLAVICLE_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.PiOver2);
             skeleton[BipedSkeleton.HIP_R].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
             skeleton[BipedSkeleton.HIP_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
-            skeleton[BipedSkeleton.ANKLE_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver2);
-            skeleton[BipedSkeleton.ANKLE_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver2);
+            skeleton[BipedSkeleton.FOOTBASE_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) *
+                QuaternionHelper.RotationZ(-MathHelper.PiOver6);// QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
+                skeleton[BipedSkeleton.FOOTBASE_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) *
+                QuaternionHelper.RotationZ(MathHelper.PiOver6);//QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
             #endregion
 
             #region TwistConstraints
@@ -89,6 +94,9 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.KNEE_R].TwistLimit = (KneeTwist);
             skeleton[BipedSkeleton.ANKLE_L].TwistLimit = (AnkleTwist);
             skeleton[BipedSkeleton.ANKLE_R].TwistLimit = (AnkleTwist);
+
+            skeleton[BipedSkeleton.FOOTBASE_L].TwistLimit = (FootBaseTwist);
+            skeleton[BipedSkeleton.FOOTBASE_R].TwistLimit = (FootBaseTwist);
             #endregion
             #region Arms
             skeleton[BipedSkeleton.CLAVICLE_L].TwistLimit = (ClaviculaTwist);
@@ -121,6 +129,8 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.KNEE_R].Stiffness = (agile);
             skeleton[BipedSkeleton.ANKLE_L].Stiffness = (barelymoving);
             skeleton[BipedSkeleton.ANKLE_R].Stiffness = (barelymoving);
+            skeleton[BipedSkeleton.FOOTBASE_L].Stiffness = (barelymoving);
+            skeleton[BipedSkeleton.FOOTBASE_R].Stiffness = (barelymoving);
             #endregion
             #endregion
         }
