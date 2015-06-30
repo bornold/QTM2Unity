@@ -50,6 +50,7 @@ namespace QTM2Unity
                     MissingJoint(bone.Parent.Parent.Data, ref skelEnumer, ref lastSkelEnumer);
                 }
             }
+
             FixRotation(skeleton.First());
             if (skeleton.Any(z => z.Data.HasNaN))
             {
@@ -66,7 +67,6 @@ namespace QTM2Unity
             //root of chain 
             // missings joints parent from last frame is root in solution
             TreeNode<Bone> curr = ((TreeNode<Bone>)skelEnum.Current).Parent;
-            TreeNode<Bone> first = curr;
             Bone target = new Bone("target");
             Bone last = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Data;
             Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
@@ -97,18 +97,11 @@ namespace QTM2Unity
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
                     Bone[] bones = missingChain.ToArray();
-                    if (!thisOrThat)
+                    if (thisOrThat && fabrik.SolveBoneChain(bones, target, referenceBone))
                     {
-                       IKSolver.SolveBoneChain(bones, target, referenceBone); // solve with IK
+                        break;
                     }
-                    else
-                    {
-                        if (!fabrik.SolveBoneChain(bones, target, referenceBone)) // then check if solution is valid
-                        {
-                            IKSolver.SolveBoneChain(bones, target, referenceBone); // //if not, solve with CCD 
-                        }
-
-                    }
+                    IKSolver.SolveBoneChain(bones, target, referenceBone); // solve with IK
                     break;
                 }
                 CopyFromLast(ref curr, last);
@@ -129,7 +122,7 @@ namespace QTM2Unity
             
             foreach (TreeNode<Bone> b in test)
             {
-                if (b.IsRoot || b.Parent.IsRoot || b.Data.ParentPointer != Quaternion.Identity) continue;
+                if (b.IsRoot || b.Parent.IsRoot || b.Parent.Children.First() != b) continue;
                 Vector3 ray1 = b.Parent.Data.GetYAxis();
                 Vector3 ray2 = (b.Data.Pos - b.Parent.Data.Pos);
                 bool parallel = Vector3Helper.Parallel(ray1, ray2, 0.01f);

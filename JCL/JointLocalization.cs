@@ -54,6 +54,7 @@ namespace QTM2Unity
                     (b) => SpineEnd(b),      
                     (b) => Neck(b),
                     (b) => GetHead(b),
+                    (b) => GetHeadTop(b),
                     (b) => GetShoulderLeft(b),  
                     (b) => GetUpperArmLeft(b),
                     (b) => GetLowerArmLeft(b),
@@ -68,10 +69,12 @@ namespace QTM2Unity
                     (b) => LowerLegLeft(b),
                     (b) => GetAnkleLeft(b),
                     (b) => GetFootLeft(b),
+                    (b) => GetHeelLeft(b),
                     (b) => UpperLegRight(b),
                     (b) => LowerLegRight(b), 
                     (b) => GetAnkleRight(b),    
                     (b) => GetFootRight(b),
+                    (b) => GetHeelRight(b),
                 };
         }
         public void GetJointLocation(Dictionary<string, Vector3> markerData, ref BipedSkeleton skeleton)
@@ -96,7 +99,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.hipOrientation == Quaternion.Zero)
+                if (o.hipOrientation == QuaternionHelper.Zero)
                 {
                     o.hipOrientation = QuaternionHelper.GetHipOrientation(
                         markers[MarkerNames.bodyBase], 
@@ -110,7 +113,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.chestOrientation == Quaternion.Zero)
+                if (o.chestOrientation == QuaternionHelper.Zero)
                 {
                     Vector3 neckPos = markers[MarkerNames.neck];
                     Vector3 chestPos = markers[MarkerNames.chest];
@@ -120,10 +123,12 @@ namespace QTM2Unity
                     Vector3 Yaxis, Xaxis;
                     Vector3 mid = Vector3Helper.MidPoint(rightShoulderPos, leftShoulderPos);
                     Quaternion rotation;
+                    bool sleart = true;// mid.IsNaN() || leftShoulderPos.IsNaN() || rightShoulderPos.IsNaN();
                     // Find Y axis
                     if (!mid.IsNaN())
                     {
                         Yaxis = mid - markers[MarkerNames.bodyBase];
+                        sleart = false;
                     }
                     else if (!backspinePos.IsNaN() && !neckPos.IsNaN()) // prio 1, 12th Thoracic to 2nd Thoracic
                     {
@@ -170,7 +175,9 @@ namespace QTM2Unity
                     {
                         Xaxis = -Vector3.Transform(Vector3.UnitX, prevChestOri);
                     }
-                    rotation = QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis);
+                    rotation = sleart ? 
+                        Quaternion.Slerp(QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis), prevChestOri, 0.8f) : 
+                        QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis);
                     prevChestOri = rotation;
                     o.chestOrientation = rotation;
                 }
@@ -181,7 +188,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.headOrientation == Quaternion.Zero)
+                if (o.headOrientation == QuaternionHelper.Zero)
                 {
                     o.headOrientation = QuaternionHelper.GetOrientation(markers[MarkerNames.head], markers[MarkerNames.leftHead], markers[MarkerNames.rightHead]);
                 }
@@ -532,17 +539,17 @@ namespace QTM2Unity
         private Vector3 GetKneePos(bool isRightKnee)
         {
             Vector3 x, z, M1, M2, M3, negateY = new Vector3(1f, -1f, 1f);
-            if (isRightKnee)
-            {
-               M1 =  markers[MarkerNames.rightOuterKnee];//FLE
-               M2 = markers[MarkerNames.rightOuterAnkle];//FAL
-               M3 = markers[MarkerNames.rightLowerKnee];//TTC
-            }
-            else
-            {
-                M1 = markers[MarkerNames.leftOuterKnee];//FLE
-                M2 = markers[MarkerNames.leftOuterAnkle];//FAL
-                M3 = markers[MarkerNames.leftLowerKnee];//TTC
+                if (isRightKnee)
+                {
+                   M1 =  markers[MarkerNames.rightOuterKnee];//FLE
+                   M2 = markers[MarkerNames.rightOuterAnkle];//FAL
+                   M3 = markers[MarkerNames.rightLowerKnee];//TTC
+                }
+                else
+                {
+                    M1 = markers[MarkerNames.leftOuterKnee];//FLE
+                    M2 = markers[MarkerNames.leftOuterAnkle];//FAL
+                    M3 = markers[MarkerNames.leftLowerKnee];//TTC
             }
             x = Vector3Helper.MidPoint(M1, M2) - M3;
             z = M1 - M2;
@@ -624,6 +631,12 @@ namespace QTM2Unity
             b.Pos = Head;
             b.Orientation = HeadOrientation;
         }
+        private void GetHeadTop(Bone b)
+        {
+            Vector3 plus = Vector3.Transform(Vector3.UnitY,HeadOrientation)*(BodyData.MidHeadToHeadJoint*2);
+            b.Pos = Head+plus;
+        }
+        
         #endregion
         #region leg getters
         private void UpperLegLeft(Bone b)
@@ -648,17 +661,15 @@ namespace QTM2Unity
         }
         private void GetAnkleLeft(Bone b)
         {
-            Vector3 pos = AnkleLeft;
-            Vector3 up = KneeLeft - pos;
-            b.Pos = pos;
-            b.Orientation = QuaternionHelper.LookAtUp(pos, markers[MarkerNames.leftToe2], up);
+            Vector3 up = KneeLeft - AnkleLeft;
+            b.Pos = AnkleLeft;
+            b.Orientation = QuaternionHelper.LookAtUp(AnkleLeft, markers[MarkerNames.leftToe2], up);
         }
         private void GetAnkleRight(Bone b)
         {
-            Vector3 pos = AnkleRight;
-            Vector3 up = KneeRight - pos;
-            b.Pos = pos;
-            b.Orientation = QuaternionHelper.LookAtUp(pos, markers[MarkerNames.rightToe2], up);
+            Vector3 up = KneeRight - AnkleRight;
+            b.Pos = AnkleRight;
+            b.Orientation = QuaternionHelper.LookAtUp(AnkleRight, markers[MarkerNames.rightToe2], up);
         }
         private void GetFootLeft(Bone b)
         {
@@ -668,6 +679,15 @@ namespace QTM2Unity
         {
             b.Pos = markers[MarkerNames.rightToe2];
         }
+        private void GetHeelLeft(Bone b)
+        {
+            b.Pos = markers[MarkerNames.leftHeel];
+        }
+        private void GetHeelRight(Bone b)
+        {
+            b.Pos = markers[MarkerNames.rightHeel];
+        }
+        
         #endregion
         #region arm getters
         private void GetShoulderLeft(Bone b)

@@ -39,7 +39,7 @@ namespace QTM2Unity
             BipedSkeleton temp = skeleton;
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
-           joints.GetJointLocation(mp.ProcessMarkers(markerData), ref skeleton);
+            if (!debug) joints.GetJointLocation(mp.ProcessMarkers(markerData), ref skeleton);
             
         }
         void OnDrawGizmos()
@@ -62,7 +62,7 @@ namespace QTM2Unity
                         UnityDebug.DrawLine(b.Data.Pos + pos, child.Data.Pos + pos, skelettColor);
                     }
                 }
-                if (showRotationTrace && (!b.IsLeaf || b.Data.Name.Equals(BipedSkeleton.HEAD)) )//&& b.Data.Name.EndsWith("L"))
+                if (showRotationTrace && (!b.IsLeaf ))
                 {
                     UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos + pos, traceLength);
                 }

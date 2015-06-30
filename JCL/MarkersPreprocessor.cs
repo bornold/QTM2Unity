@@ -10,7 +10,6 @@ namespace QTM2Unity
     class MarkersPreprocessor
     {
         private List<string> markersList;
-        private Dictionary<string, Vector3> markersComplete;
         private Dictionary<string, Vector3> markers;
         private Dictionary<string, Vector3> markersLastFrame;
         private bool nameSet = false;
@@ -37,38 +36,34 @@ namespace QTM2Unity
              MarkerNames.leftWristRadius, MarkerNames.rightWristRadius,
              MarkerNames.leftHand, MarkerNames.rightHand,
             };
-            markersComplete = markersList.ToDictionary(k => k, v => new Vector3(float.NaN, float.NaN, float.NaN));
-            markers = markersComplete;
+            markersLastFrame = markersList.ToDictionary(kv => kv, kv => Vector3Helper.NaN);
         }
         public Dictionary<string, Vector3> ProcessMarkers(List<LabeledMarker> newMarkers)
         {
             if (!nameSet)
             {
                 NameSet(newMarkers);
+                markersLastFrame[MarkerNames.bodyBase] = new Vector3(0f, 1.0190f, 0f);
+                markersLastFrame[MarkerNames.leftHip] = new Vector3(0.0925f, 0.9983f, 0.1052f); // 0.0925 0.9983 0.1052
+                markersLastFrame[MarkerNames.rightHip] = new Vector3(-0.0887f, -0.0887f, 0.1112f); // -0.0887 1.0021 0.1112
                 nameSet = true;
             }
 
+            var query =
+                from allMarkers in markersList
+                join existingMarkers in newMarkers on allMarkers equals existingMarkers.label into everthing
+                from ajoin in everthing.DefaultIfEmpty()
+                select new KeyValuePair<string, Vector3>(allMarkers, ((ajoin!=null) ? ajoin.position : Vector3Helper.NaN) );
+
+            markers = query.ToDictionary(kv => kv.Key, kv => kv.Value);
             // Copy last frames markers
-            markersLastFrame = markers;
-            // Copy new markers to dictionary
-            markers = newMarkers
-                .ToDictionary(k => k.label.ToUpper(), v => v.position)
-                .Concat(
-                    markersComplete
-                            .Where(kvp => !markers.ContainsKey(kvp.Key)))
-                .ToDictionary(kv => kv.Key, kv => kv.Value);
-            //markers = newMarkers
-            //    .ToDictionary(k => k.label, v => v.position)
-            //    .Union(markersComplete)
-            //    .ToDictionary(kv => kv.Key, kv => kv.Value);
-            //markers = newMarkers.ToDictionary(k => k.label, v => v.position);
-            //markers = markers.Concat(markersComplete.Where(kvp => !markers.ContainsKey(kvp.Key))).ToDictionary(kv => kv.Key, kv => kv.Value);
             if (markers[MarkerNames.leftHip].IsNaN()
                 || markers[MarkerNames.rightHip].IsNaN()
                 || markers[MarkerNames.bodyBase].IsNaN())
             {
                 MissingEssientialMarkers();
             }
+            markersLastFrame = markers;
             return markers;
 
         }

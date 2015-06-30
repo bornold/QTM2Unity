@@ -8,6 +8,10 @@ namespace QTM2Unity
 {  
     public static class QuaternionHelper
     {
+        /// <summary>
+        /// Defines the zerp quaternion.
+        /// </summary>
+        public static Quaternion Zero = new Quaternion(0, 0, 0, 0);
 
         /// <summary>
         /// Check if any element in quaternion is NaN

@@ -9,6 +9,11 @@ namespace QTM2Unity
     static class Vector3Helper
     {
         /// <summary>
+        /// Defines a NaN Vector3.
+        /// </summary>
+        public static readonly Vector3 NaN = new Vector3(float.NaN, float.NaN, float.NaN);
+
+        /// <summary>
         /// The point in between two points 
         /// </summary>
         /// <param name="left vector">the first vector</param>

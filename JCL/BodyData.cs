@@ -10,7 +10,7 @@ namespace QTM2Unity
     {
         public static float MarkerCentreToSkinSurface = 0.009f;
         public static float MarkerToSpineDist = 0.1f; // m
-        public static float MidHeadToHeadJoint = 0.05f; // m
+        public static float MidHeadToHeadJoint = 0.08f; // m
         public static float SpineLength = 0.0236f; // m
         public static float BMI = 24;
         public float Height { get { return height; } }

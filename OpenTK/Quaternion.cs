@@ -244,10 +244,6 @@ namespace OpenTK
         /// </summary>
         public static Quaternion Identity = new Quaternion(0, 0, 0, 1);
 
-        /// <summary>
-        /// Defines the identity quaternion.
-        /// </summary>
-        public static Quaternion Zero = new Quaternion(0, 0, 0, 0);
         #endregion
 
         #region Add
