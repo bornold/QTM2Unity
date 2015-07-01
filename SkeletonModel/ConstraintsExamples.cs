@@ -3,18 +3,21 @@ namespace QTM2Unity
 {
     class ConstraintsExamples
     {
+
+        private Vector2 NoTwist = new Vector2(359, 1);
+        private Vector4 NoMovment = new Vector4(1,1,1,1);
         //Vector4(blue, red, green, yellow);
         public Vector4 Femur = new Vector4(15, 150, 40, 55);
         public Vector4 Knee = new Vector4(15, 0, 15, 160);
-        public Vector4 Ankle = new Vector4(40, 0, 40, 15);
+        public Vector4 Ankle = new Vector4(30, 40, 40, 15);
         public Vector4 FootBase = new Vector4(30, 10, 30, 10);
 
         public Vector2 FemurTwist = new Vector2(335, 25);
-        public Vector2 KneeTwist = new Vector2(330, 30);
-        public Vector2 AnkleTwist = new Vector2(340, 20);
+        public Vector2 KneeTwist = new Vector2(320, 40);
+        public Vector2 AnkleTwist = new Vector2(350, 10);
         public Vector2 FootBaseTwist = new Vector2(350, 10);
 
-        public Vector4 Spine = new Vector4(10, 30, 10, 20);
+        public Vector4 Spine = new Vector4(20, 30, 20, 20);
         public Vector2 SpineTwist = new Vector2(340, 20);
         public Vector4 Neck = new Vector4(60, 85, 60, 85); // right, front, left, back
         public Vector2 NeckTwist = new Vector2(270, 90);
@@ -26,10 +29,7 @@ namespace QTM2Unity
         public Vector2 ClaviculaTwist = new Vector2(350, 10);
         public Vector2 ShoulderTwist = new Vector2(280, 80);
         public Vector2 ElbowTwist = new Vector2(300, 60);
-        public Vector2 WristTwist = new Vector2(350, 10);
-
-        private Vector2 NoTwist = new Vector2(359, 1);
-        private Vector4 NoMovment = new Vector4(1,1,1,1);
+        public Vector2 WristTwist = new Vector2(345, 15);
         private float veryagile = 1.2f;
         private float agile = 1.1f;
     
@@ -40,7 +40,7 @@ namespace QTM2Unity
         
         public void SetConstraints(ref BipedSkeleton skeleton)
         {
-            skeleton[BipedSkeleton.SPINE3].Constraints = (NoMovment);
+            //skeleton[BipedSkeleton.SPINE3].Constraints = (NoMovment);
             skeleton[BipedSkeleton.SPINE3].TwistLimit = (NoTwist);
             #region Cone constraints
             #region Spine too head
@@ -75,10 +75,12 @@ namespace QTM2Unity
             skeleton[BipedSkeleton.CLAVICLE_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.PiOver2);
             skeleton[BipedSkeleton.HIP_R].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
             skeleton[BipedSkeleton.HIP_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
+            skeleton[BipedSkeleton.ANKLE_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) * QuaternionHelper.RotationZ(-MathHelper.PiOver4);
+            skeleton[BipedSkeleton.ANKLE_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) * QuaternionHelper.RotationZ(MathHelper.PiOver4);
             skeleton[BipedSkeleton.FOOTBASE_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) *
-                QuaternionHelper.RotationZ(-MathHelper.PiOver6);// QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
+                QuaternionHelper.RotationZ(-MathHelper.PiOver4);// QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
                 skeleton[BipedSkeleton.FOOTBASE_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) *
-                QuaternionHelper.RotationZ(MathHelper.PiOver6);//QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
+                QuaternionHelper.RotationZ(MathHelper.PiOver4);//QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
             #endregion
 
             #region TwistConstraints

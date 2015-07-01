@@ -110,9 +110,23 @@ namespace QTM2Unity
             Debug.DrawRay(pos, cv(right) * scale, Color.magenta);
             Debug.DrawRay(pos, cv(forward) * scale, Color.cyan);
         }
+        public static void DrawRays3(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale = 0.07f)
+        {
+
+            OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
+            OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
+            OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot);
+            Debug.DrawRay(pos.Convert(), up.Convert() * scale, Color.white);
+            Debug.DrawRay(pos.Convert(), right.Convert() * scale, Color.black);
+            Debug.DrawRay(pos.Convert(), forward.Convert() * scale, Color.gray);
+        }
         public static void DrawRays2(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale)
         {
             DrawRays2(rot.Convert(), pos.Convert(), scale);
+        }
+        public static void DrawRays2(OpenTK.Quaternion rot, OpenTK.Vector3 pos)
+        {
+            DrawRays2(rot.Convert(), pos.Convert(), 0.07f);
         }
         public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos)
         {

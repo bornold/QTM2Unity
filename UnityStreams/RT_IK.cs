@@ -45,7 +45,7 @@ namespace QTM2Unity
                 }
                 lastTime = ikAlgorithm;
             }
-            ikApplier.thisOrThat = testthis;
+            ikApplier.test = testthis;
             ikApplier.ApplyIK(ref skeleton);
         }
         public override void Draw()

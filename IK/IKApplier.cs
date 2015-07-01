@@ -9,7 +9,7 @@ namespace QTM2Unity
         private BipedSkeleton lastSkel;
         public IKSolver IKSolver { private get; set; } 
         private IKSolver fabrik = new FABRIK();
-        public bool thisOrThat = false;
+        public bool test = false;
         public IKApplier()
         {
                 lastSkel = new BipedSkeleton();
@@ -47,11 +47,11 @@ namespace QTM2Unity
                         continue;
                     }
                     /////////////////////////////////////////////// TEMPORARY END//////////////////////////////
-                    MissingJoint(bone.Parent.Parent.Data, ref skelEnumer, ref lastSkelEnumer);
+                    MissingJoint(bone.Parent.Parent, ref skelEnumer, ref lastSkelEnumer);
                 }
             }
 
-            FixRotation(skeleton.First());
+            //FixRotation(skeleton.First());
             if (skeleton.Any(z => z.Data.HasNaN))
             {
                 UnityEngine.Debug.LogError(skeleton.First(c => c.Data.HasNaN)); 
@@ -60,16 +60,19 @@ namespace QTM2Unity
             lastSkel = skeleton;
         }
 
-        private void MissingJoint(Bone referenceBone, ref IEnumerator skelEnum, ref IEnumerator lastSkelEnum)
+        private void MissingJoint(TreeNode<Bone> referenceBone, ref IEnumerator skelEnum, ref IEnumerator lastSkelEnum)
         {
             List<Bone> missingChain = new List<Bone>(); // chain to be solved
 
             //root of chain 
             // missings joints parent from last frame is root in solution
             TreeNode<Bone> curr = ((TreeNode<Bone>)skelEnum.Current).Parent;
+            TreeNode<Bone> first = curr;
             Bone target = new Bone("target");
             Bone last = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Data;
             Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
+            //QTransition = QFinal * QInitial^{-1}
+            //Quaternion roffset = referenceBone.Orientation * Quaternion.Conjugate(((TreeNode<Bone>)lastSkelEnum.Current).Parent.Parent.Data.Orientation);
             CopyFromLast(ref curr, last); 
             curr.Data.Pos += offset;
             missingChain.Add(curr.Data); 
@@ -79,7 +82,6 @@ namespace QTM2Unity
             last = ((TreeNode<Bone>)lastSkelEnum.Current).Data;
             CopyFromLast(ref curr, last);
             curr.Data.Pos += offset;
-
             missingChain.Add(curr.Data);
             while (!curr.IsLeaf && skelEnum.MoveNext() && lastSkelEnum.MoveNext()) //while not leaf
             {
@@ -95,32 +97,45 @@ namespace QTM2Unity
                     target.Orientation = curr.Data.Orientation.IsNaN() ? Quaternion.Identity : new Quaternion(curr.Data.Orientation.Xyz, curr.Data.Orientation.W);
                     CopyFromLast(ref curr, last);
                     curr.Data.Pos += offset;
+
                     missingChain.Add(curr.Data);
                     Bone[] bones = missingChain.ToArray();
-                    if (thisOrThat && fabrik.SolveBoneChain(bones, target, referenceBone))
+                    //if (!thisOrThat  || (thisOrThat  && !fabrik.SolveBoneChain(bones, target, referenceBone)))
                     {
+                        IKSolver.SolveBoneChain(bones, target, referenceBone.Data); // solve with IK
                         break;
                     }
-                    IKSolver.SolveBoneChain(bones, target, referenceBone); // solve with IK
-                    break;
+
                 }
                 CopyFromLast(ref curr, last);
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
             }
-            //ConstraintsBeforeReturn(first, missingChain.Count());
+            if (test)
+            {
+
+                ConstraintsBeforeReturn(first);
+                if (missingChain.Any(b => b.HasNaN))
+                {
+                    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
+                }
+                JerkingTest(first);
+                if (missingChain.Any(b => b.HasNaN))
+                {
+                    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
+                }
+            }
         }
         private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)
         {
             curr.Data.Pos = new Vector3(last.Pos);
             curr.Data.Orientation = new Quaternion(new Vector3(last.Orientation.Xyz), last.Orientation.W);
         }
-
-        private bool FixRotation(TreeNode<Bone> test, bool endWithEndEffector = false)
+        private bool FixRotation(TreeNode<Bone> boneTree, bool endWithEndEffector = false)
         {
-            bool change = false;
+            bool hasChanged = false;
             
-            foreach (TreeNode<Bone> b in test)
+            foreach (TreeNode<Bone> b in boneTree)
             {
                 if (b.IsRoot || b.Parent.IsRoot || b.Parent.Children.First() != b) continue;
                 Vector3 ray1 = b.Parent.Data.GetYAxis();
@@ -128,74 +143,114 @@ namespace QTM2Unity
                 bool parallel = Vector3Helper.Parallel(ray1, ray2, 0.01f);
                 if (!parallel)
                 {
+                    //UnityEngine.Debug.Log("fixing rot for " + b.Parent.Data.Name);
                     ray2.NormalizeFast();
                     b.Parent.Data.RotateTowards(ray2);
-                    change = true;
+                    hasChanged = true;
                 }
                 if (endWithEndEffector && b.IsLeaf) break;
             }
-            return change;
+            return hasChanged;
         }
-        private bool JerkingTest(TreeNode<Bone> fest, string message)
+        private bool JerkingTest(TreeNode<Bone> bones)
         {
-            foreach (TreeNode<Bone> bvn in fest)
+            bool hasChanges = false;
+            foreach (TreeNode<Bone> bone in bones)
             {
-                Bone a = bvn.Parent.Data;
-                Bone b = lastSkel[a.Name];
-                Quaternion QInitial = a.Orientation;
-                Quaternion QFinal = b.Orientation;
-                float test = QuaternionHelper.DiffrenceBetween(QInitial, QFinal);
-                //Quaternion c = Quaternion.Slerp(qa, qb, 0.03f);
-                //Vector3 newYax = Vector3.Normalize(Vector3.Transform(Vector3.UnitY, c));
-                //Vector3 oldYax = a.GetYAxis();
-                if (test > 0.1f)
+                if (bone.IsRoot) continue;
+                Bone currBone = bone.Parent.Data;
+                Bone lastFrameBone = lastSkel[currBone.Name];
+                Quaternion oriInitial = currBone.Orientation;
+                Quaternion oriFinal = lastFrameBone.Orientation;
+                float quatDiff = QuaternionHelper.DiffrenceBetween(oriInitial, oriFinal);
+                if (quatDiff > 0.1f)
                 {
-                    UnityEngine.Debug.LogError(a.Name + test);
-                    Quaternion y = Quaternion.Slerp(QInitial, QFinal, 0.01f);
-                    Quaternion Trans = y * Quaternion.Conjugate(QInitial);
-                    UnityDebug.DrawRays(Trans, a.Pos, 0.1f);
-                    UnityDebug.DrawRays2(QInitial, a.Pos, 0.1f);
-
-                    ForwardKinematics(bvn, Trans);
-                    //UnityDebug.DrawRays(QFinal, Vector3.UnitX, 1f);
-                    //UnityDebug.DrawRays(y, Vector3.UnitX*2, 1f);
-                    //UnityDebug.DrawRays(Trans, Vector3.UnitX * 3, 1f);
-
+                    UnityEngine.Debug.Log(currBone.Name + " twisted " + quatDiff + " amount");
+                    /*
+                    Vector3 prepos = new Vector3(currBone.Pos);
+                    Vector3 offset = currBone.Pos - lastFrameBone.Pos;
+                    foreach (TreeNode<Bone> t in lastSkel.First(g => g.Data.Name == currBone.Name).Children.First())
+                    {
+                        UnityDebug.DrawLine(t.Parent.Data.Pos + offset, t.Data.Pos + offset, UnityEngine.Color.blue);
+                    }
+                    foreach (TreeNode<Bone> t in bone)
+                    {
+                        UnityDebug.DrawLine(t.Parent.Data.Pos, t.Data.Pos, UnityEngine.Color.green);
+                    }
+                    */
+                    Quaternion y = Quaternion.Slerp(oriInitial, oriFinal, 0.1f);
+                    Quaternion yTrans2 = y * Quaternion.Invert(oriFinal);
+                    Quaternion svart = Quaternion.Invert(yTrans2);
+                    UnityEngine.Debug.LogWarning(" FK " + bone.Parent.Data.Name + " with " + svart);
+                    FK(bone.Parent, svart);
+                    hasChanges = true;
                 }
             }
-            return false;
+            return hasChanges;
         }
-        private bool ConstraintsBeforeReturn(TreeNode<Bone> bone, int depth)
+        /// <summary>
+        /// Rotate the first joint, and move the rest
+        /// </summary>
+        /// <param name="bvn">The first joint to be rotated</param>
+        /// <param name="svart"> The quaternion to rotate by</param>
+        private void FK(TreeNode<Bone> bvn, Quaternion svart)
         {
-            int count = 0;
-            bool anychange = FixRotation(bone, endWithEndEffector: true);
+            if (bvn.IsRoot || bvn.IsLeaf)
+            {
+                UnityEngine.Debug.LogWarning("FK called on root or leaf: " + bvn);
+                return;
+            }
             
+            Vector3 root = new Vector3(bvn.Data.Pos);
+            Vector3 parent = new Vector3(root);
+            foreach (TreeNode<Bone> t in bvn)
+            {
+                if (t != bvn)// dont move the first
+                {
+                    Vector3 child = new Vector3(t.Data.Pos);
+                    Vector3 theTransform = Vector3.Transform((child - root), svart);
+                    Vector3 transformedChild = theTransform + root;
+                    //UnityEngine.Debug.LogWarning(t.Data.Name  + " from " + t.Data.Pos + "  to " +  transformedChild);
+                    t.Data.Pos = transformedChild;
+                    parent = new Vector3(transformedChild);
+                }
+                if (!t.IsLeaf)
+                {
+                    t.Data.Orientation = svart * t.Data.Orientation;
+                }
+            }
+            FixRotation(bvn);
+        }
+        private bool ConstraintsBeforeReturn(TreeNode<Bone> bone)
+        {
+            bool anychange = false; //FixRotation(bone);
+
             foreach (var tnb in bone)
             {
-                if (tnb.IsLeaf || count++ >= depth) break;
-                if (tnb.Children.First().Data.HasNaN) break;
-                if (tnb.Parent.IsRoot) continue;
+                if (tnb.IsRoot || tnb.IsLeaf) continue;
                 Quaternion rot;
                 Vector3 res;
-                Vector3 child = tnb.Children.First().Data.Pos;
-                if (Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data.Orientation, child, out res, out rot ))
+                if (!tnb.Data.HasNaN && 
+                    !tnb.Children.First().Data.HasNaN && 
+                    tnb.Data.HasConstraints)
                 {
-                    //UnityEngine.Debug.Log(tnb.Data);
-                    return true;
+                    Vector3 child = tnb.Children.First().Data.Pos;
+                    if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
+                    {
+                        tnb.Data.Rotate(rot);
+                        anychange = true;
+                    }
+                    if (Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data.Orientation, child, out res, out rot ))
+                    {
+                        //UnityEngine.Debug.Log("CONSTRAINTS FK " + tnb.Data.Name + " with " + rot);
+                        FK(tnb, rot);
+                        anychange = true;
+                    }
                 }
+                return anychange;
             }
+            //anychange = FixRotation(bone) || anychange;
             return anychange;
-        }
-        protected void ForwardKinematics(TreeNode<Bone> bones,  Quaternion rotation)
-        {
-            Vector3 oripos = bones.Parent.Data.Pos;
-            foreach (var tnb in bones)
-            {
-                if (tnb.Data.HasNaN) break;
-                tnb.Data.Pos = oripos + Vector3.Transform((tnb.Data.Pos - oripos), rotation);
-                tnb.Parent.Data.RotateTowards(tnb.Data.Pos - tnb.Parent.Data.Pos);
-                if (tnb.IsLeaf) break;
-            }
         }
     }
 }

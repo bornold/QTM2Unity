@@ -42,14 +42,11 @@ namespace QTM2Unity
                         Bone c = b.Data;
                         OpenTK.Vector3 L1 = OpenTK.Vector3.Normalize(OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, parentRotation));
                         OpenTK.Vector3 poss = c.Pos + pos;
-                        if (showConstraints )//&& b.Data.Name.EndsWith("L")) 
+                        if (showConstraints)
                         {
                             UnityDebug.CreateIrregularCone(c.Constraints, poss, L1, parentRotation, coneResolution, coneSize);
-
                         }
-//                        if (showL1) UnityDebug.DrawLine(poss, poss + L1 * traceLength, UnityEngine.Color.black);
                         if (showParentRotation)
-                            // && b.Data.Name.EndsWith("L")) 
                         {
                             UnityDebug.DrawRays2(parentRotation, poss, traceLength);
                         }

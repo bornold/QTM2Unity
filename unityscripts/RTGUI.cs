@@ -27,15 +27,16 @@ namespace QTM2Unity.Unity
         [MenuItem("Window/Qualisys/RTClient")]
         public static void ShowWindow()
         {
+            //UnityEngine.Debug.Log("ShowWindow()");
+
             EditorWindow.GetWindow(typeof(RTGUI));
         }
 
         public void OnEnable()
         {
-            if (Application.isPlaying)
-            {
-                refreshServerList();
-            }
+            //UnityEngine.Debug.Log("OnEnable()");
+            refreshServerList();
+            Repaint();
         }
         private void refreshServerList()
         {
@@ -58,10 +59,10 @@ namespace QTM2Unity.Unity
         /// otherwise IK cant be controlled
         void OnInspectorUpdate()
         {
-            Repaint();
+            //UnityEngine.Debug.Log("OnInspectorUpdate()");
             if (!Application.isPlaying && connected)
             {
-                onDisconnect();
+                OnDisconnect();
                 connected = false;
                 popuplist = null;
             }
@@ -69,6 +70,7 @@ namespace QTM2Unity.Unity
 
         void OnGUI()
         {
+            //UnityEngine.Debug.Log("OnGUI()");
             title = "QTM Streaming";
             GUILayout.Label("Server Settings", EditorStyles.boldLabel);
             if (Application.isPlaying)
@@ -113,7 +115,7 @@ namespace QTM2Unity.Unity
                 {
                     if (GUILayout.Button("Disconnect"))
                     {
-                        onDisconnect();
+                        OnDisconnect();
                     }
                     GUILayout.Label("Available Bodies:");
                     if (Availablebodies != null)
@@ -128,7 +130,7 @@ namespace QTM2Unity.Unity
                 {
                     if (GUILayout.Button("Connect"))
                     {
-                        onConnect();
+                        OnConnect();
                     }
                 }
             }
@@ -140,20 +142,24 @@ namespace QTM2Unity.Unity
 
         void OnDestroy()
         {
+            //UnityEngine.Debug.Log("OnDestroy()");
             RTClient.getInstance().disconnect();
             connected = false;
         }
 
-        void onDisconnect()
+        void OnDisconnect()
         {
+            //UnityEngine.Debug.Log("OnDisconnect()");
             RTClient.getInstance().disconnect();
             connected = false;
 
             connectionStatus = "Disconnected";
+            Repaint();
         }
 
-        void onConnect()
+        void OnConnect()
         {
+            //UnityEngine.Debug.Log("OnConnect() " + server );
             connected = RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d);
             if (connected)
             {
