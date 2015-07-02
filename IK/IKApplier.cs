@@ -77,7 +77,7 @@ namespace QTM2Unity
             // missings joints parent from last frame is root in solution
             TreeNode<Bone> curr = ((TreeNode<Bone>)skelEnum.Current).Parent;
             TreeNode<Bone> first = curr;
-            TreeNode<Bone> referenceBone = curr.Parent.Parent;
+            TreeNode<Bone> referenceBone = curr.Parent;
             // The root if the chain
             Bone last = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Data;
             Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
@@ -109,8 +109,7 @@ namespace QTM2Unity
                     CopyFromLast(ref curr, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
-                    Bone[] bownser = missingChain.ToArray();
-                    IKSolver.SolveBoneChain(bownser, target, referenceBone.Data); // solve with IK
+                    IKSolver.SolveBoneChain(missingChain.ToArray(), target, referenceBone.Data); // solve with IK
                     if (missingChain.Any(z => z.HasNaN))
                     {
                         UnityEngine.Debug.LogError(missingChain.First(c => c.HasNaN));
@@ -121,6 +120,7 @@ namespace QTM2Unity
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
             }
+
             if (missingChain.Any(z => z.HasNaN))
             {
                 UnityEngine.Debug.LogError(missingChain.First(c => c.HasNaN));
@@ -179,15 +179,19 @@ namespace QTM2Unity
                         tnb.Data.Rotate(rot);
                         anychange = true;
                     }
-                    //Vector3 child = tnb.Children.First().Data.Pos;
-                    //if (Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data.Orientation, child, out res, out rot ))
-                    //{
-                    //    FK(tnb, rot);
-                    //    anychange = true;
-                    //}
+                    Vector3 child = tnb.Children.First().Data.Pos;
+                    if (!child.IsNaN() && Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data.Orientation, child, out res, out rot))
+                    {
+                        FK(tnb, rot);
+                        anychange = true;
+                    }
+                    if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
+                    {
+                        tnb.Data.Rotate(rot);
+                        anychange = true;
+                    }
                 }
             }
-            //anychange = FixRotation(bone) || anychange;
             return anychange;
         }
         private bool JerkingTest(TreeNode<Bone> bones)
@@ -268,7 +272,8 @@ namespace QTM2Unity
         /// <param name="svart"> The quaternion to rotate by</param>
         private void FK(TreeNode<Bone> bvn, Quaternion svart)
         {
-            if (bvn.IsRoot || bvn.IsLeaf)
+            //if (bvn.IsRoot || 
+            if(bvn.IsLeaf)
             {
                 UnityEngine.Debug.Log("FK called on root or leaf: " + bvn);
                 return;

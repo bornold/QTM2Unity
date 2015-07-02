@@ -148,7 +148,7 @@ namespace QTM2Unity
                     }
                     else // last resort, use hip orientation
                     {
-                        Yaxis = Vector3.Transform(Vector3.UnitY, prevChestOri);
+                        Yaxis = Vector3.Transform(Vector3.UnitY, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
                     }
 
                     if (!rightShoulderPos.IsNaN() || !leftShoulderPos.IsNaN())
@@ -177,7 +177,7 @@ namespace QTM2Unity
                     }
                     else // last resort, use hip prev orientation
                     {
-                        Xaxis = -Vector3.Transform(Vector3.UnitX, prevChestOri);
+                        Xaxis = -Vector3.Transform(Vector3.UnitX, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
                     }
                     rotation = sleart ? 
                         Quaternion.Slerp(QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis), prevChestOri, 0.8f) : 
