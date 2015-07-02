@@ -33,7 +33,7 @@ namespace QTM2Unity
         public Quaternion Orientation
         {
             get { return orientation; }
-            set { orientation = new Quaternion(new Vector3(value.Xyz), value.W); }
+            set { orientation = value != QuaternionHelper.Zero ?  Quaternion.Normalize(value) : value; }
         }
         #region constraints getters and setters
 
