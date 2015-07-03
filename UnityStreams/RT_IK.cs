@@ -10,7 +10,7 @@ namespace QTM2Unity
     {
         private IKApplier ikApplier;
         public IK ikAlgorithm = IK.CCD;
-        public bool testthis = false;
+        public bool FlagToIKSolver = false;
         private IK lastTime = IK.CCD;
         public override void StartNext()
         {
@@ -21,7 +21,7 @@ namespace QTM2Unity
         {
             base.UpdateNext();
             if (ikApplier == null) ikApplier = new IKApplier();
-            if (lastTime != ikAlgorithm)
+            if ( lastTime != ikAlgorithm)
             {
                 switch (ikAlgorithm)
                 {
@@ -45,20 +45,20 @@ namespace QTM2Unity
                 }
                 lastTime = ikAlgorithm;
             }
-            ikApplier.test = testthis;
+            ikApplier.test = FlagToIKSolver;
             ikApplier.ApplyIK(ref skeleton);
         }
-        public override void Draw()
-        {
-            base.Draw();
-        }
-        void OnDrawGizmos()
-        {
-            if (Application.isPlaying && streaming && skeleton != null)
-            {
-                Draw();
-            }
-        }
+        //public override void Draw()
+        //{
+        //    base.Draw();
+        //}
+        //void OnDrawGizmos()
+        //{
+        //    if (Application.isPlaying && streaming && skeleton != null)
+        //    {
+        //        Draw();
+        //    }
+        //}
     }
 }
 

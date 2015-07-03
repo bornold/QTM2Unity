@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using OpenTK;
+using System.Diagnostics;
 namespace QTM2Unity
 {
     class IKApplier
     {
+        private uint c = 0;
         private BipedSkeleton lastSkel;
         public IKSolver IKSolver { private get; set; } 
         private IKSolver fabrik = new FABRIK();
@@ -14,8 +16,8 @@ namespace QTM2Unity
         {
                 lastSkel = new BipedSkeleton();
                 IKSolver = new CCD();
-                fabrik.MaxIterations = 20;
-                IKSolver.MaxIterations = 200;
+                //fabrik.MaxIterations = 20;
+                //IKSolver.MaxIterations = 200;
         }
         /// <summary>
         /// Given an incomplete skeleton, returns a complete skeleton
@@ -24,10 +26,8 @@ namespace QTM2Unity
         /// <param name="skeleton">The skeleton with joints</param>
         public void ApplyIK(ref BipedSkeleton skeleton)
         {
-            if (lastSkel.Any(z => z.Data.HasNaN))
-            {
-                UnityEngine.Debug.LogError(lastSkel.First(c => c.Data.HasNaN));
-            }
+            c++;
+            //Stopwatch stopwatch2 = //Stopwatch.StartNew();
             IEnumerator skelEnumer = skeleton.GetEnumerator();
             IEnumerator lastSkelEnumer = lastSkel.GetEnumerator();
             //Root and all of roots children MUST have set possition
@@ -37,13 +37,15 @@ namespace QTM2Unity
                 bone = (TreeNode<Bone>)skelEnumer.Current;
                 if (!bone.Data.Exists) // Possition of joint no knowned, Solve with IK
                 {
-                    ///////////////////////////////////////////////TEMPORARY/////////////////////////
+                    ///////////////////////////////////////////////Special cases/////////////////////////
                     if (bone.IsRoot || bone.Parent.IsRoot)
                     {
                         CopyFromLast(ref bone, lastSkel[bone.Data.Name]);
+                        UnityEngine.Debug.LogWarning("Root is undefined!");
                         continue;
                     }
-                    else if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
+                    else 
+                        if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
                     {
                         bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
                         Vector3 forward = bone.Parent.Data.GetZAxis();
@@ -51,17 +53,28 @@ namespace QTM2Unity
                         bone.Data.Orientation = QuaternionHelper.LookAtUp(bone.Data.Pos, target, forward);
                         continue;
                     }
-                    /////////////////////////////////////////////// TEMPORARY END//////////////////////////////
+                    /////////////////////////////////////////////// Special END//////////////////////////////
+                    //Stopwatch stopwatch = //Stopwatch.StartNew();
                     MissingJoint( ref skelEnumer, ref lastSkelEnumer);
+                    //stopwatch.Stop();
+                    //if (stopwatch.Elapsed.TotalMilliseconds > 3.0)
+                    //{
+                    //    UnityEngine.Debug.LogWarningFormat("{1}\tTime missing Joint taken: \n\t\t\t{0}ms", stopwatch.Elapsed.TotalMilliseconds, c);
+                    //}
                 }
             }
 
             FixRotation(skeleton.First());
             if (skeleton.Any(z => z.Data.HasNaN))
             {
-                UnityEngine.Debug.LogError(skeleton.First(c => c.Data.HasNaN)); 
+                UnityEngine.Debug.LogError(skeleton.First(r => r.Data.HasNaN)); 
             }
             lastSkel = skeleton;
+            //stopwatch2.Stop();
+            //if (stopwatch2.Elapsed.TotalMilliseconds > 3.0)
+            //{
+            //    UnityEngine.Debug.LogWarningFormat("{1} Time taken: \n\t{0}ms", stopwatch2.Elapsed.TotalMilliseconds,c);
+            //}
         }
 
         /// <summary>
@@ -97,7 +110,7 @@ namespace QTM2Unity
 
                 if (curr.Data.Exists) // target found! it the last in list
                 {
-                    Bone target = target = new Bone(
+                    Bone target = new Bone(
                         curr.Data.Name,
                         new Vector3(curr.Data.Pos)
                         );
@@ -109,11 +122,18 @@ namespace QTM2Unity
                     CopyFromLast(ref curr, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
+
+                    //Stopwatch stopwatch = //Stopwatch.StartNew();
                     IKSolver.SolveBoneChain(missingChain.ToArray(), target, referenceBone.Data); // solve with IK
-                    if (missingChain.Any(z => z.HasNaN))
-                    {
-                        UnityEngine.Debug.LogError(missingChain.First(c => c.HasNaN));
-                    }
+                    //stopwatch.Stop();
+                    //if (stopwatch.Elapsed.TotalMilliseconds > 3.0)
+                    //{
+                    //    UnityEngine.Debug.LogWarningFormat("{1}\t\tTime IK taken: \n\t\t\t\t{0}ms", stopwatch.Elapsed.TotalMilliseconds,c);
+                    //}
+                    //if (missingChain.Any(z => z.HasNaN))
+                    //{
+                    //    UnityEngine.Debug.LogError(missingChain.First(c => c.HasNaN));
+                    //}
                     break;
                 }
                 CopyFromLast(ref curr, last);
@@ -121,22 +141,28 @@ namespace QTM2Unity
                 missingChain.Add(curr.Data);
             }
 
-            if (missingChain.Any(z => z.HasNaN))
-            {
-                UnityEngine.Debug.LogError(missingChain.First(c => c.HasNaN));
-            }
+            //if (missingChain.Any(z => z.HasNaN))
+            //{
+            //    UnityEngine.Debug.LogError(missingChain.First(c => c.HasNaN));
+            //}
             if (test)
             {
+                //Stopwatch stopwatch = //Stopwatch.StartNew();
                 JerkingTest(first);
-                if (missingChain.Any(b => b.HasNaN))
-                {
-                    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
-                }
+                //if (missingChain.Any(b => b.HasNaN))
+                //{
+                //    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
+                //}
                 ConstraintsBeforeReturn(first);
-                if (missingChain.Any(b => b.HasNaN))
-                {
-                    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
-                }
+                //if (missingChain.Any(b => b.HasNaN))
+                //{
+                //    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
+                //}
+                //stopwatch.Stop();
+                //if (stopwatch.Elapsed.TotalMilliseconds > 1.0)
+                //{
+                //    UnityEngine.Debug.LogWarningFormat("{1}\t\tTime Jerk and CBR taken: \n\t\t\t\t{0}ms", stopwatch.Elapsed.TotalMilliseconds, c);
+                //}
             }
         }
         private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)
@@ -180,7 +206,10 @@ namespace QTM2Unity
                         anychange = true;
                     }
                     Vector3 child = tnb.Children.First().Data.Pos;
-                    if (!child.IsNaN() && Constraint.CheckRotationalConstraints(tnb.Data, tnb.Parent.Data.Orientation, child, out res, out rot))
+                    if (!child.IsNaN() && 
+                        Constraint.CheckRotationalConstraints(
+                                        tnb.Data, tnb.Parent.Data.Orientation, 
+                                        child, out res, out rot))
                     {
                         FK(tnb, rot);
                         anychange = true;
@@ -211,9 +240,12 @@ namespace QTM2Unity
                 {
                     diffInitToFinalVec.NormalizeFast();
                     diffInitToFinalVec *= 0.05f;
-                    Vector3 newFinalPos = (posInitial + diffInitToFinalVec);
-                    Vector3 parentPos = bone.Parent.Data.Pos;
-                    Quaternion rotToNewPos = QuaternionHelper.RotationBetween(bone.Parent.Data.GetYAxis(), (newFinalPos - parentPos));
+                    //Vector3 newFinalPos = (posInitial + diffInitToFinalVec);
+                    //Vector3 parentPos = bone.Parent.Data.Pos;
+                    Quaternion rotToNewPos = 
+                        QuaternionHelper.RotationBetween(
+                                bone.Parent.Data.GetYAxis(),
+                                ((posInitial + diffInitToFinalVec) - bone.Parent.Data.Pos));
                     /////////////////////////////
                     //var tnb = lastSkel.First(g => g.Data.Name == bone.Data.Name);
                     //Vector3 offset = bone.Parent.Data.Pos - tnb.Parent.Data.Pos;
@@ -266,35 +298,24 @@ namespace QTM2Unity
             return hasChanges;
         }
         /// <summary>
-        /// Rotate the first joint, and move the rest
+        /// Rotate the first joint, and move the rest according to a Quaternion
         /// </summary>
         /// <param name="bvn">The first joint to be rotated</param>
-        /// <param name="svart"> The quaternion to rotate by</param>
-        private void FK(TreeNode<Bone> bvn, Quaternion svart)
+        /// <param name="rotation"> The quaternion to rotate by</param>
+        private void FK(TreeNode<Bone> bvn, Quaternion rotation)
         {
-            //if (bvn.IsRoot || 
-            if(bvn.IsLeaf)
-            {
-                UnityEngine.Debug.Log("FK called on root or leaf: " + bvn);
-                return;
-            }
-            
+            if (bvn.IsLeaf || bvn.IsRoot) return;
             Vector3 root = new Vector3(bvn.Data.Pos);
-            Vector3 parent = new Vector3(root);
             foreach (TreeNode<Bone> t in bvn)
             {
                 if (!t.Data.Exists) break;
-                if (t != bvn)// dont move the first joint
+                if (t != bvn)
                 {
-                    Vector3 child = new Vector3(t.Data.Pos);
-                    Vector3 theTransform = Vector3.Transform((child - root), svart);
-                    Vector3 transformedChild = theTransform + root;
-                    t.Data.Pos = transformedChild;
-                    parent = new Vector3(transformedChild);
+                    t.Data.Pos = Vector3.Transform((t.Data.Pos - root), rotation) + root;
                 }
                 if (!t.IsLeaf)
                 {
-                    t.Data.Orientation = svart * t.Data.Orientation;
+                    t.Data.Orientation = rotation * t.Data.Orientation;
                 }
             }
         }

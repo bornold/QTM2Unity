@@ -5,7 +5,7 @@ namespace QTM2Unity
     {
         abstract public bool SolveBoneChain(Bone[] bones, Bone target, Bone parent);
         protected float threshold = 0.01f;
-        protected int maxIterations = 200;
+        protected int maxIterations = 150;
         public int MaxIterations 
         {
             get { return maxIterations; }
@@ -31,7 +31,7 @@ namespace QTM2Unity
                 distances[i] = (bones[i].Pos - bones[i + 1].Pos).Length;
             }
         }
-        protected Bone[] TargetUnreachable(Bone[] bones, Vector3 target, Bone parent)
+        protected Bone[] TargetUnreachable(Bone[] bones, Vector3 target)
         {
             float[] distances;
             GetDistances(out distances, ref bones);
@@ -61,7 +61,6 @@ namespace QTM2Unity
                     bones[j].Pos = bones[i].Pos +
                         Vector3.Transform((bones[j].Pos - bones[i].Pos), rotation);
                 }
-
                 // rotate orientation
                 bones[j].Rotate(rotation);
             }

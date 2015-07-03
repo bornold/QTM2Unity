@@ -8,6 +8,7 @@ namespace QTM2Unity
 {  
     public static class QuaternionHelper
     {
+        public static float precision = 0.9999f;
         /// <summary>
         /// Defines the zerp quaternion.
         /// </summary>
@@ -251,17 +252,12 @@ namespace QTM2Unity
         // Returns a quaternion representing the rotation from vector a to b
         public static Quaternion GetRotationBetween(Vector3 a, Vector3 b, float stiffness = 1f)
         {
-            float precision = 0.9999f; 
             if ((a == Vector3.Zero || b == Vector3.Zero) || (a == b) || Vector3Helper.Parallel(a,b,1-precision))
                 return Quaternion.Identity; 
 
             a.NormalizeFast();
             b.NormalizeFast();
 
-            //if (Vector3.Dot(a, b) > precision) // a and b are parallel
-            //{
-            //    return Quaternion.Identity;
-            //}
             if (Vector3.Dot(a, b) < -precision) // a and b are opposite
             {
                 return Quaternion.Normalize(Quaternion.FromAxisAngle(Vector3.UnitZ, Mathf.PI));
@@ -277,10 +273,8 @@ namespace QTM2Unity
         //TODO TEMP idiotic 
         public static Quaternion GetRotation2(Vector3 a, Vector3 b)
         {
-            a.Normalize();
-            b.Normalize();
-
-            float precision = 0.9999f; // DONT put lower then this!
+            a.NormalizeFast();
+            b.NormalizeFast();
             if (Vector3.Dot(a, b) > precision) // a and b are parallel
             {
                 return Quaternion.Identity;

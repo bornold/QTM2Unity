@@ -1,18 +1,24 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using QTM2Unity.Unity;
+using System.Linq;
 namespace QTM2Unity
 {
+    [System.Serializable]
+    public class Markers
+    {
+        public bool showMarkers = false;
+        public Color markersColor = Color.cyan;
+        public float markersScale = 0.01f;
+        public bool showMarkerBones = false;
+        public Color markerBonesColor = Color.blue;
+        public bool doRemoveMarkers = false;
+        public string removeMarker;
+    }
     public class RT : MonoBehaviour
     {
         public Vector3 offset = new Vector3(0, 0, 0);
-        public Color gizmosColor = Color.cyan;
-        public bool debug = false;
-        public string removeMarker = "SME";
-        public bool drawMarkers = false;
-        public bool drawMarkerBones = false;
-        public Color markerBonesColor = Color.blue;
-        public float markersScale = 0.01f;
+        public Markers markers;
         protected RTClient rtClient;
         protected OpenTK.Vector3 pos;
         protected bool streaming = false;
@@ -24,15 +30,16 @@ namespace QTM2Unity
             rtClient = RTClient.getInstance();
             StartNext();
         }
-        bool _connected;
-        int _pickedServer;
-        short _udpPort;
-        int _streammode;
-        int _streamval;
-        bool _stream6d;
-        bool _stream3d;
+        private bool _connected;
+        private int _pickedServer;
+        private short _udpPort;
+        private int _streammode;
+        private int _streamval;
+        private bool _stream6d;
+        private bool _stream3d;
         void Update()
         {
+
             if (rtClient == null)
             {
                 rtClient = RTClient.getInstance();
@@ -52,54 +59,59 @@ namespace QTM2Unity
             }
             if (streaming)
             {
+
                 markerData = rtClient.Markers;
                 if (markerData == null && markerData.Count == 0) return;
-                pos = this.transform.position.Convert();
-                pos += offset.Convert();
-                if (debug)
-                {
-                    foreach (var v in markerData)
-                    {
-                        if (v.label == removeMarker)
-                        {
-                            v.position = (new OpenTK.Vector3(float.NaN, float.NaN, float.NaN));
-                        }
-                    }
-                }
+                #region Debugs
+                //if (markers.doRemoveMarkers)
+                //{
+                //    string[] unwantedMarkers = markers.removeMarker.Split(' ');
+                //    foreach (var lb in markerData)
+                //    {
+                //        if (unwantedMarkers.Contains(lb.label))
+                //        {
+                //            lb.position = new OpenTK.Vector3(float.NaN, float.NaN, float.NaN);
+                //        }
+                //    }
+                //}
+                #endregion
+                pos = (this.transform.position + offset).Convert();
                 UpdateNext();
             }
             else if (_connected)
-                _connected = rtClient.connect(_pickedServer, _udpPort, _streammode, _streamval, _stream6d, _stream3d);
-        }
-        public virtual void Draw()
-        {
-            Gizmos.color = gizmosColor;
-            if (markerData != null)
             {
-                if (drawMarkers)
-                {
-                    foreach (var lb in markerData)
-                    {
-                        Gizmos.DrawSphere((lb.position + pos ).Convert(), markersScale);
-                    }
-                }
-                if (drawMarkerBones && rtClient.Bones != null)
-                {
-				    var boneData = rtClient.Bones;
-				    foreach( var bd in boneData)
-	                {
-					    Debug.DrawLine(bd.fromMarker.position.Convert() + pos.Convert(),
-                                        bd.toMarker.position.Convert() + pos.Convert(), markerBonesColor);
-	                }
-                }
+                _connected = rtClient.connect(_pickedServer, _udpPort, _streammode, _streamval, _stream6d, _stream3d);
             }
         }
         void OnDrawGizmos()
         {
-            if (Application.isPlaying)
+            if (Application.isPlaying && streaming && markerData != null)
             {
                 Draw();
             }
+        }
+        public virtual void Draw()
+        {
+            Gizmos.color = markers.markersColor;
+            if (markers.showMarkers)
+            {
+
+                foreach (var lb in markerData)
+                {
+                    UnityEngine.Debug.Log(lb.label);
+
+                    Gizmos.DrawSphere((lb.position + pos).Convert(), markers.markersScale);
+                }
+            }
+
+            if (markers.showMarkerBones && rtClient.Bones != null)
+            {
+                foreach (var lb in rtClient.Bones)
+	            {
+                    Debug.DrawLine(lb.fromMarker.position.Convert() + pos.Convert(),
+                                    lb.toMarker.position.Convert() + pos.Convert(), markers.markerBonesColor);
+                }
+	        }
         }
     }
 }

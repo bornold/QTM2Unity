@@ -45,9 +45,9 @@ namespace QTM2Unity
             if (!nameSet)
             {
                 NameSet(newMarkers);
-                markersLastFrame[MarkerNames.bodyBase] = new Vector3(0f, 1.0190f, 0f);
-                markersLastFrame[MarkerNames.leftHip] = new Vector3(0.0925f, 0.9983f, 0.1052f); // 0.0925 0.9983 0.1052
-                markersLastFrame[MarkerNames.rightHip] = new Vector3(-0.0887f, -0.0887f, 0.1112f); // -0.0887 1.0021 0.1112
+                markersLastFrame[MarkerNames.bodyBase] = new Vector3(0f, 1.0f, 0f);
+                markersLastFrame[MarkerNames.leftHip] =  new Vector3(-0.1f, 1.0f, 0.15f);  // 0.0925 0.9983 0.1052
+                markersLastFrame[MarkerNames.rightHip] = new Vector3(0.1f, 1.0f, 0.15f);
                 nameSet = true;
             }
 

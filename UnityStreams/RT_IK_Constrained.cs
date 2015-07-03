@@ -5,14 +5,18 @@ using System.Text;
 using UnityEngine;
 namespace QTM2Unity
 {
-    class RT_IK_Constrained : RT_IK
+    [System.Serializable]
+    public class JointsConstrains
     {
         public bool showConstraints = false;
         public float coneSize = 0.05f;
         public int coneResolution = 50;
-        //public bool showL1 = false;
-        public bool showParentRotation = false;
         public bool showTwistConstraints = false;
+
+    }
+    class RT_IK_Constrained : RT_IK
+    {
+        public JointsConstrains jointsConstrains;
         protected ConstraintsExamples constraints = new ConstraintsExamples();
         public override void StartNext()
         {
@@ -23,47 +27,48 @@ namespace QTM2Unity
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if (!skeleton[1].HasConstraints) 
+            if (!skeleton[1].HasConstraints)
             {
                 constraints.SetConstraints(ref skeleton);
                 constraints.SetConstraints(ref skeletonBuffer);
             }
         }
-        public override void Draw()
-        {
-            base.Draw();
-            if (showConstraints || showParentRotation || showTwistConstraints)// || showL1)
-            {
-                foreach (TreeNode<Bone> b in skeleton)
-                {
-                    if (!b.IsRoot && b.Data.HasConstraints)
-                    {
-                        OpenTK.Quaternion parentRotation = b.Parent.Data.Orientation * b.Data.ParentPointer;
-                        Bone c = b.Data;
-                        OpenTK.Vector3 L1 = OpenTK.Vector3.Normalize(OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, parentRotation));
-                        OpenTK.Vector3 poss = c.Pos + pos;
-                        if (showConstraints)
-                        {
-                            UnityDebug.CreateIrregularCone(c.Constraints, poss, L1, parentRotation, coneResolution, coneSize);
-                        }
-                        if (showParentRotation)
-                        {
-                            UnityDebug.DrawRays2(parentRotation, poss, traceLength);
-                        }
-                        if (showTwistConstraints)
-                        {
-                            UnityDebug.DrawTwistConstraints(c, b.Parent.Data, poss, traceLength * 1.1f);
-                        }
-                    }
-                }
-            }
-        }
-
         void OnDrawGizmos()
         {
             if (Application.isPlaying && streaming && skeleton != null)
             {
                 Draw();
+            }
+        }
+        public override void Draw()
+        {
+            base.Draw();
+            if (jointsConstrains.showConstraints || 
+                jointsConstrains.showTwistConstraints)
+            {
+                foreach (TreeNode<Bone> b in skeleton)
+                {
+                    if (b.Data.HasConstraints)
+                    {
+                        OpenTK.Quaternion parentRotation =
+                            b.Parent.Data.Orientation * b.Data.ParentPointer;
+                        OpenTK.Vector3 poss = b.Data.Pos + pos;
+                        if (jointsConstrains.showConstraints)
+                        {
+                            UnityDebug.CreateIrregularCone(
+                                b.Data.Constraints, poss, 
+                                OpenTK.Vector3.NormalizeFast(
+                                    OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, parentRotation)),
+                                parentRotation, 
+                                jointsConstrains.coneResolution,
+                                jointsConstrains.coneSize);
+                        }
+                        if (jointsConstrains.showTwistConstraints)
+                        {
+                            UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, bodyRig.traceLength * 1.1f);
+                        }
+                    }
+                }
             }
         }
     }
