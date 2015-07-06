@@ -19,9 +19,9 @@ namespace QTM2Unity
         public BodyRig bodyRig;
         protected BipedSkeleton skeleton;
         protected BipedSkeleton skeletonBuffer;
-        protected MarkersPreprocessor mp;
-        protected JointLocalization joints;
-        private BipedSkeleton temp;
+        private MarkersPreprocessor mp;
+        private JointLocalization joints;
+        
         
         public override void StartNext()
         {
@@ -43,10 +43,12 @@ namespace QTM2Unity
                 joints = new JointLocalization();
                 bodyRig.resetSkeleton = false;
             }
-            temp = skeleton;
+            var temp = skeleton;
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
-            joints.GetJointLocation(mp.ProcessMarkers(markerData), ref skeleton);
+            //var marmar = mp.ProcessMarkers(markerData);
+            mp.ProcessMarkers(markerData);
+            //joints.GetJointLocation(mp.ProcessMarkers(markerData), ref skeleton);
             
         }
         void OnDrawGizmos()
@@ -61,6 +63,8 @@ namespace QTM2Unity
             base.Draw();
             if (bodyRig.showSkeleton || bodyRig.showRotationTrace || bodyRig.showJoints)
             {
+                Gizmos.color = bodyRig.jointColor;
+
                 foreach (TreeNode<Bone> b in skeleton)
                 {
                     if (bodyRig.showSkeleton)
@@ -76,7 +80,6 @@ namespace QTM2Unity
                     }
                     if (bodyRig.showJoints)
                     {
-                        Gizmos.color = bodyRig.jointColor;
                         Gizmos.DrawSphere((b.Data.Pos + pos).Convert(), bodyRig.jointScale);
                     }
                 }

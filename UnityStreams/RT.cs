@@ -22,7 +22,8 @@ namespace QTM2Unity
         protected RTClient rtClient;
         protected OpenTK.Vector3 pos;
         protected bool streaming = false;
-        protected List<LabeledMarker> markerData;
+        //protected List<LabeledMarker> markerData;
+        protected Dictionary<string,OpenTK.Vector3> markerData;
         public virtual void StartNext(){}
         public virtual void UpdateNext(){}
         void Start()
@@ -59,8 +60,9 @@ namespace QTM2Unity
             }
             if (streaming)
             {
-                var list = rtClient.Markers.ToList();
-                markerData = list.ConvertAll(kvp => new LabeledMarker(kvp.Key, kvp.Value));
+                //var list = rtClient.Markers.ToList();
+                //markerData = list.ConvertAll(kvp => new LabeledMarker(kvp.Key, kvp.Value));
+                markerData = rtClient.Markers;
                 //foreach (var v in markerData)
                 //{
                 //    UnityEngine.Debug.Log(v.label + " " + v.position );
@@ -88,10 +90,11 @@ namespace QTM2Unity
             Gizmos.color = markers.markersColor;
             if (markers.showMarkers)
             {
-
-                foreach (var lb in markerData)
+                var items = markerData.Values.ToList();
+                foreach (var lb in items)
                 {
-                    Gizmos.DrawSphere((lb.position + pos).Convert(), markers.markersScale);
+                    //Gizmos.DrawSphere((lb.position + pos).Convert(), markers.markersScale);
+                    Gizmos.DrawSphere((lb + pos).Convert(), markers.markersScale);
                 }
             }
 
@@ -99,9 +102,10 @@ namespace QTM2Unity
             {
                 foreach (var lb in rtClient.Bones)
 	            {
-                    OpenTK.Vector3 from = (lb.fromMarker + pos);
-                    OpenTK.Vector3 to = (lb.toMarker + pos);
-
+                    //OpenTK.Vector3 from = markerData.Find(g => g.label == lb.from).position;
+                    //OpenTK.Vector3 to = markerData.Find(g => g.label == lb.to).position;
+                    OpenTK.Vector3 from = markerData[lb.from] + pos;
+                    OpenTK.Vector3 to = markerData[lb.to] + pos;
                     Debug.DrawLine(from.Convert(),
                                     to.Convert(), markers.markerBonesColor);
                 }

@@ -40,32 +40,47 @@ namespace QTM2Unity
             };
             markersLastFrame = markersList.ToDictionary(kv => kv, kv => Vector3Helper.NaN);
         }
-        public Dictionary<string, Vector3> ProcessMarkers(List<LabeledMarker> newMarkers)
+        public Dictionary<string, Vector3> ProcessMarkers(Dictionary<string,Vector3> newMarkers)
         {
             if (!nameSet)
             {
                 NameSet(newMarkers);
                 markersLastFrame[MarkerNames.bodyBase] = new Vector3(0f, 1.0f, 0f);
-                markersLastFrame[MarkerNames.leftHip] =  new Vector3(-0.1f, 1.0f, 0.15f);  // 0.0925 0.9983 0.1052
+                markersLastFrame[MarkerNames.leftHip] =  new Vector3(-0.1f, 1.0f, 0.15f);
                 markersLastFrame[MarkerNames.rightHip] = new Vector3(0.1f, 1.0f, 0.15f);
                 nameSet = true;
             }
+            if (markersLastFrame[MarkerNames.leftHip].IsNaN()
+              || markersLastFrame[MarkerNames.rightHip].IsNaN()
+              || markersLastFrame[MarkerNames.bodyBase].IsNaN())
+            {
+                UnityEngine.Debug.LogError("MISSING Essential LAST markers");
+            }
 
-            var query =
-                from allMarkers in markersList
-                join existingMarkers in newMarkers on allMarkers equals existingMarkers.label into everthing
-                from ajoin in everthing.DefaultIfEmpty()
-                select new KeyValuePair<string, Vector3>(allMarkers, ((ajoin!=null) ? ajoin.position : Vector3Helper.NaN) );
-
-            markers = query.ToDictionary(kv => kv.Key, kv => kv.Value);
-            // Copy last frames markers
+            foreach (var name in markersList)
+            {
+                if (!newMarkers.ContainsKey(name))
+                {
+                    newMarkers.Add(name, Vector3Helper.NaN);
+                }
+            }
+            var temp = newMarkers;
+            markersLastFrame = markers;
+            markers = temp;
             if (markers[MarkerNames.leftHip].IsNaN()
                 || markers[MarkerNames.rightHip].IsNaN()
                 || markers[MarkerNames.bodyBase].IsNaN())
             {
+                UnityEngine.Debug.Log("MISSING Essential marekrs");
                 MissingEssientialMarkers();
             }
-            markersLastFrame = markers;
+            if (markers[MarkerNames.leftHip].IsNaN()
+                    || markers[MarkerNames.rightHip].IsNaN()
+                    || markers[MarkerNames.bodyBase].IsNaN())
+            {
+                UnityEngine.Debug.LogError("MISSING Essential merksrka");
+            }
+            //markersLastFrame = markers;
             return markers;
 
         }
@@ -198,6 +213,114 @@ namespace QTM2Unity
                 markers[MarkerNames.leftOuterKnee] = newM1;//FLE
                 markers[MarkerNames.leftOuterAnkle] = newM2;//FAL
             }
+        }
+        private void NameSet(Dictionary<string,Vector3> llm)
+        {
+            var quary = MarkerNames.bodyBaseAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.bodyBase = (quary == null) ? MarkerNames.bodyBase : quary;
+
+            quary = MarkerNames.leftHipAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftHip = (quary == null) ? MarkerNames.leftHip : quary;
+
+            quary = MarkerNames.rightHipAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightHip = (quary == null) ? MarkerNames.rightHip : quary;
+
+            quary = MarkerNames.spineAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.spine = (quary == null) ? MarkerNames.spine : quary;
+
+            quary = MarkerNames.neckAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.neck = (quary == null) ? MarkerNames.neck : quary;
+
+            quary = MarkerNames.chestAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.chest = (quary == null) ? MarkerNames.chest : quary;
+
+            quary = MarkerNames.leftShoulderAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftShoulder = (quary == null) ? MarkerNames.leftShoulder : quary;
+
+            quary = MarkerNames.rightShoulderAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightShoulder = (quary == null) ? MarkerNames.rightShoulder : quary;
+
+            quary = MarkerNames.headAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.head = (quary == null) ? MarkerNames.head : quary;
+
+            quary = MarkerNames.leftHeadAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftHead = (quary == null) ? MarkerNames.leftHead : quary;
+
+            quary = MarkerNames.rightHeadAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightHead = (quary == null) ? MarkerNames.rightHead : quary;
+
+            quary = MarkerNames.leftUpperKneeAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftUpperKnee = (quary == null) ? MarkerNames.leftUpperKnee : quary;
+
+            quary = MarkerNames.rightUpperKneeAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightUpperKnee = (quary == null) ? MarkerNames.rightUpperKnee : quary;
+
+            quary = MarkerNames.leftOuterKneeAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftOuterKnee = (quary == null) ? MarkerNames.leftOuterKnee : quary;
+
+            quary = MarkerNames.rightOuterKneeAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightOuterKnee = (quary == null) ? MarkerNames.rightOuterKnee : quary;
+
+            quary = MarkerNames.leftLowerKneeAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftLowerKnee = (quary == null) ? MarkerNames.leftLowerKnee : quary;
+
+            quary = MarkerNames.rightLowerKneeAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightLowerKnee = (quary == null) ? MarkerNames.rightLowerKnee : quary;
+
+            quary = MarkerNames.leftOuterAnkleAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftOuterAnkle = (quary == null) ? MarkerNames.leftOuterAnkle : quary;
+
+            quary = MarkerNames.rightOuterAnkleAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightOuterAnkle = (quary == null) ? MarkerNames.rightOuterAnkle : quary;
+
+            quary = MarkerNames.leftHeelAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftHeel = (quary == null) ? MarkerNames.leftHeel : quary;
+
+            quary = MarkerNames.rightHeelAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightHeel = (quary == null) ? MarkerNames.rightHeel : quary;
+
+            quary = MarkerNames.leftToe2AKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftToe2 = (quary == null) ? MarkerNames.leftToe2 : quary;
+
+            quary = MarkerNames.rightToe2AKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightToe2 = (quary == null) ? MarkerNames.rightToe2 : quary;
+
+            quary = MarkerNames.leftElbowAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftElbow = (quary == null) ? MarkerNames.leftElbow : quary;
+
+            quary = MarkerNames.rightElbowAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightElbow = (quary == null) ? MarkerNames.rightElbow : quary;
+
+            quary = MarkerNames.leftInnerElbowAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftInnerElbow = (quary == null) ? MarkerNames.leftInnerElbow : quary;
+
+            quary = MarkerNames.rightInnerElbowAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightInnerElbow = (quary == null) ? MarkerNames.rightInnerElbow : quary;
+
+            quary = MarkerNames.leftOuterElbowAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftOuterElbow = (quary == null) ? MarkerNames.leftOuterElbow : quary;
+
+            quary = MarkerNames.rightOuterElbowAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightOuterElbow = (quary == null) ? MarkerNames.rightOuterElbow : quary;
+
+            quary = MarkerNames.leftWristAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftWrist = (quary == null) ? MarkerNames.leftWrist : quary;
+
+            quary = MarkerNames.rightWristAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightWrist = (quary == null) ? MarkerNames.rightWrist : quary;
+
+            quary = MarkerNames.leftWristRadiusAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftWristRadius = (quary == null) ? MarkerNames.leftWristRadius : quary;
+
+            quary = MarkerNames.rightWristRadiusAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightWristRadius = (quary == null) ? MarkerNames.rightWristRadius : quary;
+
+            quary = MarkerNames.leftHandAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.leftHand = (quary == null) ? MarkerNames.leftHand : quary;
+
+            quary = MarkerNames.rightHandAKA.FirstOrDefault(n => llm.ContainsKey(n));
+            MarkerNames.rightHand = (quary == null) ? MarkerNames.rightHand : quary;
+
         }
         private void NameSet(List<LabeledMarker> llm)
         {

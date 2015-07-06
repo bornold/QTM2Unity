@@ -15,8 +15,8 @@ namespace QTM2Unity
 		private List<sixDOFBody> mBodies;
 		public List<sixDOFBody> Bodies { get { return mBodies; } }
 
+        private List<string> markerNames;
         private Dictionary<string,Vector3> mMarkers;
-        //private List<LabeledMarker> mMarkers;
         public Dictionary<string, Vector3> Markers { get { return mMarkers; } }
 
 		private List<MarkerBone> mBones;
@@ -34,38 +34,38 @@ namespace QTM2Unity
 		{
             //UnityEngine.Debug.Log("processing");
             mPacket = packet;
-			
-            List<s6DOF> bodyData = packet.get6DOFData();
-			List<s3D> markerData = packet.get3DMarkerData();
-            if(bodyData != null)
-			{
-				for(int i = 0; i < bodyData.Count; i++)
-				{
-					Vector3 position = new Vector3(bodyData[i].position.x,
-					                               bodyData[i].position.y,
-					                               bodyData[i].position.z);
+            #region ...
+            //List<s6DOF> bodyData = packet.get6DOFData();
+            //if(bodyData != null)
+            //{
+            //    for(int i = 0; i < bodyData.Count; i++)
+            //    {
+            //        Vector3 position = new Vector3(bodyData[i].position.x,
+            //                                       bodyData[i].position.y,
+            //                                       bodyData[i].position.z);
 
-                    //Set rotation and position to work with unity
-                    position /= 1000;
+            //        //Set rotation and position to work with unity
+            //        position /= 1000;
 
-                    mBodies[i].position = Vector3.Transform(position, mCoordinateSystemChange);//QuaternionHelper.Rotate(mCoordinateSystemChange, position );
-                    mBodies[i].position.Z *= -1;
+            //        mBodies[i].position = Vector3.Transform(position, mCoordinateSystemChange);//QuaternionHelper.Rotate(mCoordinateSystemChange, position );
+            //        mBodies[i].position.Z *= -1;
 					
-                    mBodies[i].rotation = mCoordinateSystemChange * QuaternionHelper.FromMatrix(bodyData[i].matrix);
-                    mBodies[i].rotation.Z *= -1;
-                    mBodies[i].rotation.W *= -1;
+            //        mBodies[i].rotation = mCoordinateSystemChange * QuaternionHelper.FromMatrix(bodyData[i].matrix);
+            //        mBodies[i].rotation.Z *= -1;
+            //        mBodies[i].rotation.W *= -1;
 
-                    mBodies[i].rotation *= QuaternionHelper.RotationZ(Mathf.PI * .5f);
-                    mBodies[i].rotation *= QuaternionHelper.RotationX(-Mathf.PI * .5f);
+            //        mBodies[i].rotation *= QuaternionHelper.RotationZ(Mathf.PI * .5f);
+            //        mBodies[i].rotation *= QuaternionHelper.RotationX(-Mathf.PI * .5f);
 
-				}
-			}
+            //    }
+            //}
+            #endregion
 
+            List<s3D> markerData = packet.get3DMarkerData();
 			//Get marker data that is labeled and update values
             if(markerData != null)
             {
-
-                var it = mMarkers.Keys.GetEnumerator();
+                var it = markerNames.GetEnumerator();
                 foreach (var md in markerData)
                 {
                     it.MoveNext();
@@ -98,7 +98,7 @@ namespace QTM2Unity
             {
                 // reload settings when we start streaming to get proper settings
                 get3DSettings();
-                //get6DOFSettings();
+                get6DOFSettings();
             }
 		}
 
@@ -116,7 +116,8 @@ namespace QTM2Unity
 			//list of bodies that server streams
 			mBodies = new List<sixDOFBody>();
 			//list of markers
-            mMarkers = new Dictionary<string, Vector3>();//new List<LabeledMarker>();
+            markerNames = new List<string>();
+            mMarkers = new Dictionary<string, Vector3>();
 			//list of bones
 			mBones = new List<MarkerBone>();
 
@@ -168,33 +169,6 @@ namespace QTM2Unity
         //    }
         //    return null;
         //}
-
-        /// <summary>
-		/// Get list of servers available on network
-		/// </summary>
-		/// <returns><c>true</c>, if discovery packet was sent, <c>false</c> otherwise.</returns>
-		/// <param name="list">List of discovered servers</param>
-		/*public bool getServers(out GUIContent[] list)
-		{
-			//Send discovery packet
-			if( mProtocol.discoverRTServers(1337))
-			{
-				if(mProtocol.DiscoveryResponses.Count > 0)
-				{
-					//Get list of all servers from protocol
-					list = new GUIContent[mProtocol.DiscoveryResponses.Count];
-					for(int i = 0; i < mProtocol.DiscoveryResponses.Count; i++)
-					{
-						//add them to our list for user to pick from
-						list[i] = new GUIContent(mProtocol.DiscoveryResponses[i].hostname + " (" + mProtocol.DiscoveryResponses[i].ipAddress + ")");
-					}
-					return true;
-				}
-
-			}
-			list = null;
-			return false;
-		}*/
 
         /// <summary>
         /// Get list of servers available on network
@@ -321,10 +295,11 @@ namespace QTM2Unity
                 mCoordinateSystemChange = Rotation.GetAxesOrderRotation(xAxis, yAxis, zAxis);
 
                 // Save marker settings
+                markerNames.Clear();
                 mMarkers.Clear();
 				foreach (sSettings3DLabel marker in mProtocol.Settings3D.labels3D)
                 {
-                    mMarkers.Add(marker.name, Vector3.Zero);
+                    markerNames.Add(marker.name);
                    // LabeledMarker newMarker = new LabeledMarker();
                    // newMarker.label = marker.name;
                    // newMarker.position = Vector3.Zero;
@@ -347,10 +322,10 @@ namespace QTM2Unity
 	                foreach (var settingsBone in mProtocol.Settings3D.bones)
 	                {
 	                    MarkerBone bone = new MarkerBone();
-                        //bone.from = settingsBone.from;
-                        bone.fromMarker = mMarkers[settingsBone.from];//getMarker(settingsBone.from);
-                        //bone.to = settingsBone.to;
-                        bone.toMarker = mMarkers[settingsBone.to]; //getMarker(settingsBone.to);
+                        bone.from = settingsBone.from;
+                        //bone.fromMarker = mMarkers[settingsBone.from];//getMarker(settingsBone.from);
+                        bone.to = settingsBone.to;
+                        //bone.toMarker = mMarkers[settingsBone.to]; //getMarker(settingsBone.to);
 	                    Bones.Add(bone);
 	                }
                     
@@ -432,8 +407,10 @@ namespace QTM2Unity
     // Class for bones
 	public class MarkerBone
 	{
-		public Vector3 fromMarker;
-        public Vector3 toMarker;
+        public string from;
+        public string to;
+        //public Vector3 fromMarker;
+        //public Vector3 toMarker;
 	}
 
 }
