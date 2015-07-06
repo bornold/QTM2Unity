@@ -50,7 +50,7 @@ namespace QTM2Unity
                     if (bones[i].StartTwistLimit > -1 && bones[i].EndTwistLimit > -1)
                     {
                         Quaternion rot;
-                        if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rot))
+                        if (CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : parent, out rot))
                         {
                             bones[i].Rotate(rot);
                         }
@@ -76,7 +76,7 @@ namespace QTM2Unity
                         Vector3 res;
                         Quaternion rot;
                         Bone prevBone = (i > 1) ? bones[i - 2] : parent;
-                        if (Constraint.CheckRotationalConstraints(bones[i - 1], prevBone.Orientation, newPos, out res, out rot))
+                        if (CheckRotationalConstraints(bones[i - 1], prevBone.Orientation, newPos, out res, out rot))
                         {
                             newPos = res;
                             bones[i - 1].RotateTowards(newPos - bones[i - 1].Pos);

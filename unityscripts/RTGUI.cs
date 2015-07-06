@@ -52,6 +52,7 @@ namespace QTM2Unity.Unity
             else
             {
                 connectionStatus = "No servers found, is QTM running?";
+                popuplist = new GUIContent[0];
             }
         }
 
@@ -128,9 +129,12 @@ namespace QTM2Unity.Unity
                 }
                 else
                 {
-                    if (GUILayout.Button("Connect"))
+                    if (popuplist.Length > 0)
                     {
-                        OnConnect();
+                        if (GUILayout.Button("Connect"))
+                        {
+                            OnConnect();
+                        }
                     }
                 }
             }

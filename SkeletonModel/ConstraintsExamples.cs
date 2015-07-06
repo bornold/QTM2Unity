@@ -5,7 +5,7 @@ namespace QTM2Unity
     {
 
         private Vector2 NoTwist = new Vector2(359, 1);
-        private Vector4 NoMovment = new Vector4(1,1,1,1);
+        //private Vector4 NoMovment = new Vector4(1,1,1,1);
         //Vector4(blue, red, green, yellow);
         public Vector4 Femur = new Vector4(15, 150, 40, 55);
         public Vector4 Knee = new Vector4(15, 0, 15, 160);
@@ -30,13 +30,11 @@ namespace QTM2Unity
         public Vector2 ShoulderTwist = new Vector2(280, 80);
         public Vector2 ElbowTwist = new Vector2(300, 60);
         public Vector2 WristTwist = new Vector2(345, 15);
-        private float veryagile = 1.2f;
-        private float agile = 1.1f;
-    
-        //private float stiffer = 0.8f;
-        private float verystiff = 0.7f;
-        //private float extremlystiff = 0.6f;
-        private float barelymoving = 0.5f;
+
+
+        private float stiff = 0.7f;
+        private float verystiff = 0.5f;
+        private float barelymoving = 0.3f;
         
         public void SetConstraints(ref BipedSkeleton skeleton)
         {
@@ -112,23 +110,14 @@ namespace QTM2Unity
             #endregion
             #endregion
             #region stiffness
-      /*
-        */
             #region Arms
             skeleton[BipedSkeleton.CLAVICLE_L].Stiffness = (verystiff);
-            //skeleton[BipedSkeleton.UPPERARM_L].Weight = (heavy);
             skeleton[BipedSkeleton.CLAVICLE_R].Stiffness = (verystiff);
-            //skeleton[BipedSkeleton.UPPERARM_R].Weight = (heavy);
-            skeleton[BipedSkeleton.ELBOW_L].Stiffness = (agile);
-            skeleton[BipedSkeleton.ELBOW_R].Stiffness = (agile);
+
             skeleton[BipedSkeleton.WRIST_L].Stiffness = (barelymoving);
             skeleton[BipedSkeleton.WRIST_R].Stiffness = (barelymoving);
             #endregion
             #region Legs
-            skeleton[BipedSkeleton.HIP_L].Stiffness = veryagile;
-            skeleton[BipedSkeleton.HIP_R].Stiffness = (veryagile);
-            skeleton[BipedSkeleton.KNEE_L].Stiffness = (agile);
-            skeleton[BipedSkeleton.KNEE_R].Stiffness = (agile);
             skeleton[BipedSkeleton.ANKLE_L].Stiffness = (barelymoving);
             skeleton[BipedSkeleton.ANKLE_R].Stiffness = (barelymoving);
             skeleton[BipedSkeleton.FOOTBASE_L].Stiffness = (barelymoving);

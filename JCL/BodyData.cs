@@ -27,11 +27,11 @@ namespace QTM2Unity
         public void CalculateBodyData(Dictionary<string, Vector3> markers, Quaternion chestOrientation)
         {
             // set chest depth
-            var tmpV = (markers[MarkerNames.chest] - markers[MarkerNames.neck]); // to mm
-            tmpV = Vector3.Transform(tmpV, Quaternion.Invert(chestOrientation));
-            if (!tmpV.IsNaN())
+            var currentNeckToChestVector = (markers[MarkerNames.chest] - markers[MarkerNames.neck]);
+            currentNeckToChestVector = Vector3.Transform(currentNeckToChestVector, Quaternion.Invert(chestOrientation));
+            if (!currentNeckToChestVector.IsNaN())
             {
-                neck2ChestVector = (neck2ChestVector * chestsFrames + tmpV) / (chestsFrames + 1);
+                neck2ChestVector = (neck2ChestVector * chestsFrames + currentNeckToChestVector) / (chestsFrames + 1);
                 chestsFrames++;
             }
 
@@ -43,12 +43,11 @@ namespace QTM2Unity
                 shoulderFrames++;
             }
             // height and mass
-            tmp = (
-                    (markers[MarkerNames.rightOuterAnkle] - markers[MarkerNames.rightOuterKnee]).Length +
-                    (markers[MarkerNames.rightOuterKnee] - markers[MarkerNames.rightHip]).Length +
-                    (markers[MarkerNames.bodyBase] - markers[MarkerNames.spine]).Length +
-                    (markers[MarkerNames.spine] - markers[MarkerNames.neck]).Length +
-                    (markers[MarkerNames.neck] - markers[MarkerNames.head]).Length
+            tmp = ( (markers[MarkerNames.rightOuterAnkle] - markers[MarkerNames.rightOuterKnee]).LengthFast +
+                    (markers[MarkerNames.rightOuterKnee] - markers[MarkerNames.rightHip]).LengthFast +
+                    (markers[MarkerNames.bodyBase] - markers[MarkerNames.spine]).LengthFast +
+                    (markers[MarkerNames.spine] - markers[MarkerNames.neck]).LengthFast +
+                    (markers[MarkerNames.neck] - markers[MarkerNames.head]).LengthFast
                   ) * 100; // cm
             if (!float.IsNaN(tmp) && tmp < 250)
             {

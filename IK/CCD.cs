@@ -16,7 +16,7 @@ namespace QTM2Unity
             int numberOfBones = bones.Length;
             int iter = 0;
             int degrees = 5;
-            int loopsWithSameDist = 0;
+            //int loopsWithSameDist = 0;
             bool toggle = false;
             bool doneOneLapAroundYAxis = false;
             int maxdegrees = 120;
@@ -74,7 +74,7 @@ namespace QTM2Unity
                         //Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
                         Vector3 res;
                         Quaternion rot;
-                        if (Constraint.CheckRotationalConstraints(
+                        if (CheckRotationalConstraints(
                             bones[i],
                             ((i > 0) ? bones[i - 1] : grandparent).Orientation, //Reference
                             bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation), // Target
@@ -92,7 +92,7 @@ namespace QTM2Unity
                     if ( bones[i].HasTwistConstraints)
                     {
                         Quaternion rotation2;
-                        if (Constraint.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : grandparent, out rotation2))
+                        if (CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : grandparent, out rotation2))
                         {
                             ForwardKinematics(ref bones, rotation2, i);
                         }

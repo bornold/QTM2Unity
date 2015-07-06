@@ -88,7 +88,7 @@ namespace QTM2Unity
                     Vector3 res;
                     Quaternion rot;
                     newPos =
-                        Constraint.CheckRotationalConstraints(bones[i], prevBone.Orientation, newPos, out res, out rot) ?
+                        CheckRotationalConstraints(bones[i], prevBone.Orientation, newPos, out res, out rot) ?
                         res : newPos;
                 }
                 bones[i + 1].Pos = newPos;
@@ -97,7 +97,7 @@ namespace QTM2Unity
                 if (bones[i].HasConstraints)
                 {
                     Quaternion rot;
-                    if (Constraint.CheckOrientationalConstraint(bones[i], prevBone, out rot))
+                    if (CheckOrientationalConstraint(bones[i], prevBone, out rot))
                     {
                         bones[i].Rotate(rot);
                     }

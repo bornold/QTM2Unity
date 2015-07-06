@@ -19,9 +19,9 @@ namespace QTM2Unity
         /// </summary>
         /// <param name="quaternion"> Quaternion to be checked </param>
         /// <returns>True if any of x, y, z, w is NaN</returns>
-        public static bool IsNaN(this Quaternion v)
+        public static bool IsNaN(this Quaternion q)
         {
-            return v.Xyz.IsNaN() || float.IsNaN(v.W);
+            return q.Xyz.IsNaN() || float.IsNaN(q.W);
         }
 
         /// <summary>
@@ -36,20 +36,6 @@ namespace QTM2Unity
             s = Mathf.Sin(angle);
             c = Mathf.Cos(angle);
             return new Quaternion(s, 0.0f, 0.0f, c);
-        }
-        /// <summary>
-        /// Calculates the difference in rotation between two Quaternions
-        /// if result is 0, there is no diffrence between the Quaternions
-        /// if the results is 1, the diffrence is 180 degrees diffrence 
-        /// </summary>
-        /// <param name="a">The first quaternion</param>
-        /// <param name="b">The secound quaternion</param>
-        /// <returns>float between 0 and 1 where 0 the Quaternions are the same, and 1 they are at a 180 degrees diffrences</returns>
-        public static float DiffrenceBetween(Quaternion right, Quaternion left)
-        {
-            float dot = left.X * right.X + left.Y * right.Y + left.Z * right.Z + left.W * right.W;
-
-            return 1f-Mathf.Sqrt(dot);
         }
 
         /// <summary>
@@ -177,77 +163,90 @@ namespace QTM2Unity
 
             return new Quaternion(qx, qy, qz, qw);
         }
-        /// <summary>
-        /// Rotates a vector according to a quaternion
-        /// </summary>
-        /// <param name="Vector">the quaternion to rotate from</param>
-        /// <param name="Vector">the vector to be rotated</param>
-        /// <returns>The rotated vector</returns>
-        public static Vector3 Rotate(Quaternion quaternion, Vector3 vec)
-        {
-            float tmpX, tmpY, tmpZ, tmpW;
-            tmpX = (((quaternion.W * vec.X) + (quaternion.Y * vec.Z)) - (quaternion.Z * vec.Y));
-            tmpY = (((quaternion.W * vec.Y) + (quaternion.Z * vec.X)) - (quaternion.X * vec.Z));
-            tmpZ = (((quaternion.W * vec.Z) + (quaternion.X * vec.Y)) - (quaternion.Y * vec.X));
-            tmpW = (((quaternion.X * vec.X) + (quaternion.Y * vec.Y)) + (quaternion.Z * vec.Z));
-            return new Vector3(
-                ((((tmpW * quaternion.X) + (tmpX * quaternion.W)) - (tmpY * quaternion.Z)) + (tmpZ * quaternion.Y)),
-                ((((tmpW * quaternion.Y) + (tmpY * quaternion.W)) - (tmpZ * quaternion.X)) + (tmpX * quaternion.Z)),
-                ((((tmpW * quaternion.Z) + (tmpZ * quaternion.W)) - (tmpX * quaternion.Y)) + (tmpY * quaternion.X))
-           );
-        }
 
-        private static float norm(this Quaternion quaternion )
-        {
-            double result;
-            result = (quaternion.X * quaternion.X);
-            result = (result + (quaternion.Y * quaternion.Y));
-            result = (result + (quaternion.Z * quaternion.Z));
-            result = (result + (quaternion.W * quaternion.W));
-            return (float)result;
-        }
-
-        public static Quaternion Normalize(this Quaternion quaternion)
-        {        
-            float lenSqr = quaternion.norm();
-            float lenInv = (1.0f / Mathf.Sqrt(lenSqr));
-            return new Quaternion(
-                        (quaternion.X * lenInv),
-                        (quaternion.Y * lenInv),
-                        (quaternion.Z * lenInv),
-                        (quaternion.W * lenInv)
-                        );
-        }
 
         /// <summary>
-        /// Calculates the angle in radians for a rotation around a specific axis
+        /// Calculates the difference in rotation between two Quaternions
+        /// if result is 0, there is no diffrence between the Quaternions
+        /// if the results is 1, the diffrence is 180 degrees diffrence 
         /// </summary>
-        /// <param name="quaternion">the rotation quaternion</param>
-        /// <param name="front">the specific axis</param>
-        /// <returns>the rotation angle around the given axis</returns>
-        public static float getAngleAroundRad(this Quaternion quaternion, Vector3 axis)
+        /// <param name="a">The first quaternion</param>
+        /// <param name="b">The secound quaternion</param>
+        /// <returns>float between 0 and 1 where 0 the Quaternions are the same, and 1 they are at a 180 degrees diffrences</returns>
+        public static float DiffrenceBetween(Quaternion right, Quaternion left)
         {
-            float d = Vector3.Dot(quaternion.Xyz, axis);
-            float l = length(axis.X * d, axis.Y * d, axis.Z * d, quaternion.W);
-
-            return (l == 0) ? 0f : (float)(2.0 * Math.Acos(Mathf.Clamp((float) (quaternion.W / Math.Sqrt(l)), -1f, 1f)));
+            float dot = left.X * right.X + left.Y * right.Y + left.Z * right.Z + left.W * right.W;
+            
+            return 1f - Mathf.Sqrt(dot);
         }
 
-        /// <summary>
-        /// Calculates the angle in degrees for a rotation around a specific axis
-        /// </summary>
-        /// <param name="quaternion">the rotation quaternion</param>
-        /// <param name="front">the specific axis</param>
-        /// <returns>the rotation angle around the given axis</returns>
-        public static float getAngleAround(this Quaternion quaternion, Vector3 axis)
-        {
-            return OpenTK.MathHelper.RadiansToDegrees(getAngleAroundRad(quaternion, axis));
-        }
+        ///// <summary>
+        ///// Rotates a vector according to a quaternion
+        ///// </summary>
+        ///// <param name="Vector">the quaternion to rotate from</param>
+        ///// <param name="Vector">the vector to be rotated</param>
+        ///// <returns>The rotated vector</returns>
+        //public static Vector3 Rotate(Quaternion quaternion, Vector3 vec)
+        //{
+        //    float tmpX, tmpY, tmpZ, tmpW;
+        //    tmpX = (((quaternion.W * vec.X) + (quaternion.Y * vec.Z)) - (quaternion.Z * vec.Y));
+        //    tmpY = (((quaternion.W * vec.Y) + (quaternion.Z * vec.X)) - (quaternion.X * vec.Z));
+        //    tmpZ = (((quaternion.W * vec.Z) + (quaternion.X * vec.Y)) - (quaternion.Y * vec.X));
+        //    tmpW = (((quaternion.X * vec.X) + (quaternion.Y * vec.Y)) + (quaternion.Z * vec.Z));
+        //    return new Vector3(
+        //        ((((tmpW * quaternion.X) + (tmpX * quaternion.W)) - (tmpY * quaternion.Z)) + (tmpZ * quaternion.Y)),
+        //        ((((tmpW * quaternion.Y) + (tmpY * quaternion.W)) - (tmpZ * quaternion.X)) + (tmpX * quaternion.Z)),
+        //        ((((tmpW * quaternion.Z) + (tmpZ * quaternion.W)) - (tmpX * quaternion.Y)) + (tmpY * quaternion.X))
+        //   );
+        //}
 
-        public static float length (float x, float y, float z, float w) 
-        {
-		    return x * x + y * y + z * z + w * w;
-	    }
+        //private static float Norm(this Quaternion quaternion )
+        //{
+        //    return quaternion.X * quaternion.X + 
+        //           quaternion.Y * quaternion.Y + 
+        //           quaternion.Z * quaternion.Z +
+        //           quaternion.W * quaternion.W;
+        //}
+
+        //public static void Normalize(this Quaternion quaternion)
+        //{        
+        //    Quaternion.Normalize()
+        //    //float lenSqr = quaternion.norm();
+        //    float lenInv = (1.0f / Mathf.Sqrt(quaternion.Norm()));
+        //    quaternion.X = (quaternion.X * lenInv);
+        //    quaternion.Y = (quaternion.Y * lenInv);
+        //    quaternion.Z = (quaternion.Z * lenInv);
+        //    quaternion.W = (quaternion.W * lenInv);
+
+        //}
+
+
+        ///// <summary>
+        ///// Calculates the angle in radians for a rotation around a specific axis
+        ///// </summary>
+        ///// <param name="quaternion">the rotation quaternion</param>
+        ///// <param name="front">the specific axis</param>
+        ///// <returns>the rotation angle around the given axis</returns>
+        //public static float GetAngleAroundRad(this Quaternion quaternion, Vector3 axis)
+        //{
+        //    float d = Vector3.Dot(quaternion.Xyz, axis);
+        //    float l = length(axis.X * d, axis.Y * d, axis.Z * d, quaternion.W);
+
+        //    return (l == 0) ? 0f : (float)(2.0 * Math.Acos(Mathf.Clamp((float) (quaternion.W / Math.Sqrt(l)), -1f, 1f)));
+        //}
+
+        ///// <summary>
+        ///// Calculates the angle in degrees for a rotation around a specific axis
+        ///// </summary>
+        ///// <param name="quaternion">the rotation quaternion</param>
+        ///// <param name="front">the specific axis</param>
+        ///// <returns>the rotation angle around the given axis</returns>
+        //public static float GetAngleAround(this Quaternion quaternion, Vector3 axis)
+        //{
+        //    return OpenTK.MathHelper.RadiansToDegrees(GetAngleAroundRad(quaternion, axis));
+        //}
+
+    
 
         // Returns a quaternion representing the rotation from vector a to b
         public static Quaternion GetRotationBetween(Vector3 a, Vector3 b, float stiffness = 1f)
@@ -263,14 +262,9 @@ namespace QTM2Unity
                 return Quaternion.Normalize(Quaternion.FromAxisAngle(Vector3.UnitZ, Mathf.PI));
             }
 
-            float angle = Vector3.CalculateAngle(a, b);
-            Vector3 axis = Vector3.Cross(a, b);
-            //axis.Normalize();
-
-            return Quaternion.FromAxisAngle(axis, angle*stiffness);
+            return Quaternion.FromAxisAngle(Vector3.Cross(a, b), Vector3.CalculateAngle(a, b) * stiffness);
         }
 
-        //TODO TEMP idiotic 
         public static Quaternion GetRotation2(Vector3 a, Vector3 b)
         {
             a.NormalizeFast();
@@ -279,12 +273,7 @@ namespace QTM2Unity
             {
                 return Quaternion.Identity;
             }
-
-            float angle = Vector3.CalculateAngle(a, b);
-            Vector3 axis = Vector3.Cross(a, b);
-            axis.Normalize();
-
-            return Quaternion.FromAxisAngle(axis, angle);
+            return Quaternion.FromAxisAngle(Vector3.NormalizeFast(Vector3.Cross(a, b)), Vector3.CalculateAngle(a, b));
         }
         
 
@@ -301,8 +290,8 @@ namespace QTM2Unity
 
             Vector3 front = forwardPoint - backMid;
             Vector3 right = rightPoint - leftPoint;
-            front.Normalize();
-            right.Normalize();
+            front.NormalizeFast();
+            right.NormalizeFast();
 
             Vector3 up = Vector3.Cross(front, right);
             Quaternion frontRot = GetRotation2(Vector3.UnitZ, front);
@@ -313,28 +302,28 @@ namespace QTM2Unity
             return orientation;
         }
 
-        /// <summary>
-        /// Get orientation from three points
-        /// </summary>
-        /// <param name="sacrum">position vector of sacrum marker</param>
-        /// <param name="leftHip">position vector of left hip marker</param>
-        /// <param name="rightHip">position vector of right hip marker</param>
-        /// <returns>Quaternion with rotation of hip</returns>
-        public static Quaternion GetHipOrientation(Vector3 sacrum, Vector3 leftHip, Vector3 rightHip)
-        {
-            Vector3 hipMarkerMid = (leftHip - rightHip) * 0.5f + rightHip;
-            Vector3 right = leftHip - rightHip;
-            Vector3 front = hipMarkerMid - sacrum;
-            front.Normalize();
-            right.Normalize();
-            Vector3 up = Vector3.Cross(right, front);
-            Quaternion frontRot = GetRotation2(Vector3.UnitZ, front);
-            Vector3 possibleUp = Vector3.Transform(Vector3.UnitY, frontRot);
-            Quaternion upRot = GetRotation2(possibleUp, up);
+        ///// <summary>
+        ///// Get orientation from three points
+        ///// </summary>
+        ///// <param name="sacrum">position vector of sacrum marker</param>
+        ///// <param name="leftHip">position vector of left hip marker</param>
+        ///// <param name="rightHip">position vector of right hip marker</param>
+        ///// <returns>Quaternion with rotation of hip</returns>
+        //public static Quaternion GetHipOrientation(Vector3 sacrum, Vector3 leftHip, Vector3 rightHip)
+        //{
+        //    Vector3 hipMarkerMid = (leftHip - rightHip) * 0.5f + rightHip;
+        //    Vector3 right = leftHip - rightHip;
+        //    Vector3 front = hipMarkerMid - sacrum;
+        //    front.Normalize();
+        //    right.Normalize();
+        //    Vector3 up = Vector3.Cross(right, front);
+        //    Quaternion frontRot = GetRotation2(Vector3.UnitZ, front);
+        //    Vector3 possibleUp = Vector3.Transform(Vector3.UnitY, frontRot);
+        //    Quaternion upRot = GetRotation2(possibleUp, up);
 
-            Quaternion orientation = upRot * frontRot;
-            return orientation;
-        }
+        //    Quaternion orientation = upRot * frontRot;
+        //    return orientation;
+        //}
         /// <summary>
         /// Get quaternion with rotation as Y axis towards target as close as z parameter as possible
         /// </summary>
@@ -344,20 +333,20 @@ namespace QTM2Unity
         /// <returns>Quaternion with rotation to target</returns>
         public static Quaternion LookAtUp(Vector3 source, Vector3 target, Vector3 z)
         {
-            Vector3 y = target - source;
-            Vector3[] normal = { y, z };
+            //Vector3 y = target - source;
+            Vector3[] normal = { (target - source), z };
             Vector3Helper.OrthoNormalize(ref normal);
 
-            y = normal[0];
-            z = normal[1];
+            //y = normal[0];
+            //z = normal[1];
             //Vector3 x = Vector3.Cross(z, y);
 
-            Quaternion zRot = GetRotation2(Vector3.UnitZ, z);
-            Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
+            Quaternion zRot = GetRotation2(Vector3.UnitZ, normal[0]);
+            //Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
 
-            Quaternion yRot = GetRotation2(possibleY, y);
-            Quaternion orientation = yRot * zRot;
-            return orientation;
+            //Quaternion yRot = GetRotation2(possibleY, y);
+            //Quaternion orientation = yRot * zRot;
+            return GetRotation2(Vector3.Transform(Vector3.UnitY, zRot), normal[0]) * zRot;
         }
         /// <summary>
         /// Get quaternion with rotation as Y axis towards target and X towards right parameter
@@ -368,18 +357,18 @@ namespace QTM2Unity
         /// <returns>Quaternion with rotation to target</returns>
         public static Quaternion LookAtRight(Vector3 source, Vector3 target, Vector3 x)
         {
-            Vector3 y = target - source;
-            Vector3[] normal = { y, x };
+            //Vector3 y = target - source;
+            Vector3[] normal = { target - source, x };
             Vector3Helper.OrthoNormalize(ref normal);
-            y = normal[0];
-            x = normal[1];
-            Vector3 z = Vector3.Cross(y, x);
-            Quaternion zRot = GetRotation2(Vector3.UnitZ, z);
-            Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
+            //y = normal[0];
+            //x = normal[1];
+            //Vector3 z = Vector3.Cross(normal[0], normal[1]);
+            Quaternion zRot = GetRotation2(Vector3.UnitZ, Vector3.Cross(normal[0], normal[1]));
+            //Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
 
-            Quaternion yRot = GetRotation2(possibleY, y);
-            Quaternion orientation = yRot * zRot;
-            return orientation;
+            //Quaternion yRot = GetRotation2(Vector3.Transform(Vector3.UnitY, zRot), normal[0]);
+            //Quaternion orientation = yRot * zRot;
+            return GetRotation2(Vector3.Transform(Vector3.UnitY, zRot), normal[0]) * zRot;
         }
         /// <summary>
         /// Get quaternion with front and right vector
@@ -391,21 +380,19 @@ namespace QTM2Unity
         {
             Vector3[] normal = { y, x };
             Vector3Helper.OrthoNormalize(ref normal);
-            y = normal[0];
-            x = normal[1];
-            Vector3 z = Vector3.Cross(y, x);
-            Quaternion zRot = GetRotation2(Vector3.UnitZ, z);
-            Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
-
-            Quaternion yRot = GetRotation2(possibleY, y);
-            Quaternion orientation = yRot * zRot;
-            return orientation;
+            //y = normal[0];
+            //x = normal[1];
+            //Vector3 z = Vector3.Cross(y, x);
+            Quaternion zRot = GetRotation2(Vector3.UnitZ, Vector3.Cross(normal[0], normal[1]));
+            //Vector3 possibleY = Vector3.Transform(Vector3.UnitY, zRot);
+            //Quaternion yRot = GetRotation2(possibleY, y);
+            return GetRotation2(Vector3.Transform(Vector3.UnitY, zRot), normal[0]) * zRot;
         }
         public static Quaternion RotationBetween(Vector3 from, Vector3 to)
         {
-            float angle = Vector3.CalculateAngle(from, to);
-            Vector3 axis = Vector3.Cross(from, to);
-            return Quaternion.FromAxisAngle(axis, angle);
+            //float angle = Vector3.CalculateAngle(from, to);
+            //Vector3 axis = Vector3.Cross(from, to);
+            return Quaternion.FromAxisAngle(Vector3.Cross(from, to), Vector3.CalculateAngle(from, to));
         }
     }
 }

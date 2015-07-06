@@ -7,10 +7,10 @@ namespace QTM2Unity
 {
     class IKApplier
     {
-        private uint c = 0;
+        //private uint c = 0;
         private BipedSkeleton lastSkel;
         public IKSolver IKSolver { private get; set; } 
-        private IKSolver fabrik = new FABRIK();
+        //private IKSolver fabrik = new FABRIK();
         public bool test = false;
         public IKApplier()
         {
@@ -26,7 +26,7 @@ namespace QTM2Unity
         /// <param name="skeleton">The skeleton with joints</param>
         public void ApplyIK(ref BipedSkeleton skeleton)
         {
-            c++;
+            //c++;
             //Stopwatch stopwatch2 = //Stopwatch.StartNew();
             IEnumerator skelEnumer = skeleton.GetEnumerator();
             IEnumerator lastSkelEnumer = lastSkel.GetEnumerator();
@@ -196,25 +196,25 @@ namespace QTM2Unity
             foreach (var tnb in bone)
             {
                 if (tnb.IsRoot || tnb.IsLeaf) continue;
-                Quaternion rot;
-                Vector3 res;
                 if (!tnb.Data.HasNaN && tnb.Data.HasConstraints)
                 {
-                    if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
+                    Quaternion rot;
+                    if (IKSolver.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                     {
                         tnb.Data.Rotate(rot);
                         anychange = true;
                     }
+                    Vector3 res;
                     Vector3 child = tnb.Children.First().Data.Pos;
-                    if (!child.IsNaN() && 
-                        Constraint.CheckRotationalConstraints(
-                                        tnb.Data, tnb.Parent.Data.Orientation, 
+                    if (!child.IsNaN() &&
+                        IKSolver.CheckRotationalConstraints(
+                                        tnb.Data, tnb.Parent.Data.Orientation,
                                         child, out res, out rot))
                     {
                         FK(tnb, rot);
                         anychange = true;
                     }
-                    if (Constraint.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
+                    if (IKSolver.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                     {
                         tnb.Data.Rotate(rot);
                         anychange = true;
@@ -229,13 +229,12 @@ namespace QTM2Unity
             foreach (TreeNode<Bone> bone in bones)
             {
                 if (bone.IsRoot || bone.Data.HasNaN) continue;
-                Bone currBone = bone.Data;
-                Bone lastFrameBone = lastSkel[currBone.Name];
+                Bone lastFrameBone = lastSkel[bone.Data.Name];
                 #region Poss
 
-                Vector3 posFinal = currBone.Pos;
+                //Vector3 posFinal = currBone.Pos;
                 Vector3 posInitial = lastFrameBone.Pos;
-                Vector3 diffInitToFinalVec = (posFinal - posInitial);
+                Vector3 diffInitToFinalVec = (bone.Data.Pos - posInitial);
                 if (diffInitToFinalVec.Length > 0.1f)
                 {
                     diffInitToFinalVec.NormalizeFast();
@@ -266,7 +265,7 @@ namespace QTM2Unity
                 }
                 #endregion
                 #region Rots
-                Quaternion oriFinal = currBone.Orientation;
+                Quaternion oriFinal = bone.Data.Orientation;
                 Quaternion oriInitial = lastFrameBone.Orientation;
                 if (!bone.IsLeaf)
                 {

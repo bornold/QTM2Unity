@@ -1188,7 +1188,9 @@ namespace OpenTK
             //return (float)System.Math.Acos((Vector3.Dot(first, second)) / (first.Length * second.Length));
             // This function should not be able to return NaN. Therefore fixed:
             return (float)System.Math.Acos(
-                Math.Max(Math.Min((Vector3.Dot(first, second)) / (first.Length * second.Length), 1.0f),-1.0f));
+                Math.Max(Math.Min(
+                (Vector3.Dot(first, second)) / (first.Length * second.Length), 
+                1.0f),-1.0f));
         }
 
         /// <summary>Calculates the angle (in radians) between two vectors.</summary>
@@ -1200,7 +1202,10 @@ namespace OpenTK
         {
             float temp;
             Vector3.Dot(ref first, ref second, out temp);
-            result = (float)System.Math.Acos(temp / (first.Length * second.Length));
+            result = (float)System.Math.Acos(
+                Math.Max(Math.Min(
+                temp / (first.Length * second.Length),
+                1.0f),-1.0f));
         }
 
         #endregion

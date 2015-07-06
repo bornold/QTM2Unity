@@ -62,19 +62,6 @@ namespace QTM2Unity
 
                 markerData = rtClient.Markers;
                 if (markerData == null && markerData.Count == 0) return;
-                #region Debugs
-                //if (markers.doRemoveMarkers)
-                //{
-                //    string[] unwantedMarkers = markers.removeMarker.Split(' ');
-                //    foreach (var lb in markerData)
-                //    {
-                //        if (unwantedMarkers.Contains(lb.label))
-                //        {
-                //            lb.position = new OpenTK.Vector3(float.NaN, float.NaN, float.NaN);
-                //        }
-                //    }
-                //}
-                #endregion
                 pos = (this.transform.position + offset).Convert();
                 UpdateNext();
             }
@@ -98,8 +85,6 @@ namespace QTM2Unity
 
                 foreach (var lb in markerData)
                 {
-                    UnityEngine.Debug.Log(lb.label);
-
                     Gizmos.DrawSphere((lb.position + pos).Convert(), markers.markersScale);
                 }
             }

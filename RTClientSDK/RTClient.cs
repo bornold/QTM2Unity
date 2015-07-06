@@ -47,7 +47,7 @@ namespace QTM2Unity
                     //Set rotation and position to work with unity
                     position /= 1000;
 
-					mBodies[i].position = QuaternionHelper.Rotate(mCoordinateSystemChange, position );
+                    mBodies[i].position = Vector3.Transform(position, mCoordinateSystemChange);//QuaternionHelper.Rotate(mCoordinateSystemChange, position );
                     mBodies[i].position.Z *= -1;
 					
                     mBodies[i].rotation = mCoordinateSystemChange * QuaternionHelper.FromMatrix(bodyData[i].matrix);
@@ -72,7 +72,7 @@ namespace QTM2Unity
 
 					position /= 1000;
 
-					mMarkers[i].position = QuaternionHelper.Rotate(mCoordinateSystemChange, position );
+                    mMarkers[i].position = Vector3.Transform(position, mCoordinateSystemChange);//QuaternionHelper.Rotate(mCoordinateSystemChange, position );
 					mMarkers[i].position.Z *= -1;
 
 				}
@@ -234,7 +234,15 @@ namespace QTM2Unity
         /// <param name="stream3d"> if labeled markers should be streamed.</param>
 		public bool connect(int pickedServer, short udpPort, int streammode, int streamval, bool stream6d, bool stream3d)
 		{
-			sDiscoveryResponse server =  mProtocol.DiscoveryResponses[pickedServer];
+            sDiscoveryResponse server;
+            try
+            {
+			    server =  mProtocol.DiscoveryResponses[pickedServer];
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return false;
+            }
 			if(mProtocol.connect(server, udpPort))
 			{
                 if (connectStream(udpPort, streammode, streamval, stream6d, stream3d))

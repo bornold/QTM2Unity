@@ -48,6 +48,11 @@ namespace QTM2Unity
         #region varible necessary to estimate joints
         private BodyData bd = new BodyData();
         private Quaternion prevChestOri = Quaternion.Identity;
+        private Vector3 ZeroVector3 = Vector3.Zero;
+        private Quaternion ZeroQuaternion = QuaternionHelper.Zero;
+        private Vector3 UnitX = Vector3.UnitX;
+        private Vector3 UnitY = Vector3.UnitY;
+        private Vector3 UnitZ = Vector3.UnitZ;
         #endregion
         public JointLocalization()
         {
@@ -103,12 +108,15 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.hipOrientation == QuaternionHelper.Zero)
+                if (o.hipOrientation == ZeroQuaternion)
                 {
-                    o.hipOrientation = QuaternionHelper.GetHipOrientation(
-                        markers[MarkerNames.bodyBase], 
-                        markers[MarkerNames.leftHip], 
-                        markers[MarkerNames.rightHip]);
+                    Vector3 right = markers[MarkerNames.leftHip] - markers[MarkerNames.rightHip];
+                    Vector3 front = ((markers[MarkerNames.leftHip] - markers[MarkerNames.rightHip]) * 0.5f + markers[MarkerNames.rightHip]) 
+                        - markers[MarkerNames.bodyBase];
+                    front.NormalizeFast();
+                    right.NormalizeFast();
+                    Quaternion frontRot = QuaternionHelper.GetRotation2(Vector3.UnitZ, front);
+                    o.hipOrientation = QuaternionHelper.GetRotation2(Vector3.Transform(Vector3.UnitY, frontRot), Vector3.Cross(right, front)) * frontRot;
                 }
                 return o.hipOrientation;
             }
@@ -117,7 +125,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.chestOrientation == QuaternionHelper.Zero)
+                if (o.chestOrientation == ZeroQuaternion)
                 {
                     Vector3 neckPos = markers[MarkerNames.neck];
                     Vector3 chestPos = markers[MarkerNames.chest];
@@ -148,7 +156,7 @@ namespace QTM2Unity
                     }
                     else // last resort, use hip orientation
                     {
-                        Yaxis = Vector3.Transform(Vector3.UnitY, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
+                        Yaxis = Vector3.Transform(UnitY, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
                     }
 
                     if (!rightShoulderPos.IsNaN() || !leftShoulderPos.IsNaN())
@@ -172,12 +180,12 @@ namespace QTM2Unity
                         else
                         {
                             //Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f);
-                            Xaxis = -Vector3.Transform(Vector3.UnitX, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
+                            Xaxis = -Vector3.Transform(UnitX, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
                         }
                     }
                     else // last resort, use hip prev orientation
                     {
-                        Xaxis = -Vector3.Transform(Vector3.UnitX, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
+                        Xaxis = -Vector3.Transform(UnitX, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
                     }
                     rotation = sleart ? 
                         Quaternion.Slerp(QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis), prevChestOri, 0.8f) : 
@@ -192,7 +200,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.headOrientation == QuaternionHelper.Zero)
+                if (o.headOrientation == ZeroQuaternion)
                 {
                     o.headOrientation = QuaternionHelper.GetOrientation(markers[MarkerNames.head], markers[MarkerNames.leftHead], markers[MarkerNames.rightHead]);
                 }
@@ -203,8 +211,8 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.hipForward == Vector3.Zero)
-                    o.hipForward = Vector3.Transform(Vector3.UnitZ, HipOrientation);
+                if (o.hipForward == ZeroVector3)
+                    o.hipForward = Vector3.Transform(UnitZ, HipOrientation);
                 return o.hipForward;
             }
         }
@@ -212,9 +220,9 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.chestForward == Vector3.Zero)
+                if (o.chestForward == ZeroVector3)
                 {
-                    o.chestForward = Vector3.Transform(Vector3.UnitZ, ChestOrientation);
+                    o.chestForward = Vector3.Transform(UnitZ, ChestOrientation);
                 }
                 return o.chestForward;
             }
@@ -223,7 +231,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.upperArmForwardLeft == Vector3.Zero)
+                if (o.upperArmForwardLeft == ZeroVector3)
                 {
 
                     Vector3 midPoint = Vector3Helper.MidPoint(markers[MarkerNames.leftInnerElbow], markers[MarkerNames.leftOuterElbow]);
@@ -236,7 +244,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.upperArmForwardRight == Vector3.Zero)
+                if (o.upperArmForwardRight == ZeroVector3)
                 {
                     Vector3 midPoint = Vector3Helper.MidPoint(markers[MarkerNames.rightInnerElbow], markers[MarkerNames.rightOuterElbow]);
                     o.upperArmForwardRight = Vector3.Normalize(midPoint - markers[MarkerNames.rightElbow]);
@@ -248,7 +256,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.lowerArmForwardLeft == Vector3.Zero)
+                if (o.lowerArmForwardLeft == ZeroVector3)
                 {
                     o.lowerArmForwardLeft = Vector3.NormalizeFast(markers[MarkerNames.leftWristRadius] - markers[MarkerNames.leftWrist]);
                 }
@@ -259,7 +267,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.lowerArmForwardRight == Vector3.Zero)
+                if (o.lowerArmForwardRight == ZeroVector3)
                 {
                     o.lowerArmForwardRight = Vector3.NormalizeFast(markers[MarkerNames.rightWristRadius] - markers[MarkerNames.rightWrist]);
                 }
@@ -270,7 +278,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.kneeForwardLeft == Vector3.Zero)
+                if (o.kneeForwardLeft == ZeroVector3)
                 {
                     Vector3 knee = KneeLeft;
                     Vector3 kneeOuter = markers[MarkerNames.leftOuterKnee];
@@ -283,7 +291,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.kneeForwardRight == Vector3.Zero)
+                if (o.kneeForwardRight == ZeroVector3)
                 {
                     Vector3 knee = KneeRight;
                     Vector3 kneeOuter = markers[MarkerNames.rightOuterKnee];
@@ -297,7 +305,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.lowerLegUpLeft == Vector3.Zero)
+                if (o.lowerLegUpLeft == ZeroVector3)
                 {
                     Vector3 belove =
                        !FootBaseLeft.IsNaN() ? FootBaseLeft :
@@ -306,7 +314,7 @@ namespace QTM2Unity
                        !markers[MarkerNames.leftOuterAnkle].IsNaN() ? markers[MarkerNames.leftOuterAnkle] :
                        !markers[MarkerNames.leftInnerAnkle].IsNaN() ? markers[MarkerNames.leftInnerAnkle] :
                        !markers[MarkerNames.leftToe2].IsNaN() ? markers[MarkerNames.leftToe2] :
-                       HipJointLeft - (Vector3.Transform(Vector3.UnitY, HipOrientation) * HipJointLeft.LengthFast);
+                       HipJointLeft - (Vector3.Transform(UnitY, HipOrientation) * HipJointLeft.LengthFast);
                     Vector3 above =
                         !KneeLeft.IsNaN() ? KneeLeft :
                         !markers[MarkerNames.leftLowerKnee].IsNaN() ? markers[MarkerNames.leftLowerKnee] :
@@ -323,7 +331,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.lowerLegUpRight == Vector3.Zero)
+                if (o.lowerLegUpRight == ZeroVector3)
                 {
                     Vector3 belove =
                         !FootBaseRight.IsNaN() ? FootBaseRight :
@@ -332,7 +340,7 @@ namespace QTM2Unity
                         !markers[MarkerNames.rightOuterAnkle].IsNaN() ? markers[MarkerNames.rightOuterAnkle] :
                         !markers[MarkerNames.rightInnerAnkle].IsNaN() ? markers[MarkerNames.rightInnerAnkle] :
                         !markers[MarkerNames.leftToe2].IsNaN() ? markers[MarkerNames.leftToe2] :
-                        HipJointRight - (Vector3.Transform(Vector3.UnitY,HipOrientation) * HipJointRight.LengthFast );
+                        HipJointRight - (Vector3.Transform(UnitY,HipOrientation) * HipJointRight.LengthFast );
                     Vector3 above =
                         !KneeRight.IsNaN() ? KneeRight :
                         !markers[MarkerNames.rightLowerKnee].IsNaN() ? markers[MarkerNames.rightLowerKnee] :
@@ -350,7 +358,7 @@ namespace QTM2Unity
         private Vector3 HipJointRight
         {
             get {
-                if (o.rightHipPos == Vector3.Zero)
+                if (o.rightHipPos == ZeroVector3)
                 {
                     o.rightHipPos = GetHipJoint(true);
                 }
@@ -361,7 +369,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.leftHipPos == Vector3.Zero)
+                if (o.leftHipPos == ZeroVector3)
                 {
                     o.leftHipPos = GetHipJoint(false);
                 }
@@ -372,26 +380,25 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.sternumClacicle == Vector3.Zero)
+                if (o.sternumClacicle == ZeroVector3)
                 {
                     Vector3 back = markers[MarkerNames.neck];
                     Vector3 front = markers[MarkerNames.chest];
                     Vector3 neckPos;
                     Vector3 neck2ChestVector = bd.NeckToChestVector;
                     Vector3 transformedNeckToChestVector = Vector3.Transform(neck2ChestVector, ChestOrientation) / 2;
-                    if (!back.IsNaN() && neck2ChestVector != Vector3.Zero)
+                    if (!back.IsNaN() && neck2ChestVector != ZeroVector3)
                     {
                         neckPos = back + transformedNeckToChestVector;
 
                     }
-                    else if (!front.IsNaN() && neck2ChestVector != Vector3.Zero)
+                    else if (!front.IsNaN() && neck2ChestVector != ZeroVector3)
                     {
                         neckPos = front - transformedNeckToChestVector;
                     }
                     else
                     {
-                        back.Normalize();
-                        neckPos = back * BodyData.MarkerToSpineDist;
+                        neckPos = Vector3.NormalizeFast(back) * BodyData.MarkerToSpineDist;
                     }
                     o.sternumClacicle = neckPos;
                 }
@@ -401,7 +408,7 @@ namespace QTM2Unity
         private Vector3 Spine1
         {
             get {
-                if (o.spine1 == Vector3.Zero)
+                if (o.spine1 == ZeroVector3)
                 {
                     Vector3 pos;
                     Vector3 target;
@@ -415,7 +422,7 @@ namespace QTM2Unity
                         pos = markers[MarkerNames.spine];
                         target = markers[MarkerNames.neck];
                     }
-                Vector3 front = Vector3.Transform(Vector3.UnitZ, QuaternionHelper.LookAtUp(pos, target, ChestForward));
+                Vector3 front = Vector3.Transform(UnitZ, QuaternionHelper.LookAtUp(pos, target, ChestForward));
                 front.Normalize();
                 pos = markers[MarkerNames.spine];
                 pos += front * BodyData.MarkerToSpineDist;
@@ -428,11 +435,11 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.head == Vector3.Zero)
+                if (o.head == ZeroVector3)
                 {
                     Vector3 headPos = Vector3Helper.MidPoint(markers[MarkerNames.leftHead], markers[MarkerNames.rightHead]);
                     //Move head position down
-                    Vector3 down = -Vector3.Transform(Vector3.UnitY, HeadOrientation);
+                    Vector3 down = -Vector3.Transform(UnitY, HeadOrientation);
                     //down.NormalizeFast();
                     headPos += down * BodyData.MidHeadToHeadJoint;
                     o.head = headPos;
@@ -444,7 +451,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.shoulderLeft == Vector3.Zero)
+                if (o.shoulderLeft == ZeroVector3)
                 {
                     o.shoulderLeft = GetUpperarmJoint(false);
                 }
@@ -455,7 +462,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.shoulderRight == Vector3.Zero)
+                if (o.shoulderRight == ZeroVector3)
                 {
                     o.shoulderRight = GetUpperarmJoint(true);
                 }
@@ -466,7 +473,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.elbowLeft == Vector3.Zero)
+                if (o.elbowLeft == ZeroVector3)
                 {
                     o.elbowLeft = Vector3Helper.MidPoint(markers[MarkerNames.leftInnerElbow], markers[MarkerNames.leftOuterElbow]);
                 }
@@ -477,7 +484,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.elbowRight == Vector3.Zero)
+                if (o.elbowRight == ZeroVector3)
                 {
                     o.elbowRight = Vector3Helper.MidPoint(markers[MarkerNames.rightInnerElbow], markers[MarkerNames.rightOuterElbow]);
                 }
@@ -488,7 +495,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.handLeft == Vector3.Zero)
+                if (o.handLeft == ZeroVector3)
                 {
                     o.handLeft = Vector3Helper.MidPoint(markers[MarkerNames.leftWrist], markers[MarkerNames.leftWristRadius]);
                 }
@@ -499,7 +506,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.handRight == Vector3.Zero)
+                if (o.handRight == ZeroVector3)
                 {
                     o.handRight = Vector3Helper.MidPoint(markers[MarkerNames.rightWrist], markers[MarkerNames.rightWristRadius]);
                 }
@@ -510,7 +517,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.kneeRight == Vector3.Zero)
+                if (o.kneeRight == ZeroVector3)
                 {
                     o.kneeRight = GetKneePos(true);
                 }
@@ -521,7 +528,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.kneeLeft  == Vector3.Zero)
+                if (o.kneeLeft  == ZeroVector3)
                 {
                     o.kneeLeft = GetKneePos(false);
                 }
@@ -532,7 +539,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.ankleLeft == Vector3.Zero)
+                if (o.ankleLeft == ZeroVector3)
                 {
                     o.ankleLeft = GetAnklePos(false);
                 }
@@ -543,7 +550,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.ankleRight == Vector3.Zero)
+                if (o.ankleRight == ZeroVector3)
                 {
                     o.ankleRight = GetAnklePos(true);
                 }
@@ -554,7 +561,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.footBaseLeft == Vector3.Zero)
+                if (o.footBaseLeft == ZeroVector3)
                 {
                     o.footBaseLeft = Vector3Helper.PointBetween(markers[MarkerNames.leftHeel], markers[MarkerNames.leftToe2], 0.4f);
                 }
@@ -565,7 +572,7 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.footBaseRight == Vector3.Zero)
+                if (o.footBaseRight == ZeroVector3)
                 {
                     o.footBaseRight = Vector3Helper.PointBetween(markers[MarkerNames.rightHeel], markers[MarkerNames.rightToe2], 0.4f);
                 }
@@ -586,8 +593,8 @@ namespace QTM2Unity
             Z = -0.24f * pelvisDepth - 9.9f;
             if (!isRightHip) X = -X;
             Vector3 offset = new Vector3(X, Y, Z) / 1000;
-            offset = QuaternionHelper.Rotate(HipOrientation, offset);
-            return ASISMid + offset;
+            //offset = Vector3.Transform(offset, HipOrientation);// QuaternionHelper.Rotate(HipOrientation, offset);
+            return ASISMid + Vector3.Transform(offset, HipOrientation);
         }
         private Vector3 GetUpperarmJoint(bool isRightShoulder)
         {
@@ -601,7 +608,7 @@ namespace QTM2Unity
                 z = 66.468f - 0.531f * bd.ShoulderWidth + 0.571f * bd.Mass;
             if (isRightShoulder) z = -z;
             Vector3 res = new Vector3(x, y, z) / 1000; // to mm
-            res = QuaternionHelper.Rotate(ChestOrientation, res);
+            res = Vector3.Transform(res, ChestOrientation); //QuaternionHelper.Rotate(ChestOrientation, res);
             res += isRightShoulder ? markers[MarkerNames.rightShoulder] : markers[MarkerNames.leftShoulder];
             return res;
         }
@@ -689,7 +696,7 @@ namespace QTM2Unity
         }
         private void Neck(Bone b)
         {
-            Vector3 up = Vector3.Transform(Vector3.UnitY, ChestOrientation);
+            Vector3 up = Vector3.Transform(UnitY, ChestOrientation);
             Vector3 neckPos = SternumClavicle;
             Vector3 pos = neckPos + up * BodyData.SpineLength * 2;
             b.Pos = pos;
@@ -702,7 +709,7 @@ namespace QTM2Unity
         }
         private void GetHeadTop(Bone b)
         {
-            Vector3 plus = Vector3.Transform(Vector3.UnitY,HeadOrientation)*(BodyData.MidHeadToHeadJoint*2);
+            Vector3 plus = Vector3.Transform(UnitY,HeadOrientation)*(BodyData.MidHeadToHeadJoint*2);
             b.Pos = Head+plus;
         }
         
