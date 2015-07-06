@@ -36,6 +36,7 @@ namespace QTM2Unity
         {
             if (bodyRig.resetSkeleton || joints == null || skeleton == null || skeletonBuffer == null || mp == null)
             {
+                UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
                 skeletonBuffer = new BipedSkeleton();
                 mp = new MarkersPreprocessor();

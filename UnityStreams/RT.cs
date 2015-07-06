@@ -59,11 +59,17 @@ namespace QTM2Unity
             }
             if (streaming)
             {
-
-                markerData = rtClient.Markers;
+                var list = rtClient.Markers.ToList();
+                markerData = list.ConvertAll(kvp => new LabeledMarker(kvp.Key, kvp.Value));
+                //foreach (var v in markerData)
+                //{
+                //    UnityEngine.Debug.Log(v.label + " " + v.position );
+                //}
                 if (markerData == null && markerData.Count == 0) return;
                 pos = (this.transform.position + offset).Convert();
                 UpdateNext();
+
+
             }
             else if (_connected)
             {
@@ -93,8 +99,11 @@ namespace QTM2Unity
             {
                 foreach (var lb in rtClient.Bones)
 	            {
-                    Debug.DrawLine(lb.fromMarker.position.Convert() + pos.Convert(),
-                                    lb.toMarker.position.Convert() + pos.Convert(), markers.markerBonesColor);
+                    OpenTK.Vector3 from = (lb.fromMarker + pos);
+                    OpenTK.Vector3 to = (lb.toMarker + pos);
+
+                    Debug.DrawLine(from.Convert(),
+                                    to.Convert(), markers.markerBonesColor);
                 }
 	        }
         }

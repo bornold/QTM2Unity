@@ -87,7 +87,15 @@ namespace QTM2Unity.Unity
                 }
                 else
                 {
-                    GUILayout.Label("Connected to: " + popuplist[server].text);
+                    try
+                    {
+                        GUILayout.Label("Connected to: " + popuplist[server].text);
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        OnDisconnect();
+                        return;
+                    }
                 }
             }
             else
