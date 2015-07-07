@@ -43,12 +43,11 @@ namespace QTM2Unity
                 joints = new JointLocalization();
                 bodyRig.resetSkeleton = false;
             }
+            if (!mp.ProcessMarkers(markerData)) return;
             var temp = skeleton;
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
-            //var marmar = mp.ProcessMarkers(markerData);
-            mp.ProcessMarkers(markerData);
-            //joints.GetJointLocation(mp.ProcessMarkers(markerData), ref skeleton);
+            joints.GetJointLocation(markerData, ref skeleton);
             
         }
         void OnDrawGizmos()

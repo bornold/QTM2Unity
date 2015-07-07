@@ -17,9 +17,18 @@ namespace QTM2Unity
 
         private List<string> markerNames;
         private Dictionary<string,Vector3> mMarkers;
-        public Dictionary<string, Vector3> Markers { get { return mMarkers; } }
+        private Dictionary<string, Vector3> mMarkersBuffer;
+        private volatile bool dataFetched = false;
+        public Dictionary<string, Vector3> Markers
+        { 
+            get
+            {
+                dataFetched = true;
+                return mMarkers;
+            } 
+        }
 
-		private List<MarkerBone> mBones;
+        private List<MarkerBone> mBones;
 		public List<MarkerBone> Bones { get { return mBones; } }
 
 		private eAxis mUpAxis;
@@ -32,7 +41,6 @@ namespace QTM2Unity
 		// Function is called everytime protocol receives a datapacket from server
 		public void process(RTPacket packet)
 		{
-            //UnityEngine.Debug.Log("processing");
             mPacket = packet;
             #region ...
             //List<s6DOF> bodyData = packet.get6DOFData();
@@ -65,6 +73,13 @@ namespace QTM2Unity
 			//Get marker data that is labeled and update values
             if(markerData != null)
             {
+                if (dataFetched)
+                {
+                    var tmp = mMarkers;
+                    mMarkers = mMarkersBuffer;
+                    mMarkersBuffer = tmp;
+                    dataFetched = false;
+                }
                 var it = markerNames.GetEnumerator();
                 foreach (var md in markerData)
                 {
@@ -84,6 +99,10 @@ namespace QTM2Unity
                     {
                         mMarkers.Add(key, position);
                     }
+                }
+                if (dataFetched)
+                {
+                    dataFetched = false;
                 }
             }
 		}
@@ -118,6 +137,7 @@ namespace QTM2Unity
 			//list of markers
             markerNames = new List<string>();
             mMarkers = new Dictionary<string, Vector3>();
+            mMarkersBuffer = new Dictionary<string, Vector3>();
 			//list of bones
 			mBones = new List<MarkerBone>();
 
@@ -153,22 +173,6 @@ namespace QTM2Unity
 			}
 			return null;
 		}
-
-        //// Get marker data from streamed data
-        //public LabeledMarker getMarker(string name)
-        //{
-        //    if(mMarkers.Count > 0)
-        //    {
-        //        foreach(LabeledMarker marker in mMarkers)
-        //        {
-        //            if(marker.label == name)
-        //            {
-        //                return marker;
-        //            }
-        //        }
-        //    }
-        //    return null;
-        //}
 
         /// <summary>
         /// Get list of servers available on network
@@ -256,7 +260,6 @@ namespace QTM2Unity
 			mProtocol.disconnect();
 		}
 
-
         private bool get6DOFSettings()
         {
             //get settings and information for streamed bodies
@@ -273,12 +276,9 @@ namespace QTM2Unity
                     newbody.position = Vector3.Zero;
                     newbody.rotation = Quaternion.Identity;
                     mBodies.Add(newbody);
-
                 }
-
                 return true;
             }
-
             return false;
         }
 
@@ -297,20 +297,10 @@ namespace QTM2Unity
                 // Save marker settings
                 markerNames.Clear();
                 mMarkers.Clear();
+                mMarkersBuffer.Clear();
 				foreach (sSettings3DLabel marker in mProtocol.Settings3D.labels3D)
                 {
                     markerNames.Add(marker.name);
-                   // LabeledMarker newMarker = new LabeledMarker();
-                   // newMarker.label = marker.name;
-                   // newMarker.position = Vector3.Zero;
-                   ///* 
-                   // newMarker.color.r = (marker.colorRGB) & 0xFF;
-                   // newMarker.color.g = (marker.colorRGB >> 8) & 0xFF;
-                   // newMarker.color.b = (marker.colorRGB >> 16) & 0xFF;
-
-                   // newMarker.color /= 255;
-                   // */
-                   // mMarkers.Add(newMarker);
                 }
 
 				// Save bone settings
@@ -323,9 +313,7 @@ namespace QTM2Unity
 	                {
 	                    MarkerBone bone = new MarkerBone();
                         bone.from = settingsBone.from;
-                        //bone.fromMarker = mMarkers[settingsBone.from];//getMarker(settingsBone.from);
                         bone.to = settingsBone.to;
-                        //bone.toMarker = mMarkers[settingsBone.to]; //getMarker(settingsBone.to);
 	                    Bones.Add(bone);
 	                }
                     
@@ -353,7 +341,6 @@ namespace QTM2Unity
                 {
                     if(!get3DSettings())
                     {
-                        //Debug.Log("Error retrieving settings");
                         return false;
                     }
                 }
@@ -362,7 +349,6 @@ namespace QTM2Unity
                 {
                     if (!get6DOFSettings())
                     {
-                        //Debug.Log("Error retrieving settings");
                         return false;
                     }
                 }
@@ -379,10 +365,6 @@ namespace QTM2Unity
                     return true;
                 }
 			}
-			else
-			{
-				//Debug.Log ("Error Creating Connection to server");
-			}
 			return false;
 		}
 	}
@@ -396,21 +378,11 @@ namespace QTM2Unity
 		public Quaternion rotation;
 	}
 
-    // Class for labeled markers with unity datatypes
-	public class LabeledMarker
-	{
-        public LabeledMarker(string label, Vector3 pos) { this.label = label; this.position = pos; }
-		public string label;
-		public Vector3 position;
-	}
-
     // Class for bones
 	public class MarkerBone
 	{
         public string from;
         public string to;
-        //public Vector3 fromMarker;
-        //public Vector3 toMarker;
 	}
 
 }

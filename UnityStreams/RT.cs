@@ -22,7 +22,6 @@ namespace QTM2Unity
         protected RTClient rtClient;
         protected OpenTK.Vector3 pos;
         protected bool streaming = false;
-        //protected List<LabeledMarker> markerData;
         protected Dictionary<string,OpenTK.Vector3> markerData;
         public virtual void StartNext(){}
         public virtual void UpdateNext(){}
@@ -40,7 +39,6 @@ namespace QTM2Unity
         private bool _stream3d;
         void Update()
         {
-
             if (rtClient == null)
             {
                 rtClient = RTClient.getInstance();
@@ -60,18 +58,10 @@ namespace QTM2Unity
             }
             if (streaming)
             {
-                //var list = rtClient.Markers.ToList();
-                //markerData = list.ConvertAll(kvp => new LabeledMarker(kvp.Key, kvp.Value));
                 markerData = rtClient.Markers;
-                //foreach (var v in markerData)
-                //{
-                //    UnityEngine.Debug.Log(v.label + " " + v.position );
-                //}
-                if (markerData == null && markerData.Count == 0) return;
+                if (markerData == null || markerData.Count == 0 ) return;
                 pos = (this.transform.position + offset).Convert();
                 UpdateNext();
-
-
             }
             else if (_connected)
             {
@@ -80,7 +70,7 @@ namespace QTM2Unity
         }
         void OnDrawGizmos()
         {
-            if (Application.isPlaying && streaming && markerData != null)
+            if (Application.isPlaying && streaming && markerData != null && markerData.Count > 0 )
             {
                 Draw();
             }
@@ -93,7 +83,6 @@ namespace QTM2Unity
                 var items = markerData.Values.ToList();
                 foreach (var lb in items)
                 {
-                    //Gizmos.DrawSphere((lb.position + pos).Convert(), markers.markersScale);
                     Gizmos.DrawSphere((lb + pos).Convert(), markers.markersScale);
                 }
             }
@@ -102,8 +91,6 @@ namespace QTM2Unity
             {
                 foreach (var lb in rtClient.Bones)
 	            {
-                    //OpenTK.Vector3 from = markerData.Find(g => g.label == lb.from).position;
-                    //OpenTK.Vector3 to = markerData.Find(g => g.label == lb.to).position;
                     OpenTK.Vector3 from = markerData[lb.from] + pos;
                     OpenTK.Vector3 to = markerData[lb.to] + pos;
                     Debug.DrawLine(from.Convert(),

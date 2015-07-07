@@ -57,10 +57,13 @@ namespace QTM2Unity
         public JointLocalization()
         {
             jointFunctions = new List<Action<Bone>>() {
+                    //GC 0.7kB
                     (b) => Plevis(b), 
+                    //GC 0.9kB
                     (b) => SpineRoot(b), 
+                    // GC 1.1kB
                     (b) => MidSpine(b),
-                    (b) => SpineEnd(b),      
+                    (b) => SpineEnd(b),
                     (b) => Neck(b),
                     (b) => GetHead(b),
                     (b) => GetHeadTop(b),
@@ -110,13 +113,13 @@ namespace QTM2Unity
             {
                 if (o.hipOrientation == ZeroQuaternion)
                 {
-                    Vector3 right = markers[MarkerNames.leftHip] - markers[MarkerNames.rightHip];
-                    Vector3 front = ((markers[MarkerNames.leftHip] - markers[MarkerNames.rightHip]) * 0.5f + markers[MarkerNames.rightHip]) 
-                        - markers[MarkerNames.bodyBase];
-                    front.NormalizeFast();
-                    right.NormalizeFast();
-                    Quaternion frontRot = QuaternionHelper.GetRotation2(Vector3.UnitZ, front);
-                    o.hipOrientation = QuaternionHelper.GetRotation2(Vector3.Transform(Vector3.UnitY, frontRot), Vector3.Cross(right, front)) * frontRot;
+                    Vector3 front = Vector3Helper.MidPoint(markers[MarkerNames.leftHip], markers[MarkerNames.rightHip])
+                                    - markers[MarkerNames.bodyBase];
+                    Quaternion frontRot = QuaternionHelper.GetRotation2(UnitZ, front);
+                    o.hipOrientation = QuaternionHelper.GetRotation2(
+                                            Vector3.Transform(UnitY, frontRot), 
+                                            Vector3.Cross((markers[MarkerNames.leftHip] - markers[MarkerNames.rightHip]), front))
+                                        * frontRot;
                 }
                 return o.hipOrientation;
             }
@@ -593,8 +596,7 @@ namespace QTM2Unity
             Z = -0.24f * pelvisDepth - 9.9f;
             if (!isRightHip) X = -X;
             Vector3 offset = new Vector3(X, Y, Z) / 1000;
-            //offset = Vector3.Transform(offset, HipOrientation);// QuaternionHelper.Rotate(HipOrientation, offset);
-            return ASISMid + Vector3.Transform(offset, HipOrientation);
+            return ASISMid + Vector3.Transform((new Vector3(X, Y, Z) / 1000), HipOrientation);
         }
         private Vector3 GetUpperarmJoint(bool isRightShoulder)
         {
