@@ -160,7 +160,7 @@ namespace QTM2Unity
                 //{
                 //    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
                 //}
-                ConstraintsBeforeReturn(first);
+                //ConstraintsBeforeReturn(first);
                 //if (missingChain.Any(b => b.HasNaN))
                 //{
                 //    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));

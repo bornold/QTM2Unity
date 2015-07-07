@@ -102,7 +102,7 @@ namespace QTM2Unity
 		public void events(RTPacket packet)
 		{
             eEvent currentEvent =  packet.getEvent();
-			//Debug.Log("Event occured! : " + currentEvent);
+			UnityEngine.Debug.Log("Event occured! : " + currentEvent);
 
             if (currentEvent == eEvent.kEventRTFromFileStarted)
             {

@@ -40,12 +40,15 @@ namespace QTM2Unity
         public const string ELBOW_L = "elbow_L";
         public const string WRIST_L = "wrist_L";
         public const string HAND_L = "hand_L";
+        public const string finger_L = "finger_L";
+
         //Right arm chain
         public const string CLAVICLE_R = "clavicle_R";
         public const string SHOULDER_R = "shoulder_R";
         public const string ELBOW_R = "elbow_R";
         public const string WRIST_R = "wrist_R";
         public const string HAND_R = "hand_R";
+        public const string finger_R = "finger_R";
         #endregion
         public BipedSkeleton()
         {
@@ -176,9 +179,14 @@ namespace QTM2Unity
                                         wristLeftPos,
                                         wristLeftRot));
                                     {
-                                        wristLeft.AddChild(new Bone(HAND_L,
+                                        TreeNode<Bone> handLeft = wristLeft.AddChild(new Bone(HAND_L,
+                                           handLeftPos,
+                                           wristLeftRot));
+                                        {
+                                            handLeft.AddChild(new Bone(finger_L,
                                            handLeftPos,
                                            QuaternionHelper.Zero));
+                                        }
                                     }
                                 }
                             }
@@ -201,9 +209,14 @@ namespace QTM2Unity
                                         wristRightPos, 
                                         wristRightRot));    
                                     {
-                                        wristRight.AddChild(new Bone(HAND_R, 
+                                        TreeNode<Bone> handRight = wristRight.AddChild(new Bone(HAND_R, 
                                             handRightPos,
+                                            wristRightRot));
+                                        {
+                                            handRight.AddChild(new Bone(finger_L,
+                                            handLeftPos,
                                             QuaternionHelper.Zero));
+                                        }
                                     }
                                 }
                             }

@@ -4,6 +4,7 @@ namespace QTM2Unity
     [System.Serializable]
     public class BodyRig
     {
+        public string bodyPrefix = "";
         public bool showSkeleton = false;
         public Color skelettColor = Color.black;
         public bool showJoints = false;
@@ -39,7 +40,7 @@ namespace QTM2Unity
                 UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
                 skeletonBuffer = new BipedSkeleton();
-                mp = new MarkersPreprocessor();
+                mp = new MarkersPreprocessor(bodyPrefix: bodyRig.bodyPrefix);
                 joints = new JointLocalization();
                 resetSkeleton = false;
             }

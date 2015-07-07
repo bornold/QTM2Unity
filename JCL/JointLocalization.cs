@@ -80,12 +80,16 @@ namespace QTM2Unity
                     (b) => GetWristLeft(b),
                     // GC 2.5kB
                     (b) => GetHandLeft(b),
+                    (b) => GetHandLeft(b),
+
                     (b) => GetShoulderRight(b), 
                     (b) => GetUpperArmRight(b),
                     (b) => GetLowerArmRight(b),
                     (b) => GetWristRight(b),
                     // GC 3.3kB
                     (b) => GetHandRight(b),
+                    (b) => GetHandRight(b),
+
                     (b) => UpperLegLeft(b),       
                     (b) => LowerLegLeft(b),
                     (b) => GetAnkleLeft(b),
@@ -535,7 +539,14 @@ namespace QTM2Unity
             {
                 if (o.kneeRight == ZeroVector3)
                 {
-                    o.kneeRight = GetKneePos(true);
+                    if (markers[MarkerNames.rightInnerKnee].IsNaN())
+                    {
+                        o.kneeRight = GetKneePos(true);
+                    }
+                    else
+                    {
+                        o.kneeRight = Vector3Helper.MidPoint(markers[MarkerNames.rightOuterKnee], markers[MarkerNames.rightInnerKnee]);
+                    }
                 }
                 return o.kneeRight;
             }
@@ -546,7 +557,14 @@ namespace QTM2Unity
             {
                 if (o.kneeLeft  == ZeroVector3)
                 {
-                    o.kneeLeft = GetKneePos(false);
+                    if (markers[MarkerNames.leftInnerKnee].IsNaN())
+                    {
+                        o.kneeLeft = GetKneePos(false);
+                    }
+                    else
+                    {
+                        o.kneeLeft = Vector3Helper.MidPoint(markers[MarkerNames.leftOuterKnee], markers[MarkerNames.leftInnerKnee]);
+                    }
                 }
                 return o.kneeLeft;
             }
@@ -555,10 +573,17 @@ namespace QTM2Unity
         {
             get
             {
-                if (o.ankleLeft == ZeroVector3)
-                {
-                    o.ankleLeft = GetAnklePos(false);
-                }
+                    if (o.ankleLeft == ZeroVector3)
+                    {
+                        if (markers[MarkerNames.leftInnerAnkle].IsNaN())
+                        {
+                            o.ankleLeft = GetAnklePos(false);
+                        }
+                        else
+                        {
+                            o.ankleLeft = Vector3Helper.MidPoint(markers[MarkerNames.leftOuterAnkle], markers[MarkerNames.leftInnerAnkle]);
+                        }
+                    }
                 return o.ankleLeft;
             }
         }
@@ -568,7 +593,14 @@ namespace QTM2Unity
             {
                 if (o.ankleRight == ZeroVector3)
                 {
-                    o.ankleRight = GetAnklePos(true);
+                    if (markers[MarkerNames.rightInnerAnkle].IsNaN())
+                    {
+                        o.ankleRight = GetAnklePos(true);
+                    }
+                    else
+                    {
+                        o.ankleRight = Vector3Helper.MidPoint(markers[MarkerNames.rightOuterAnkle], markers[MarkerNames.rightInnerAnkle]);
+                    }
                 }
                 return o.ankleRight;
             }

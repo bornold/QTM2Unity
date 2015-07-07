@@ -112,6 +112,10 @@ namespace QTM2Unity
             leftHand  = "L_HM2";
         public static readonly List<string> 
             leftHandAKA = new List<string>() {"L_HM2", "Lt 3rd Digita"  };
+        public static string
+            leftFinger = "L_Finger";
+        public static readonly List<string>
+            leftFingerAKA = new List<string>() { "L_Finger" };
         #endregion
         #region right hand
         public static string 
@@ -126,6 +130,10 @@ namespace QTM2Unity
             rightHand  = "R_HM2";
         public static readonly List<string>
             rightHandAKA = new List<string>() { "R_HM2", "Rt 3rd Digita" };
+        public static string
+            rightFinger = "R_Finger";
+        public static readonly List<string>
+            rightFingerAKA = new List<string>() { "R_Finger" };
         #endregion
         #endregion
         #region knee
