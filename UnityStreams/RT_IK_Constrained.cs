@@ -12,7 +12,6 @@ namespace QTM2Unity
         public float coneSize = 0.05f;
         public int coneResolution = 50;
         public bool showTwistConstraints = false;
-
     }
     class RT_IK_Constrained : RT_IK
     {
@@ -43,8 +42,9 @@ namespace QTM2Unity
         public override void Draw()
         {
             base.Draw();
-            if (jointsConstrains.showConstraints || 
-                jointsConstrains.showTwistConstraints)
+            if (jointsConstrains != null && 
+                (jointsConstrains.showConstraints || 
+                jointsConstrains.showTwistConstraints))
             {
                 foreach (TreeNode<Bone> b in skeleton)
                 {

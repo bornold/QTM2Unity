@@ -9,9 +9,7 @@ namespace QTM2Unity
     class RT_IK : RT_JC
     {
         private IKApplier ikApplier;
-        public IK ikAlgorithm = IK.CCD;
         public bool FlagToIKSolver = false;
-        private IK lastTime = IK.CCD;
         public override void StartNext()
         {
             base.StartNext();
@@ -21,44 +19,10 @@ namespace QTM2Unity
         {
             base.UpdateNext();
             if (ikApplier == null) ikApplier = new IKApplier();
-            if ( lastTime != ikAlgorithm)
-            {
-                switch (ikAlgorithm)
-                {
-                    case IK.CCD:
-                        ikApplier.IKSolver = new CCD();
-                        break;
-                    case IK.FABRIK:
-                        ikApplier.IKSolver = new FABRIK();
-                        break;
-                    case IK.DLS:
-                        ikApplier.IKSolver = new DampedLeastSquares();
-                        break;
-                    case IK.TRANSPOSE:
-                        ikApplier.IKSolver = new JacobianTranspose();
-                        break;
-                    case IK.TT:
-                        ikApplier.IKSolver = new TargetTriangleIK();
-                        break;
-                    default:
-                        break;
-                }
-                lastTime = ikAlgorithm;
-            }
             ikApplier.test = FlagToIKSolver;
+            // GC 5.1kB
             ikApplier.ApplyIK(ref skeleton);
         }
-        //public override void Draw()
-        //{
-        //    base.Draw();
-        //}
-        //void OnDrawGizmos()
-        //{
-        //    if (Application.isPlaying && streaming && skeleton != null)
-        //    {
-        //        Draw();
-        //    }
-        //}
     }
 }
 

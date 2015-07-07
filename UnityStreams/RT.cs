@@ -12,8 +12,6 @@ namespace QTM2Unity
         public float markersScale = 0.01f;
         public bool showMarkerBones = false;
         public Color markerBonesColor = Color.blue;
-        public bool doRemoveMarkers = false;
-        public string removeMarker;
     }
     public class RT : MonoBehaviour
     {
@@ -30,42 +28,20 @@ namespace QTM2Unity
             rtClient = RTClient.getInstance();
             StartNext();
         }
-        private bool _connected;
-        private int _pickedServer;
-        private short _udpPort;
-        private int _streammode;
-        private int _streamval;
-        private bool _stream6d;
-        private bool _stream3d;
         void Update()
         {
             if (rtClient == null)
             {
                 rtClient = RTClient.getInstance();
-                streaming = false;
+                streaming = rtClient.getStreamingStatus();
             }
-            if (rtClient.getStreamingStatus() && !streaming)
-            {
-                _pickedServer = rtClient._pickedServer;
-                _udpPort = rtClient._udpPort;
-                _streammode = rtClient._streammode;
-                _streamval = rtClient._streamval;
-                _stream6d = rtClient._stream6d;
-                _stream3d = rtClient._stream3d;
-                _connected = true;
-
-                streaming = true;
-            }
+            streaming = rtClient.getStreamingStatus();
             if (streaming)
             {
                 markerData = rtClient.Markers;
                 if (markerData == null || markerData.Count == 0 ) return;
                 pos = (this.transform.position + offset).Convert();
                 UpdateNext();
-            }
-            else if (_connected)
-            {
-                _connected = rtClient.connect(_pickedServer, _udpPort, _streammode, _streamval, _stream6d, _stream3d);
             }
         }
         void OnDrawGizmos()
@@ -77,9 +53,11 @@ namespace QTM2Unity
         }
         public virtual void Draw()
         {
-            Gizmos.color = markers.markersColor;
+            if (markers == null) return;
             if (markers.showMarkers)
             {
+                Gizmos.color = markers.markersColor;
+
                 var items = markerData.Values.ToList();
                 foreach (var lb in items)
                 {

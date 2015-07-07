@@ -17,13 +17,14 @@ namespace QTM2Unity
 
         private List<string> markerNames;
         private Dictionary<string,Vector3> mMarkers;
-        private Dictionary<string, Vector3> mMarkersBuffer;
-        private volatile bool dataFetched = false;
+        private List<Dictionary<string, Vector3>> mMarkersBuffer;
+        private int bufferSize = 64;
+        private volatile int dataFetched = 0;
         public Dictionary<string, Vector3> Markers
         { 
             get
             {
-                dataFetched = true;
+                dataFetched = (dataFetched+1)%bufferSize;
                 return mMarkers;
             } 
         }
@@ -73,13 +74,7 @@ namespace QTM2Unity
 			//Get marker data that is labeled and update values
             if(markerData != null)
             {
-                if (dataFetched)
-                {
-                    var tmp = mMarkers;
-                    mMarkers = mMarkersBuffer;
-                    mMarkersBuffer = tmp;
-                    dataFetched = false;
-                }
+                mMarkers = mMarkersBuffer[dataFetched];
                 var it = markerNames.GetEnumerator();
                 foreach (var md in markerData)
                 {
@@ -99,10 +94,6 @@ namespace QTM2Unity
                     {
                         mMarkers.Add(key, position);
                     }
-                }
-                if (dataFetched)
-                {
-                    dataFetched = false;
                 }
             }
 		}
@@ -136,8 +127,12 @@ namespace QTM2Unity
 			mBodies = new List<sixDOFBody>();
 			//list of markers
             markerNames = new List<string>();
-            mMarkers = new Dictionary<string, Vector3>();
-            mMarkersBuffer = new Dictionary<string, Vector3>();
+            mMarkersBuffer = new List<Dictionary<string, Vector3>>();
+            for (int i = 0; i < bufferSize; i++)
+            {
+                mMarkersBuffer.Add(new Dictionary<string, Vector3>());
+                
+            }
 			//list of bones
 			mBones = new List<MarkerBone>();
 
@@ -230,17 +225,7 @@ namespace QTM2Unity
             }
 			if(mProtocol.connect(server, udpPort))
 			{
-                if (connectStream(udpPort, streammode, streamval, stream6d, stream3d))
-                {
-                    _connected = true;
-                    _pickedServer = pickedServer;
-                    _udpPort= udpPort;
-                    _streammode = streammode;
-                    _streamval = streamval;
-                    _stream6d = stream6d;
-                    _stream3d = stream3d;
-                    return true;
-                }
+                return (connectStream(udpPort, streammode, streamval, stream6d, stream3d));
 			}
 			return false;
 		}
@@ -296,8 +281,6 @@ namespace QTM2Unity
 
                 // Save marker settings
                 markerNames.Clear();
-                mMarkers.Clear();
-                mMarkersBuffer.Clear();
 				foreach (sSettings3DLabel marker in mProtocol.Settings3D.labels3D)
                 {
                     markerNames.Add(marker.name);
@@ -316,9 +299,7 @@ namespace QTM2Unity
                         bone.to = settingsBone.to;
 	                    Bones.Add(bone);
 	                }
-                    
 		        }
-
                 return true;
             }
             return false;

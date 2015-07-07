@@ -275,7 +275,10 @@ namespace QTM2Unity
             }
             return Quaternion.FromAxisAngle(Vector3.NormalizeFast(Vector3.Cross(a, b)), Vector3.CalculateAngle(a, b));
         }
-        
+        public static Quaternion RotationBetween(Vector3 from, Vector3 to)
+        {
+            return Quaternion.FromAxisAngle(Vector3.Cross(from, to), Vector3.CalculateAngle(from, to));
+        }
 
         /// <summary>
         /// Get orientation of three points
@@ -388,12 +391,6 @@ namespace QTM2Unity
             //Quaternion yRot = GetRotation2(possibleY, y);
             //Quaternion orientation = yRot * zRot;
             return GetRotation2(Vector3.Transform(Vector3.UnitY, zRot), y) * zRot;
-        }
-        public static Quaternion RotationBetween(Vector3 from, Vector3 to)
-        {
-            //float angle = Vector3.CalculateAngle(from, to);
-            //Vector3 axis = Vector3.Cross(from, to);
-            return Quaternion.FromAxisAngle(Vector3.Cross(from, to), Vector3.CalculateAngle(from, to));
         }
     }
 }

@@ -60,8 +60,7 @@ namespace QTM2Unity
                 UnityEngine.Debug.LogWarning(markersLastFrame[MarkerNames.leftHip]);
                 UnityEngine.Debug.LogWarning(markersLastFrame[MarkerNames.rightHip]);
                 UnityEngine.Debug.LogWarning(markersLastFrame[MarkerNames.bodyBase]);
-                UnityEngine.Debug.LogError("MISSING Essential LAST markers");
-
+                UnityEngine.Debug.LogWarning("MISSING Essential markers from last frame");
             }
             // GC: 40B GC 
             foreach (var name in markersList)
@@ -79,12 +78,6 @@ namespace QTM2Unity
                 MissingEssientialMarkers(markers);
 
             }
-            if (markers[MarkerNames.leftHip].IsNaN()
-                || markers[MarkerNames.rightHip].IsNaN()
-                || markers[MarkerNames.bodyBase].IsNaN())
-            {
-                UnityEngine.Debug.LogError("FUCK");
-            }
             markersLastFrame = markers;
             //MoveLegMarkers(ref newMarkers, true);
             //MoveLegMarkers(ref newMarkers, false);
@@ -96,12 +89,6 @@ namespace QTM2Unity
                     sacrumlastFrame = markersLastFrame[MarkerNames.bodyBase],
                     liasLastFrame = markersLastFrame[MarkerNames.leftHip],
                     riasLastFrame = markersLastFrame[MarkerNames.rightHip];
-            if (liasLastFrame.IsNaN()
-                || sacrumlastFrame.IsNaN()
-                || riasLastFrame.IsNaN())
-            {
-                UnityEngine.Debug.LogError("LAST FRAME ERROR");
-            }
             Vector3
                 Sacrum = markers[MarkerNames.bodyBase],
                 RIAS = markers[MarkerNames.rightHip],
@@ -192,7 +179,7 @@ namespace QTM2Unity
                 || markers[MarkerNames.bodyBase].IsNaN())
             {
                 //UnityEngine.Debug.LogError("LAST FRAME ERROR");
-                UnityEngine.Debug.LogErrorFormat("RIAS:{0}\nLIAS{1}\nSACRUM{2}",
+                UnityEngine.Debug.LogWarningFormat("Missing even after prediction: RIAS:{0}\nLIAS{1}\nSACRUM{2}",
                     markers[MarkerNames.rightHip],markers[MarkerNames.leftHip],markers[MarkerNames.bodyBase]);
             }
         }

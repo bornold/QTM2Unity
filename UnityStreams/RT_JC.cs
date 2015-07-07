@@ -4,7 +4,6 @@ namespace QTM2Unity
     [System.Serializable]
     public class BodyRig
     {
-        public bool resetSkeleton = false;
         public bool showSkeleton = false;
         public Color skelettColor = Color.black;
         public bool showJoints = false;
@@ -17,6 +16,7 @@ namespace QTM2Unity
     class RT_JC : RT
     {
         public BodyRig bodyRig;
+        public bool resetSkeleton = false;
         protected BipedSkeleton skeleton;
         protected BipedSkeleton skeletonBuffer;
         private MarkersPreprocessor mp;
@@ -34,14 +34,14 @@ namespace QTM2Unity
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if (bodyRig.resetSkeleton || joints == null || skeleton == null || skeletonBuffer == null || mp == null)
+            if ((bodyRig != null && resetSkeleton) || joints == null || skeleton == null || skeletonBuffer == null || mp == null)
             {
                 UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
                 skeletonBuffer = new BipedSkeleton();
                 mp = new MarkersPreprocessor();
                 joints = new JointLocalization();
-                bodyRig.resetSkeleton = false;
+                resetSkeleton = false;
             }
             if (!mp.ProcessMarkers(markerData)) return;
             var temp = skeleton;
@@ -60,7 +60,7 @@ namespace QTM2Unity
         public override void Draw()
         {
             base.Draw();
-            if (bodyRig.showSkeleton || bodyRig.showRotationTrace || bodyRig.showJoints)
+            if (bodyRig != null && (bodyRig.showSkeleton || bodyRig.showRotationTrace || bodyRig.showJoints))
             {
                 Gizmos.color = bodyRig.jointColor;
 

@@ -48,14 +48,18 @@ namespace QTM2Unity
                         if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
                     {
                         bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
-                        Vector3 forward = bone.Parent.Data.GetZAxis();
-                        Vector3 target = bone.Children.First().Data.Pos;
-                        bone.Data.Orientation = QuaternionHelper.LookAtUp(bone.Data.Pos, target, forward);
+                        //Vector3 forward = bone.Parent.Data.GetZAxis();
+                        //Vector3 target = bone.Children.First().Data.Pos;
+                        bone.Data.Orientation = QuaternionHelper.LookAtUp(
+                            bone.Data.Pos, 
+                            bone.Children.First().Data.Pos,
+                            bone.Parent.Data.GetZAxis());
                         continue;
                     }
                     /////////////////////////////////////////////// Special END//////////////////////////////
                     //Stopwatch stopwatch = //Stopwatch.StartNew();
-                    MissingJoint( ref skelEnumer, ref lastSkelEnumer);
+                    //GC 13.1kB
+                    MissingJoint(ref skelEnumer, ref lastSkelEnumer);
                     //stopwatch.Stop();
                     //if (stopwatch.Elapsed.TotalMilliseconds > 3.0)
                     //{
@@ -64,11 +68,14 @@ namespace QTM2Unity
                 }
             }
 
-            FixRotation(skeleton.First());
-            if (skeleton.Any(z => z.Data.HasNaN))
-            {
-                UnityEngine.Debug.LogError(skeleton.First(r => r.Data.HasNaN)); 
-            }
+            //GC 11.4kB
+            //FixRotation(skeleton.First());
+            //GC 4kB
+            //if (skeleton.Any(z => z.Data.HasNaN))
+            //{
+            //    UnityEngine.Debug.LogError(skeleton.First(r => r.Data.HasNaN));
+            //}
+            //GC END
             lastSkel = skeleton;
             //stopwatch2.Stop();
             //if (stopwatch2.Elapsed.TotalMilliseconds > 3.0)
@@ -178,8 +185,7 @@ namespace QTM2Unity
                 if (!b.Data.Exists) break;
                 if (b.IsRoot || b.Parent.IsRoot || b.Parent.Children.First() != b) continue;
                 Vector3 ray2 = (b.Data.Pos - b.Parent.Data.Pos);
-                bool parallel = Vector3Helper.Parallel(b.Parent.Data.GetYAxis(), ray2, 0.01f);
-                if (!parallel)
+                if (!Vector3Helper.Parallel(b.Parent.Data.GetYAxis(), ray2, 0.01f))
                 {
                     //UnityEngine.Debug.Log("fixing rot for " + b.Parent.Data.Name);
                     ray2.NormalizeFast();
@@ -190,6 +196,7 @@ namespace QTM2Unity
             }
             return hasChanged;
         }
+
         private bool ConstraintsBeforeReturn(TreeNode<Bone> bone)
         {
             bool anychange = false;

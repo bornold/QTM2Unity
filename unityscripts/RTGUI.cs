@@ -13,6 +13,7 @@ namespace QTM2Unity.Unity
         int streamFreq = 60;
         int streammode = 0;
         int server = 0;
+        RTClient rtClient;
 
         string connectionStatus = "Not Connected";
 
@@ -21,7 +22,6 @@ namespace QTM2Unity.Unity
         bool stream3d = true;
 
         GUIContent[] popuplist;
-        GUIContent refreshlist;
         private List<sixDOFBody> Availablebodies;
             
         [MenuItem("Window/Qualisys/RTClient")]
@@ -35,6 +35,7 @@ namespace QTM2Unity.Unity
         public void OnEnable()
         {
             //UnityEngine.Debug.Log("OnEnable()");
+            rtClient = RTClient.getInstance();
             refreshServerList();
             Repaint();
         }
@@ -55,7 +56,6 @@ namespace QTM2Unity.Unity
                 popuplist = new GUIContent[0];
             }
         }
-
         /// This makes sure we only can connect when in playing mode
         /// otherwise IK cant be controlled
         void OnInspectorUpdate()
@@ -67,8 +67,11 @@ namespace QTM2Unity.Unity
                 connected = false;
                 popuplist = null;
             }
+            if (Application.isPlaying && connected && !rtClient.getStreamingStatus())
+            {
+               OnConnect();
+            }
         }
-
         void OnGUI()
         {
             //UnityEngine.Debug.Log("OnGUI()");
@@ -181,6 +184,7 @@ namespace QTM2Unity.Unity
             else
             {
                 connectionStatus = "connection Error - check console";
+
             }
         }
     }

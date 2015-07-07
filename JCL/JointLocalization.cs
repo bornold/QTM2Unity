@@ -63,29 +63,40 @@ namespace QTM2Unity
                     (b) => SpineRoot(b), 
                     // GC 1.1kB
                     (b) => MidSpine(b),
+                    // GC 1.2kB
                     (b) => SpineEnd(b),
+                    // GC 1.4kB
                     (b) => Neck(b),
+                    // GC 1.5kB
                     (b) => GetHead(b),
+                    // GC 1.7kB
                     (b) => GetHeadTop(b),
-                    (b) => GetShoulderLeft(b),  
+                    // GC 1.8kB
+                    (b) => GetShoulderLeft(b),
+                    // GC 2.0kB
                     (b) => GetUpperArmLeft(b),
+                    // GC 2.2kB
                     (b) => GetLowerArmLeft(b),
                     (b) => GetWristLeft(b),
+                    // GC 2.5kB
                     (b) => GetHandLeft(b),
                     (b) => GetShoulderRight(b), 
                     (b) => GetUpperArmRight(b),
                     (b) => GetLowerArmRight(b),
                     (b) => GetWristRight(b),
+                    // GC 3.3kB
                     (b) => GetHandRight(b),
                     (b) => UpperLegLeft(b),       
                     (b) => LowerLegLeft(b),
                     (b) => GetAnkleLeft(b),
                     (b) => GetFootBaseLeft(b),
+                    // GC 4.2kB
                     (b) => GetFootLeft(b),
                     (b) => UpperLegRight(b),
                     (b) => LowerLegRight(b), 
                     (b) => GetAnkleRight(b),    
                     (b) => GetFootBaseRight(b),
+                    //// GC 4.9kB
                     (b) => GetFootRight(b),
                 };
         }
@@ -107,6 +118,7 @@ namespace QTM2Unity
             }
         }
         #region Getters and Setters used for joint localization
+
         private Quaternion HipOrientation
         {
             get
@@ -117,10 +129,11 @@ namespace QTM2Unity
                                     - markers[MarkerNames.bodyBase];
                     Quaternion frontRot = QuaternionHelper.GetRotation2(UnitZ, front);
                     o.hipOrientation = QuaternionHelper.GetRotation2(
-                                            Vector3.Transform(UnitY, frontRot), 
+                                            Vector3.Transform(UnitY, frontRot),
                                             Vector3.Cross((markers[MarkerNames.leftHip] - markers[MarkerNames.rightHip]), front))
                                         * frontRot;
                 }
+
                 return o.hipOrientation;
             }
         }
@@ -595,7 +608,6 @@ namespace QTM2Unity
             Y = -0.30f * pelvisWidth - 10.9f;
             Z = -0.24f * pelvisDepth - 9.9f;
             if (!isRightHip) X = -X;
-            Vector3 offset = new Vector3(X, Y, Z) / 1000;
             return ASISMid + Vector3.Transform((new Vector3(X, Y, Z) / 1000), HipOrientation);
         }
         private Vector3 GetUpperarmJoint(bool isRightShoulder)
@@ -711,8 +723,7 @@ namespace QTM2Unity
         }
         private void GetHeadTop(Bone b)
         {
-            Vector3 plus = Vector3.Transform(UnitY,HeadOrientation)*(BodyData.MidHeadToHeadJoint*2);
-            b.Pos = Head+plus;
+            b.Pos = Head + Vector3.Transform(UnitY, HeadOrientation) * (BodyData.MidHeadToHeadJoint * 2);
         }
         
         #endregion
