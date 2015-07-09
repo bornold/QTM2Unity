@@ -75,24 +75,29 @@ namespace QTM2Unity
             if(markerData != null)
             {
                 mMarkers = mMarkersBuffer[dataFetched];
-                var it = markerNames.GetEnumerator();
-                foreach (var md in markerData)
+                lock (mMarkers)
                 {
-                    it.MoveNext();
-                    Vector3 position = new Vector3(md.position.x,
-                                                    md.position.y,
-                                                    md.position.z);
-                    position /= 1000;
-                    position = Vector3.Transform(position, mCoordinateSystemChange);
-                    position.Z *= -1;
-                    string key = it.Current;
-                    if (mMarkers.ContainsKey(key))
+                    mMarkers.Clear();
+                    var it = markerNames.GetEnumerator();
+                    foreach (var md in markerData)
                     {
-                        mMarkers[key] = position;
-                    }
-                    else
-                    {
-                        mMarkers.Add(key, position);
+
+                        if (!it.MoveNext()) break;
+                        Vector3 position = new Vector3(md.position.x,
+                                                        md.position.y,
+                                                        md.position.z);
+                        position /= 1000;
+                        position = Vector3.Transform(position, mCoordinateSystemChange);
+                        position.Z *= -1;
+                        string key = it.Current;
+                        if (mMarkers.ContainsKey(key))
+                        {
+                            mMarkers[key] = position;
+                        }
+                        else
+                        {
+                            mMarkers.Add(key, position);
+                        }
                     }
                 }
             }
@@ -107,6 +112,7 @@ namespace QTM2Unity
             if (currentEvent == eEvent.kEventRTFromFileStarted)
             {
                 // reload settings when we start streaming to get proper settings
+                string message;
                 get3DSettings();
                 get6DOFSettings();
             }
@@ -212,7 +218,7 @@ namespace QTM2Unity
         /// <param name="streamval">if not stream all frames is picked, this holds frequency or frequency divisor.</param>
         /// <param name="stream6d"> if 6 DOF data should be streamed.</param>
         /// <param name="stream3d"> if labeled markers should be streamed.</param>
-		public bool connect(int pickedServer, short udpPort, int streammode, int streamval, bool stream6d, bool stream3d)
+		public bool connect(int pickedServer, short udpPort, int streammode, int streamval, bool stream6d, bool stream3d, out string message)
 		{
             sDiscoveryResponse server;
             try
@@ -221,12 +227,14 @@ namespace QTM2Unity
             }
             catch (ArgumentOutOfRangeException)
             {
+                message = "Wrong server, no server found at index: " + pickedServer;
                 return false;
             }
 			if(mProtocol.connect(server, udpPort))
 			{
-                return (connectStream(udpPort, streammode, streamval, stream6d, stream3d));
+                return (connectStream(udpPort, streammode, streamval, stream6d, stream3d, out message));
 			}
+            message = "Error connecting to server.";
 			return false;
 		}
 
@@ -269,8 +277,7 @@ namespace QTM2Unity
 
         private bool get3DSettings()
         {
-            bool getstatus = mProtocol.get3Dsettings();
-            if (getstatus)
+            if (mProtocol.get3Dsettings())
             {
                 mUpAxis = mProtocol.Settings3D.axisUpwards;
 
@@ -305,7 +312,7 @@ namespace QTM2Unity
             return false;
         }
 
-		public bool connectStream(short udpPort, int streamMode, int streamVal, bool stream6d, bool stream3d)
+		public bool connectStream(short udpPort, int streamMode, int streamVal, bool stream6d, bool stream3d, out string message)
 		{
 			streamMode++; // add one to stream mode for correct typecast
 
@@ -322,6 +329,7 @@ namespace QTM2Unity
                 {
                     if(!get3DSettings())
                     {
+                        message = "Error retriving 3D settings";
                         return false;
                     }
                 }
@@ -330,6 +338,8 @@ namespace QTM2Unity
                 {
                     if (!get6DOFSettings())
                     {
+                        message = "Error retriving 6DOF settings";
+
                         return false;
                     }
                 }
@@ -343,9 +353,11 @@ namespace QTM2Unity
                 if (mProtocol.listenToStream())
                 {
                     mStreamingStatus = true;
+                    message = "No errors";
                     return true;
                 }
 			}
+            message = "Error connecting to Stream";
 			return false;
 		}
 	}

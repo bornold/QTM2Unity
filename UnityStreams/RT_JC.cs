@@ -12,12 +12,11 @@ namespace QTM2Unity
         public float jointScale = 0.015f;
         public bool showRotationTrace = false;
         public float traceLength = 0.08f;
+        public bool resetSkeleton = false;
     }
-
     class RT_JC : RT
     {
         public BodyRig bodyRig;
-        public bool resetSkeleton = false;
         protected BipedSkeleton skeleton;
         protected BipedSkeleton skeletonBuffer;
         private MarkersPreprocessor mp;
@@ -35,21 +34,26 @@ namespace QTM2Unity
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if ((bodyRig != null && resetSkeleton) || joints == null || skeleton == null || skeletonBuffer == null || mp == null)
+            if ((bodyRig != null && bodyRig.resetSkeleton) || joints == null || skeleton == null || skeletonBuffer == null || mp == null)
             {
                 UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
                 skeletonBuffer = new BipedSkeleton();
                 mp = new MarkersPreprocessor(bodyPrefix: bodyRig.bodyPrefix);
                 joints = new JointLocalization();
-                resetSkeleton = false;
+                bodyRig.resetSkeleton = false;
             }
-            if (!mp.ProcessMarkers(markerData)) return;
-            var temp = skeleton;
-            skeleton = skeletonBuffer;
-            skeletonBuffer = temp;
-            joints.GetJointLocation(markerData, ref skeleton);
-            
+            if (!debug)
+            {
+                lock (markerData)
+                {
+                    if (!mp.ProcessMarkers(markerData)) return;
+                }
+                var temp = skeleton;
+                skeleton = skeletonBuffer;
+                skeletonBuffer = temp;
+                joints.GetJointLocation(markerData, ref skeleton);
+            }
         }
         void OnDrawGizmos()
         {
@@ -61,7 +65,7 @@ namespace QTM2Unity
         public override void Draw()
         {
             base.Draw();
-            if (bodyRig != null && (bodyRig.showSkeleton || bodyRig.showRotationTrace || bodyRig.showJoints))
+            if (bodyRig != null && skeleton != null && (bodyRig.showSkeleton || bodyRig.showRotationTrace || bodyRig.showJoints))
             {
                 Gizmos.color = bodyRig.jointColor;
 

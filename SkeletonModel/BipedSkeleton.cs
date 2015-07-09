@@ -39,16 +39,21 @@ namespace QTM2Unity
         public const string SHOULDER_L = "shoulder_L";
         public const string ELBOW_L = "elbow_L";
         public const string WRIST_L = "wrist_L";
+        public const string TRAP_L = "trap_L";
+        public const string THUMB_L = "thumb_L";
         public const string HAND_L = "hand_L";
-        public const string finger_L = "finger_L";
+        public const string INDEX_L = "index_L";
 
         //Right arm chain
         public const string CLAVICLE_R = "clavicle_R";
         public const string SHOULDER_R = "shoulder_R";
         public const string ELBOW_R = "elbow_R";
         public const string WRIST_R = "wrist_R";
+        public const string TRAP_R = "trap_R";
+        public const string THUMB_R = "thumb_R";
         public const string HAND_R = "hand_R";
-        public const string finger_R = "finger_R";
+        public const string INDEX_R = "index_R";
+
         #endregion
         public BipedSkeleton()
         {
@@ -69,6 +74,10 @@ namespace QTM2Unity
                 new Vector3(-0.1959f, 0.8694f, -0.0521f);
             Vector3 handLeftPos = 
                 new Vector3(-0.1961f, 0.8055f, -0.0218f);
+            Vector3 indexLeftPos =
+                new Vector3(-0.1945f, 0.7169f, -0.0173f);
+            Vector3 thumbLeftPos =
+                new Vector3(-0.1864f, 0.8190f, 0.0506f);
 
             Vector3 shoulderRightPos = 
                 new Vector3(0.2029f, 1.4376f, -0.0387f);
@@ -78,6 +87,10 @@ namespace QTM2Unity
                 new Vector3(0.1984f, 0.8663f, -0.0583f);
             Vector3 handRightPos = 
                 new Vector3(0.1983f, 0.8024f, -0.0280f);
+            Vector3 indexRightPos =
+                new Vector3(0.2028f, 0.7139f, -0.0236f);
+            Vector3 thumbRightPos =
+                new Vector3(0.1955f, 0.8159f, 0.0464f);
 
             Vector3 hipLeftPos = 
                 new Vector3(-0.0950f, 0.9171f, 0.0029f);
@@ -114,11 +127,16 @@ namespace QTM2Unity
             Quaternion shoulderLeftRot = QuaternionHelper.LookAtRight(shoulderLeftPos, elbowLeftPos, Vector3.UnitX);
             Quaternion elbowLeftRot = QuaternionHelper.LookAtRight(elbowLeftPos, wristLeftPos, Vector3.UnitX); ;
             Quaternion wristLeftRot = QuaternionHelper.LookAtRight(wristLeftPos, handLeftPos, Vector3.UnitX);
+            Quaternion trapezoidLeftRot = QuaternionHelper.LookAtRight(wristLeftPos, thumbLeftPos, Vector3.UnitX);
+            Quaternion handLeftRot = QuaternionHelper.LookAtRight(handLeftPos, indexLeftPos, Vector3.UnitX);
+
 
             Quaternion clavicleRightRot = QuaternionHelper.LookAtUp(spine3Pos, shoulderRightPos, Vector3.UnitZ);
             Quaternion shoulderRightRot = QuaternionHelper.LookAtRight(shoulderRightPos, elbowRightPos, Vector3.UnitX);
             Quaternion elbowRightRot = QuaternionHelper.LookAtRight(elbowRightPos, wristRightPos, Vector3.UnitX);
             Quaternion wristRightRot = QuaternionHelper.LookAtRight(wristRightPos, handRightPos, Vector3.UnitX);
+            Quaternion trapezoidRightRot = QuaternionHelper.LookAtRight(wristRightPos, thumbRightPos, Vector3.UnitX);
+            Quaternion handRightRot = QuaternionHelper.LookAtRight(handRightPos, indexRightPos, Vector3.UnitX);
 
             Quaternion hipLeftRot = QuaternionHelper.LookAtRight(hipLeftPos, kneeLeftPos, Vector3.UnitX);
             Quaternion kneeLeftRot = QuaternionHelper.LookAtRight(kneeLeftPos, ankleLeftPos, Vector3.UnitX);
@@ -179,12 +197,20 @@ namespace QTM2Unity
                                         wristLeftPos,
                                         wristLeftRot));
                                     {
+                                        TreeNode<Bone> trapezoidLeft = wristLeft.AddChild(new Bone(TRAP_L,
+                                                wristLeftPos,
+                                                trapezoidLeftRot));
+                                        {
+                                            trapezoidLeft.AddChild(new Bone(THUMB_L,
+                                            thumbLeftPos,
+                                            QuaternionHelper.Zero));
+                                        }
                                         TreeNode<Bone> handLeft = wristLeft.AddChild(new Bone(HAND_L,
                                            handLeftPos,
-                                           wristLeftRot));
+                                           handLeftRot));
                                         {
-                                            handLeft.AddChild(new Bone(finger_L,
-                                           handLeftPos,
+                                            handLeft.AddChild(new Bone(INDEX_L,
+                                           indexLeftPos,
                                            QuaternionHelper.Zero));
                                         }
                                     }
@@ -209,12 +235,20 @@ namespace QTM2Unity
                                         wristRightPos, 
                                         wristRightRot));    
                                     {
+                                        TreeNode<Bone> trapezoidRight = wristRight.AddChild(new Bone(TRAP_R,
+                                            wristRightPos,
+                                            trapezoidRightRot));
+                                        {
+                                            trapezoidRight.AddChild(new Bone(THUMB_R,
+                                            thumbRightPos,
+                                            QuaternionHelper.Zero));
+                                        }
                                         TreeNode<Bone> handRight = wristRight.AddChild(new Bone(HAND_R, 
                                             handRightPos,
-                                            wristRightRot));
+                                            handRightRot));
                                         {
-                                            handRight.AddChild(new Bone(finger_L,
-                                            handLeftPos,
+                                            handRight.AddChild(new Bone(INDEX_R,
+                                            indexRightPos,
                                             QuaternionHelper.Zero));
                                         }
                                     }

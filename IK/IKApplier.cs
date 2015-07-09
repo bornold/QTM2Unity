@@ -44,12 +44,10 @@ namespace QTM2Unity
                         UnityEngine.Debug.LogWarning("Root is undefined!");
                         continue;
                     }
-                    else 
-                        if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3))
+                    else if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3) 
+                                || bone.Data.Name.StartsWith("trap"))
                     {
                         bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
-                        //Vector3 forward = bone.Parent.Data.GetZAxis();
-                        //Vector3 target = bone.Children.First().Data.Pos;
                         bone.Data.Orientation = QuaternionHelper.LookAtUp(
                             bone.Data.Pos, 
                             bone.Children.First().Data.Pos,

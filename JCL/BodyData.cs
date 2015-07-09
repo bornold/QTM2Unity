@@ -9,7 +9,7 @@ namespace QTM2Unity
     class BodyData
     {
         public static float MarkerCentreToSkinSurface = 0.009f;
-        public static float MarkerToSpineDist = 0.1f; // m
+        public static float MarkerToSpineDist = 0.08f; // m
         public static float MidHeadToHeadJoint = 0.08f; // m
         public static float SpineLength = 0.0236f; // m
         public static float BMI = 24;

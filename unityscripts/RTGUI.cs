@@ -87,6 +87,13 @@ namespace QTM2Unity.Unity
                     {
                         refreshServerList();
                     }
+                    if (popuplist.Length > 0)
+                    {
+                        if (GUILayout.Button("Connect"))
+                        {
+                            OnConnect();
+                        }
+                    }
                 }
                 else
                 {
@@ -175,7 +182,8 @@ namespace QTM2Unity.Unity
         void OnConnect()
         {
             //UnityEngine.Debug.Log("OnConnect() " + server );
-            connected = RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d);
+            string message;
+            connected = RTClient.getInstance().connect(server, portUDP, streammode, streamFreq, stream6d, stream3d, out message);
             if (connected)
             {
                 connectionStatus = "Connected";
@@ -183,7 +191,7 @@ namespace QTM2Unity.Unity
             }
             else
             {
-                connectionStatus = "connection Error - check console";
+                connectionStatus = "Connection Error: " + message;
 
             }
         }

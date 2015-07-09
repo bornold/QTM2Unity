@@ -34,7 +34,7 @@ namespace QTM2Unity
         }
         void OnDrawGizmos()
         {
-            if (Application.isPlaying && streaming && skeleton != null)
+            if (debug || Application.isPlaying && streaming && skeleton != null)
             {
                 Draw();
             }

@@ -78,29 +78,29 @@ namespace QTM2Unity
                     // GC 2.2kB
                     (b) => GetLowerArmLeft(b),
                     (b) => GetWristLeft(b),
-                    // GC 2.5kB
+                    (b) => GetTrapLeft(b),
+                    (b) => GetThumbLeft(b),
                     (b) => GetHandLeft(b),
-                    (b) => GetHandLeft(b),
+                    (b) => GetIndexLeft(b),
 
                     (b) => GetShoulderRight(b), 
                     (b) => GetUpperArmRight(b),
                     (b) => GetLowerArmRight(b),
                     (b) => GetWristRight(b),
-                    // GC 3.3kB
+                    (b) => GetTrapRight(b),
+                    (b) => GetThumbRight(b),
                     (b) => GetHandRight(b),
-                    (b) => GetHandRight(b),
+                    (b) => GetIndexRight(b),
 
                     (b) => UpperLegLeft(b),       
                     (b) => LowerLegLeft(b),
                     (b) => GetAnkleLeft(b),
                     (b) => GetFootBaseLeft(b),
-                    // GC 4.2kB
                     (b) => GetFootLeft(b),
                     (b) => UpperLegRight(b),
                     (b) => LowerLegRight(b), 
                     (b) => GetAnkleRight(b),    
                     (b) => GetFootBaseRight(b),
-                    //// GC 4.9kB
                     (b) => GetFootRight(b),
                 };
         }
@@ -511,7 +511,7 @@ namespace QTM2Unity
                 return o.elbowRight;
             }
         }
-        private Vector3 HandLeft
+        private Vector3 WristLeft
         {
             get
             {
@@ -522,7 +522,7 @@ namespace QTM2Unity
                 return o.handLeft;
             }
         }
-        private Vector3 HandRight
+        private Vector3 WristRight
         {
             get
             {
@@ -836,31 +836,61 @@ namespace QTM2Unity
         private void GetLowerArmLeft(Bone b)
         {
             b.Pos = ElbowLeft;
-            b.Orientation = QuaternionHelper.LookAtUp(ElbowLeft, HandLeft, LowerArmForwardLeft);
+            b.Orientation = QuaternionHelper.LookAtUp(ElbowLeft, WristLeft, LowerArmForwardLeft);
         }
         private void GetLowerArmRight(Bone b)
         {
             b.Pos = ElbowRight;
-            b.Orientation = QuaternionHelper.LookAtUp(ElbowRight, HandRight, LowerArmForwardRight);
+            b.Orientation = QuaternionHelper.LookAtUp(ElbowRight, WristRight, LowerArmForwardRight);
         }
         private void GetWristLeft(Bone b)
         {
-            b.Pos = HandLeft;
-            b.Orientation = QuaternionHelper.LookAtUp(HandLeft, markers[MarkerNames.leftHand], LowerArmForwardLeft);
+            b.Pos = WristLeft;
+            b.Orientation = QuaternionHelper.LookAtUp(WristLeft, markers[MarkerNames.leftHand], LowerArmForwardLeft);
         }
         private void GetWristRight(Bone b)
         {
-            b.Pos = HandRight;
-            b.Orientation = QuaternionHelper.LookAtUp(HandRight, markers[MarkerNames.rightHand], LowerArmForwardRight);
+            b.Pos = WristRight;
+            b.Orientation = QuaternionHelper.LookAtUp(WristRight, markers[MarkerNames.rightHand], LowerArmForwardRight);
+        }
+        #region hand getters
+        private void GetTrapLeft(Bone b)
+        {
+            b.Pos = WristLeft;
+            b.Orientation = QuaternionHelper.LookAtUp(WristLeft, markers[MarkerNames.leftThumb], LowerArmForwardLeft);
+        }
+        private void GetTrapRight(Bone b)
+        {
+            b.Pos = WristRight;
+            b.Orientation = QuaternionHelper.LookAtUp(WristRight, markers[MarkerNames.rightThumb], LowerArmForwardRight);
         }
         private void GetHandLeft(Bone b)
         {
             b.Pos = markers[MarkerNames.leftHand];
+            b.Orientation = QuaternionHelper.LookAtUp(markers[MarkerNames.leftHand], markers[MarkerNames.leftIndex], LowerArmForwardLeft);
         }
         private void GetHandRight(Bone b)
         {
             b.Pos = markers[MarkerNames.rightHand];
+            b.Orientation = QuaternionHelper.LookAtUp(markers[MarkerNames.rightHand], markers[MarkerNames.rightIndex], LowerArmForwardRight);
         }
+        private void GetThumbLeft(Bone b)
+        {
+            b.Pos = markers[MarkerNames.leftThumb];
+        }
+        private void GetThumbRight(Bone b)
+        {
+            b.Pos = markers[MarkerNames.rightThumb];
+        }
+        private void GetIndexLeft(Bone b)
+        {
+            b.Pos = markers[MarkerNames.leftIndex];
+        }
+        private void GetIndexRight(Bone b)
+        {
+            b.Pos = markers[MarkerNames.rightIndex];
+        }
+        #endregion
         #endregion
         #endregion
     }

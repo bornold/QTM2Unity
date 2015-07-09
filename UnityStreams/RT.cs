@@ -4,9 +4,11 @@ using QTM2Unity.Unity;
 using System.Linq;
 namespace QTM2Unity
 {
+
     [System.Serializable]
     public class Markers
     {
+        public Vector3 offset = new Vector3(0, 0, 0);
         public bool showMarkers = false;
         public Color markersColor = Color.cyan;
         public float markersScale = 0.01f;
@@ -15,7 +17,8 @@ namespace QTM2Unity
     }
     public class RT : MonoBehaviour
     {
-        public Vector3 offset = new Vector3(0, 0, 0);
+        public bool debug = false;
+
         public Markers markers;
         protected RTClient rtClient;
         protected OpenTK.Vector3 pos;
@@ -30,17 +33,16 @@ namespace QTM2Unity
         }
         void Update()
         {
-            if (rtClient == null)
-            {
-                rtClient = RTClient.getInstance();
-                streaming = rtClient.getStreamingStatus();
-            }
+            if (rtClient == null) rtClient = RTClient.getInstance();
             streaming = rtClient.getStreamingStatus();
             if (streaming)
             {
                 markerData = rtClient.Markers;
                 if (markerData == null || markerData.Count == 0 ) return;
-                pos = (this.transform.position + offset).Convert();
+            }
+            if (streaming || debug)
+            {
+                pos = (this.transform.position + markers.offset).Convert();
                 UpdateNext();
             }
         }
@@ -58,8 +60,8 @@ namespace QTM2Unity
             {
                 Gizmos.color = markers.markersColor;
 
-                var items = markerData.Values.ToList();
-                foreach (var lb in items)
+                //var items = markerData.Values.ToList();
+                foreach (var lb in markerData.Values)
                 {
                     Gizmos.DrawSphere((lb + pos).Convert(), markers.markersScale);
                 }
