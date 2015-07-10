@@ -98,6 +98,8 @@ namespace QTM2Unity
                 lastLIASknown = markers[MarkerNames.leftHip];
             }
             newMarkers = markers;
+            MoveLegMarkers(ref markers, true);
+            MoveLegMarkers(ref markers, false);
             return true;
         }
         private void MissingEssientialMarkers(Dictionary<string,Vector3> markers)

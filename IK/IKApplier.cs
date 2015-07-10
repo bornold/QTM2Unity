@@ -122,14 +122,6 @@ namespace QTM2Unity
                     string tarrot = curr.Data.Orientation.ToString();
                     IKSolver.SolveBoneChain(missingChain.ToArray(), target, referenceBone.Data); // solve with IK
                     iksolved = true;
-                    //UnityEngine.Debug.LogFormat("Solving from {0} to {1}", first.Data.Name, curr.Data.Name);
-                    //UnityEngine.Debug.LogFormat("First {2} rot before: {0}\n And after: {1}", firstRot, first.Data.Orientation.ToString(), first.Data.Name);
-                    UnityEngine.Debug.LogFormat(
-                        "{2}\t before: {0,-50}\n" +
-                        "\t after:    {1,-50}\n" +
-                        "\t target   {3,-50}\n{4}\n{5}",
-                        tarrot, curr.Data.Orientation.ToString(), curr.Data.Name,target.Orientation,target.Name, torgentation);
-
                     break;
                 }
                 CopyFromLast(ref curr, last);
@@ -145,7 +137,7 @@ namespace QTM2Unity
             if (iksolved && test)
             {
                 JerkingTest(first);
-                //ConstraintsBeforeReturn(first);
+                ConstraintsBeforeReturn(first);
             }
         }
         private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)
@@ -173,12 +165,13 @@ namespace QTM2Unity
             return hasChanged;
         }
 
-        private bool ConstraintsBeforeReturn(TreeNode<Bone> bone)
+        private bool ConstraintsBeforeReturn(TreeNode<Bone> bone, bool stopAtLeaf = true)
         {
             bool anychange = false;
             foreach (var tnb in bone)
             {
                 if (tnb.IsRoot || tnb.IsLeaf) continue;
+                if ( stopAtLeaf && tnb.IsLeaf) break;
                 if (!tnb.Data.HasNaN && tnb.Data.HasConstraints)
                 {
                     Quaternion rot;
