@@ -52,8 +52,7 @@ namespace QTM2Unity
         }
         public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, float scale)
         {
-            Color c = new Color(0.25f, 0.5f, 0.25f);
-
+            Color c = Color.yellow;
             if (b.Orientation.Xyz.IsNaN() || refBone.Orientation.Xyz.IsNaN())
             {
                 return;

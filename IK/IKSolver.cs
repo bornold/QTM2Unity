@@ -32,7 +32,7 @@ namespace QTM2Unity
                 distances[i] = (bones[i].Pos - bones[i + 1].Pos).Length;
             }
         }
-        protected Bone[] TargetUnreachable(Bone[] bones, Vector3 target)
+        protected Bone[] TargetUnreachable(Bone[] bones, Vector3 target, Bone grandparent)
         {
             float[] distances;
             GetDistances(out distances, ref bones);
@@ -45,7 +45,15 @@ namespace QTM2Unity
                 Vector3 newPos = ((1 - l) * bones[i].Pos) + (l * target);
                 bones[i + 1].Pos = newPos;
                 // Orientation
-                bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos); 
+                bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
+                if (bones[i].HasTwistConstraints)
+                {
+                    Quaternion rotation2;
+                    if (CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : grandparent, out rotation2))
+                    {
+                        ForwardKinematics(ref bones, rotation2, i);
+                    }
+                }
             }
             return bones;
         }

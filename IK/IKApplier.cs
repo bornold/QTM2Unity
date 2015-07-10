@@ -84,6 +84,7 @@ namespace QTM2Unity
             TreeNode<Bone> referenceBone = curr.Parent;
             // The root if the chain
 
+            string firstRot = first.Data.Orientation.ToString();
             Bone last = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Data;
             Bone cpylast = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Parent.Data;
             Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
@@ -103,7 +104,8 @@ namespace QTM2Unity
 
                 if (curr.Data.Exists) // target found! it the last in list
                 {
-                    
+
+                    string torgentation = "";
                     Bone target = new Bone(
                         curr.Data.Name,
                         new Vector3(curr.Data.Pos)
@@ -112,23 +114,22 @@ namespace QTM2Unity
                     {
                         target.Orientation = 
                             new Quaternion(curr.Data.Orientation.Xyz, curr.Data.Orientation.W);
+                        torgentation = target.Orientation.ToString();
                     }
                     CopyFromLast(ref curr, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
-
-                    //Stopwatch stopwatch = //Stopwatch.StartNew();
+                    string tarrot = curr.Data.Orientation.ToString();
                     IKSolver.SolveBoneChain(missingChain.ToArray(), target, referenceBone.Data); // solve with IK
                     iksolved = true;
-                    //stopwatch.Stop();
-                    //if (stopwatch.Elapsed.TotalMilliseconds > 3.0)
-                    //{
-                    //    UnityEngine.Debug.LogWarningFormat("{1}\t\tTime IK taken: \n\t\t\t\t{0}ms", stopwatch.Elapsed.TotalMilliseconds,c);
-                    //}
-                    //if (missingChain.Any(z => z.HasNaN))
-                    //{
-                    //    UnityEngine.Debug.LogError(missingChain.First(c => c.HasNaN));
-                    //}
+                    //UnityEngine.Debug.LogFormat("Solving from {0} to {1}", first.Data.Name, curr.Data.Name);
+                    //UnityEngine.Debug.LogFormat("First {2} rot before: {0}\n And after: {1}", firstRot, first.Data.Orientation.ToString(), first.Data.Name);
+                    UnityEngine.Debug.LogFormat(
+                        "{2}\t before: {0,-50}\n" +
+                        "\t after:    {1,-50}\n" +
+                        "\t target   {3,-50}\n{4}\n{5}",
+                        tarrot, curr.Data.Orientation.ToString(), curr.Data.Name,target.Orientation,target.Name, torgentation);
+
                     break;
                 }
                 CopyFromLast(ref curr, last);
@@ -141,29 +142,10 @@ namespace QTM2Unity
                 var q1 = cpylast.Orientation;
                 FK(first, (q2 * Quaternion.Invert(q1)));
             }
-
-            //if (missingChain.Any(z => z.HasNaN))
-            //{
-            //    UnityEngine.Debug.LogError(missingChain.First(c => c.HasNaN));
-            //}
-            if (test)
+            if (iksolved && test)
             {
-                //Stopwatch stopwatch = //Stopwatch.StartNew();
                 JerkingTest(first);
-                //if (missingChain.Any(b => b.HasNaN))
-                //{
-                //    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
-                //}
-                ConstraintsBeforeReturn(first);
-                //if (missingChain.Any(b => b.HasNaN))
-                //{
-                //    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
-                //}
-                //stopwatch.Stop();
-                //if (stopwatch.Elapsed.TotalMilliseconds > 1.0)
-                //{
-                //    UnityEngine.Debug.LogWarningFormat("{1}\t\tTime Jerk and CBR taken: \n\t\t\t\t{0}ms", stopwatch.Elapsed.TotalMilliseconds, c);
-                //}
+                //ConstraintsBeforeReturn(first);
             }
         }
         private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)

@@ -11,7 +11,7 @@ namespace QTM2Unity
         public bool showConstraints = false;
         [Range(0.01f, 0.5f)]
         public float coneSize = 0.05f;
-        [Range(1, 300)]
+        [Range(1, 150)]
         public int coneResolution = 50;
         public bool showTwistConstraints = false;
     }
@@ -67,7 +67,7 @@ namespace QTM2Unity
                         }
                         if (jointsConstrains.showTwistConstraints)
                         {
-                            UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, 1.1f);
+                            UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, bodyRig.traceLength);
                         }
                     }
                 }

@@ -306,13 +306,11 @@ namespace QTM2Unity
                     LabeledMarker newMarker = new LabeledMarker();
                     newMarker.label = marker.name;
                     newMarker.position = Vector3.Zero;
-                    /* 
-                     newMarker.color.r = (marker.colorRGB) & 0xFF;
-                     newMarker.color.g = (marker.colorRGB >> 8) & 0xFF;
-                     newMarker.color.b = (marker.colorRGB >> 16) & 0xFF;
-
-                     newMarker.color /= 255;
-                     */
+                    newMarker.color = new LabeledMarker.Color();
+                    newMarker.color.r = (marker.colorRGB) & 0xFF;
+                    newMarker.color.g = (marker.colorRGB >> 8) & 0xFF;
+                    newMarker.color.b = (marker.colorRGB >> 16) & 0xFF;
+                    newMarker.color /= 255; 
                     mMarkers.Add(newMarker);
                 }
 
@@ -402,12 +400,23 @@ namespace QTM2Unity
         //public LabeledMarker() { }
         public string label;
         public Vector3 position;
+        public Color color;
+        public class Color
+        {
+            public float r, g, b;
+            public static Color operator /(Color col, float scale)
+            {
+                col.r /= scale;
+                col.g /= scale;
+                col.b /= scale;
+                return col;
+            }
+        }
     }
 
     // Class for bones
     public class MarkerBone
     {
-        public MarkerBone() { }
         public string from;
         public LabeledMarker fromMarker;
         public string to;

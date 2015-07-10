@@ -15,7 +15,7 @@ namespace QTM2Unity
             double dist = Math.Abs((bones[0].Pos - target.Pos).Length);
             if (dist > distances.Sum()) // the target is unreachable
             {
-                TargetUnreachable(bones, target.Pos);
+                TargetUnreachable(bones, target.Pos, parent);
                 return true;
             }
 

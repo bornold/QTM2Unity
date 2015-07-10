@@ -16,7 +16,6 @@ namespace QTM2Unity
             public bool markers = false;
             [Range(0.001f, 0.1f)]
             public float scale = 0.01f;
-            public Color markerColor = Color.cyan;
             public bool bones = false;
             public Color boneColor = Color.blue;
         }
@@ -65,11 +64,9 @@ namespace QTM2Unity
             if (debug == null) return;
             if (debug.markers.markers)
             {
-                Gizmos.color = debug.markers.markerColor;
-
-                //var items = markerData.Values.ToList();
                 foreach (var lb in markerData)
                 {
+                    Gizmos.color = new Color(lb.color.r, lb.color.b, lb.color.g);
                     Gizmos.DrawSphere((lb.position + pos).Convert(), debug.markers.scale);
                 }
             }
@@ -80,8 +77,7 @@ namespace QTM2Unity
 	            {
                     OpenTK.Vector3 from = markerData.Find(md => md.label == lb.from).position + pos;
                     OpenTK.Vector3 to = markerData.Find(md => md.label == lb.to).position + pos;
-                    Debug.DrawLine(from.Convert(),
-                                    to.Convert(), debug.markers.boneColor);
+                    Debug.DrawLine(from.Convert(), to.Convert(), debug.markers.boneColor);
                 }
 	        }
         }

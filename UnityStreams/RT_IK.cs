@@ -9,7 +9,7 @@ namespace QTM2Unity
     class RT_IK : RT_JC
     {
         private IKApplier ikApplier;
-        public bool FlagToIKSolver = false;
+        public bool Extrapolate = false;
         public override void StartNext()
         {
             base.StartNext();
@@ -19,7 +19,7 @@ namespace QTM2Unity
         {
             base.UpdateNext();
             if (ikApplier == null) ikApplier = new IKApplier();
-            ikApplier.test = FlagToIKSolver;
+            ikApplier.test = Extrapolate;
             // GC 5.1kB
             ikApplier.ApplyIK(ref skeleton);
         }

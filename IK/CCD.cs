@@ -9,7 +9,8 @@ namespace QTM2Unity
             
             if (!IsReachable(bones,target))
             {
-                TargetUnreachable(bones, target.Pos);
+                TargetUnreachable(bones, target.Pos, grandparent);
+                bones[bones.Length - 1].Orientation = new Quaternion(target.Orientation.Xyz, target.Orientation.W);
                 return true;
             }
 
