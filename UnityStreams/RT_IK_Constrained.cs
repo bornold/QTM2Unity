@@ -9,7 +9,9 @@ namespace QTM2Unity
     public class JointsConstrains
     {
         public bool showConstraints = false;
+        [Range(0.01f, 0.5f)]
         public float coneSize = 0.05f;
+        [Range(1, 300)]
         public int coneResolution = 50;
         public bool showTwistConstraints = false;
     }
@@ -26,7 +28,7 @@ namespace QTM2Unity
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if (!skeleton[1].HasConstraints)
+            if (!skeleton[BipedSkeleton.HIP_L].HasConstraints)
             {
                 constraints.SetConstraints(ref skeleton);
                 constraints.SetConstraints(ref skeletonBuffer);
@@ -34,7 +36,7 @@ namespace QTM2Unity
         }
         void OnDrawGizmos()
         {
-            if (debug || Application.isPlaying && streaming && skeleton != null)
+            if (debugFlag || Application.isPlaying && streaming && skeleton != null)
             {
                 Draw();
             }
@@ -46,7 +48,7 @@ namespace QTM2Unity
                 (jointsConstrains.showConstraints || 
                 jointsConstrains.showTwistConstraints))
             {
-                foreach (TreeNode<Bone> b in skeleton)
+                foreach (TreeNode<Bone> b in skeleton.Root)
                 {
                     if (b.Data.HasConstraints)
                     {
@@ -65,7 +67,7 @@ namespace QTM2Unity
                         }
                         if (jointsConstrains.showTwistConstraints)
                         {
-                            UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, bodyRig.traceLength * 1.1f);
+                            UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, 1.1f);
                         }
                     }
                 }

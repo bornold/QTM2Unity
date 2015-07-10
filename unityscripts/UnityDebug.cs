@@ -10,7 +10,7 @@ namespace QTM2Unity
     {
         public static void sanity(BipedSkeleton test, string message = "")
         {
-            UnityDebug.sanity(test.First(), message);
+            UnityDebug.sanity(test.Root, message);
         }
         public static void sanity(TreeNode<Bone> test, string message = "")
         {

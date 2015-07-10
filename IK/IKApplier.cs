@@ -26,10 +26,9 @@ namespace QTM2Unity
         /// <param name="skeleton">The skeleton with joints</param>
         public void ApplyIK(ref BipedSkeleton skeleton)
         {
-            //c++;
-            //Stopwatch stopwatch2 = //Stopwatch.StartNew();
-            IEnumerator skelEnumer = skeleton.GetEnumerator();
-            IEnumerator lastSkelEnumer = lastSkel.GetEnumerator();
+
+            IEnumerator skelEnumer = skeleton.Root.GetEnumerator();
+            IEnumerator lastSkelEnumer = lastSkel.Root.GetEnumerator();
             //Root and all of roots children MUST have set possition
             TreeNode<Bone> bone;
             while (skelEnumer.MoveNext() && lastSkelEnumer.MoveNext())
@@ -40,7 +39,8 @@ namespace QTM2Unity
                     ///////////////////////////////////////////////Special cases/////////////////////////
                     if (bone.IsRoot || bone.Parent.IsRoot)
                     {
-                        CopyFromLast(ref bone, lastSkel[bone.Data.Name]);
+
+                        CopyFromLast(ref bone, lastSkel [bone.Data.Name]);
                         UnityEngine.Debug.LogWarning("Root is undefined!");
                         continue;
                     }
@@ -55,31 +55,16 @@ namespace QTM2Unity
                         continue;
                     }
                     /////////////////////////////////////////////// Special END//////////////////////////////
-                    //Stopwatch stopwatch = //Stopwatch.StartNew();
-                    //GC 13.1kB
+                    //GC so far 11.5kB
                     MissingJoint(ref skelEnumer, ref lastSkelEnumer);
-                    //stopwatch.Stop();
-                    //if (stopwatch.Elapsed.TotalMilliseconds > 3.0)
-                    //{
-                    //    UnityEngine.Debug.LogWarningFormat("{1}\tTime missing Joint taken: \n\t\t\t{0}ms", stopwatch.Elapsed.TotalMilliseconds, c);
-                    //}
+                    //GC so far 20.2kB
                 }
             }
 
-            //GC 11.4kB
-            //FixRotation(skeleton.First());
-            //GC 4kB
-            //if (skeleton.Any(z => z.Data.HasNaN))
-            //{
-            //    UnityEngine.Debug.LogError(skeleton.First(r => r.Data.HasNaN));
-            //}
-            //GC END
+            //if (test) FixRotation(skeleton.Root);
+
             lastSkel = skeleton;
-            //stopwatch2.Stop();
-            //if (stopwatch2.Elapsed.TotalMilliseconds > 3.0)
-            //{
-            //    UnityEngine.Debug.LogWarningFormat("{1} Time taken: \n\t{0}ms", stopwatch2.Elapsed.TotalMilliseconds,c);
-            //}
+            //GC So far 21.3
         }
 
         /// <summary>
@@ -89,6 +74,7 @@ namespace QTM2Unity
         /// <param name="lastSkelEnum">The enumurator to the missing bone position from the last skeleton</param>
         private void MissingJoint(ref IEnumerator skelEnum, ref IEnumerator lastSkelEnum)
         {
+            bool iksolved = false;
             List<Bone> missingChain = new List<Bone>(); // chain to be solved
 
             //root of chain 
@@ -97,7 +83,9 @@ namespace QTM2Unity
             TreeNode<Bone> first = curr;
             TreeNode<Bone> referenceBone = curr.Parent;
             // The root if the chain
+
             Bone last = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Data;
+            Bone cpylast = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Parent.Data;
             Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
             CopyFromLast(ref curr, last); 
             curr.Data.Pos += offset;
@@ -115,6 +103,7 @@ namespace QTM2Unity
 
                 if (curr.Data.Exists) // target found! it the last in list
                 {
+                    
                     Bone target = new Bone(
                         curr.Data.Name,
                         new Vector3(curr.Data.Pos)
@@ -130,6 +119,7 @@ namespace QTM2Unity
 
                     //Stopwatch stopwatch = //Stopwatch.StartNew();
                     IKSolver.SolveBoneChain(missingChain.ToArray(), target, referenceBone.Data); // solve with IK
+                    iksolved = true;
                     //stopwatch.Stop();
                     //if (stopwatch.Elapsed.TotalMilliseconds > 3.0)
                     //{
@@ -145,6 +135,12 @@ namespace QTM2Unity
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
             }
+            if (!iksolved)
+            {
+                var q2 = referenceBone.Data.Orientation;
+                var q1 = cpylast.Orientation;
+                FK(first, (q2 * Quaternion.Invert(q1)));
+            }
 
             //if (missingChain.Any(z => z.HasNaN))
             //{
@@ -158,7 +154,7 @@ namespace QTM2Unity
                 //{
                 //    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
                 //}
-                //ConstraintsBeforeReturn(first);
+                ConstraintsBeforeReturn(first);
                 //if (missingChain.Any(b => b.HasNaN))
                 //{
                 //    UnityEngine.Debug.LogError(missingChain.First(b => b.HasNaN));
@@ -181,7 +177,7 @@ namespace QTM2Unity
             foreach (TreeNode<Bone> b in boneTree)
             {
                 if (!b.Data.Exists) break;
-                if (b.IsRoot || b.Parent.IsRoot || b.Parent.Children.First() != b) continue;
+                if (b.IsRoot || b.Parent.IsRoot || b.Data.ParentPointer != Quaternion.Identity) continue;
                 Vector3 ray2 = (b.Data.Pos - b.Parent.Data.Pos);
                 if (!Vector3Helper.Parallel(b.Parent.Data.GetYAxis(), ray2, 0.01f))
                 {

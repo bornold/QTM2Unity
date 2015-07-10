@@ -1,19 +1,22 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 namespace QTM2Unity
 {
-    [System.Serializable]
-    public class BodyRig
-    {
-        public string bodyPrefix = "";
-        public bool showSkeleton = false;
-        public Color skelettColor = Color.black;
-        public bool showJoints = false;
-        public Color jointColor = Color.green;
-        public float jointScale = 0.015f;
-        public bool showRotationTrace = false;
-        public float traceLength = 0.08f;
-        public bool resetSkeleton = false;
-    }
+        [System.Serializable]
+        public class BodyRig
+        {
+            public string bodyPrefix = "";
+            public bool showSkeleton = false;
+            public Color skelettColor = Color.black;
+            public bool showJoints = false;
+            [Range(0.01f, 0.1f)]
+            public float jointScale = 0.015f;
+            public Color jointColor = Color.green;
+            public bool showRotationTrace = false;
+            [Range(0.01f, 1.0f)]
+            public float traceLength = 0.08f;
+            public bool resetSkeleton = false;
+        }
     class RT_JC : RT
     {
         public BodyRig bodyRig;
@@ -21,8 +24,9 @@ namespace QTM2Unity
         protected BipedSkeleton skeletonBuffer;
         private MarkersPreprocessor mp;
         private JointLocalization joints;
-        
-        
+        private Dictionary<string, OpenTK.Vector3> markers;
+
+
         public override void StartNext()
         {
             skeleton = new BipedSkeleton();
@@ -42,17 +46,19 @@ namespace QTM2Unity
                 mp = new MarkersPreprocessor(bodyPrefix: bodyRig.bodyPrefix);
                 joints = new JointLocalization();
                 bodyRig.resetSkeleton = false;
+                return;
             }
-            if (!debug)
+            if (!mp.ProcessMarkers(markerData, out markers))
             {
-                lock (markerData)
-                {
-                    if (!mp.ProcessMarkers(markerData)) return;
-                }
+                Debug.LogError("markers...");
+                return;
+            }
+            if (!debugFlag)
+            {
                 var temp = skeleton;
                 skeleton = skeletonBuffer;
                 skeletonBuffer = temp;
-                joints.GetJointLocation(markerData, ref skeleton);
+                joints.GetJointLocation(markers, ref skeleton);
             }
         }
         void OnDrawGizmos()
@@ -65,11 +71,12 @@ namespace QTM2Unity
         public override void Draw()
         {
             base.Draw();
-            if (bodyRig != null && skeleton != null && (bodyRig.showSkeleton || bodyRig.showRotationTrace || bodyRig.showJoints))
+            if (bodyRig != null && skeleton != null && 
+                (bodyRig.showSkeleton || bodyRig.showRotationTrace || bodyRig.showJoints))
             {
                 Gizmos.color = bodyRig.jointColor;
 
-                foreach (TreeNode<Bone> b in skeleton)
+                foreach (TreeNode<Bone> b in skeleton.Root)
                 {
                     if (bodyRig.showSkeleton)
                     {

@@ -6,24 +6,31 @@ namespace QTM2Unity
 {
 
     [System.Serializable]
-    public class Markers
+    public class Debugging
     {
         public Vector3 offset = new Vector3(0, 0, 0);
-        public bool showMarkers = false;
-        public Color markersColor = Color.cyan;
-        public float markersScale = 0.01f;
-        public bool showMarkerBones = false;
-        public Color markerBonesColor = Color.blue;
+        public Markers markers;
+        [System.Serializable]
+        public class Markers 
+        {
+            public bool markers = false;
+            [Range(0.001f, 0.1f)]
+            public float scale = 0.01f;
+            public Color markerColor = Color.cyan;
+            public bool bones = false;
+            public Color boneColor = Color.blue;
+        }
     }
     public class RT : MonoBehaviour
     {
-        public bool debug = false;
+        public bool debugFlag = false;
 
-        public Markers markers;
+        public Debugging debug;
         protected RTClient rtClient;
         protected OpenTK.Vector3 pos;
         protected bool streaming = false;
-        protected Dictionary<string,OpenTK.Vector3> markerData;
+        protected List<LabeledMarker> markerData;
+        protected List<string> markersLabels;
         public virtual void StartNext(){}
         public virtual void UpdateNext(){}
         void Start()
@@ -40,9 +47,9 @@ namespace QTM2Unity
                 markerData = rtClient.Markers;
                 if (markerData == null || markerData.Count == 0 ) return;
             }
-            if (streaming || debug)
+            if (streaming || debugFlag)
             {
-                pos = (this.transform.position + markers.offset).Convert();
+                pos = (this.transform.position + debug.offset).Convert();
                 UpdateNext();
             }
         }
@@ -55,26 +62,26 @@ namespace QTM2Unity
         }
         public virtual void Draw()
         {
-            if (markers == null) return;
-            if (markers.showMarkers)
+            if (debug == null) return;
+            if (debug.markers.markers)
             {
-                Gizmos.color = markers.markersColor;
+                Gizmos.color = debug.markers.markerColor;
 
                 //var items = markerData.Values.ToList();
-                foreach (var lb in markerData.Values)
+                foreach (var lb in markerData)
                 {
-                    Gizmos.DrawSphere((lb + pos).Convert(), markers.markersScale);
+                    Gizmos.DrawSphere((lb.position + pos).Convert(), debug.markers.scale);
                 }
             }
 
-            if (markers.showMarkerBones && rtClient.Bones != null)
+            if (debug.markers.bones && rtClient.Bones != null)
             {
                 foreach (var lb in rtClient.Bones)
 	            {
-                    OpenTK.Vector3 from = markerData[lb.from] + pos;
-                    OpenTK.Vector3 to = markerData[lb.to] + pos;
+                    OpenTK.Vector3 from = markerData.Find(md => md.label == lb.from).position + pos;
+                    OpenTK.Vector3 to = markerData.Find(md => md.label == lb.to).position + pos;
                     Debug.DrawLine(from.Convert(),
-                                    to.Convert(), markers.markerBonesColor);
+                                    to.Convert(), debug.markers.boneColor);
                 }
 	        }
         }

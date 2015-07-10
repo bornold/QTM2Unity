@@ -6,8 +6,10 @@ using OpenTK;
 
 namespace QTM2Unity
 {
-    class BipedSkeleton : Skeleton
+    class BipedSkeleton
     {
+        protected TreeNode<Bone> root;
+        public TreeNode<Bone> Root { get { return root; } }
         // String constants for bones in a biped skeleton
         #region joint Names
         //Root
@@ -309,6 +311,17 @@ namespace QTM2Unity
         public BipedSkeleton(TreeNode<Bone> pelvis)
         {
             root = pelvis;
+        }
+        public Bone this[string key]
+        {
+            get
+            {
+                return root.FindTreeNode(node => node.Data != null && node.Data.Name.Equals(key)).Data;
+            }
+            set
+            {
+                root.FindTreeNode(node => node.Data.Name.Equals(key)).Data = value;
+            }
         }
     }
 }

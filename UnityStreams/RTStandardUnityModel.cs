@@ -39,7 +39,7 @@ namespace QTM2Unity
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if (streaming || debug)
+            if (streaming || debugFlag)
             {
                 base.UpdateNext();
                 localRotation = transform.gameObject.transform.rotation;
@@ -71,7 +71,7 @@ namespace QTM2Unity
             setGOHandLeft(handLeft, BipedSkeleton.WRIST_L);
             foreach (var fing in fingersLeft)
             {
-                setGOArmLeft(fing, BipedSkeleton.HAND_L);
+                setGOHandLeft(fing, BipedSkeleton.HAND_L);
             }
             setGOThumbLeft(thumbLeft, BipedSkeleton.TRAP_L);
 
@@ -81,7 +81,7 @@ namespace QTM2Unity
             setGOHandRight(handRight, BipedSkeleton.WRIST_R);
             foreach (var fing in fingersRight)
             {
-                setGOArmRight(fing, BipedSkeleton.HAND_R);
+                setGOHandRight(fing, BipedSkeleton.HAND_R);
             }
             setGOThumbRight(thumbRight, BipedSkeleton.TRAP_R);
         }
@@ -115,17 +115,15 @@ namespace QTM2Unity
             setGO(go, name, Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180));
         }
 
-
         private void setGOArmLeft(Transform go, string name)
         {
             setGO(go, name, Quaternion.Euler(Vector3.forward * 270));
         }
+
         private void setGOArmRight(Transform go, string name)
         {
             setGO(go, name, Quaternion.Euler(Vector3.forward * 90));
         }
-
-
 
         private void setGOHandLeft(Transform go, string name)
         {
@@ -135,7 +133,6 @@ namespace QTM2Unity
         {
             setGO(go, name,  Quaternion.Euler(Vector3.forward * 60)); //30?
         }
-
 
         private void setGOThumbLeft(Transform go, string name)
         {

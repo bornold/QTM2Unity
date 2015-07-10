@@ -7,42 +7,31 @@ using OpenTK;
 
 namespace QTM2Unity
 {
-    abstract class Skeleton : IEnumerable<TreeNode<Bone>>
-    {
-        protected TreeNode<Bone> root;
+    //abstract class Skeleton : TreeNode<Bone>
+    //{
+    //    protected TreeNode<Bone> root;
+    //    public TreeNode<Bone> Root { get { return root; } }
+    //    public Bone this[string key]
+    //    {
+    //        get
+    //        {
+    //            return root.FindTreeNode(node => node.Data != null && node.Data.Name.Equals(key)).Data;
+    //        }
+    //        set
+    //        {
+    //            root.FindTreeNode(node => node.Data.Name.Equals(key)).Data = value;
+    //        }
+    //    }
 
-        public Bone this[string key]
-        {
-            get
-            {
-                return root.FindTreeNode(node => node.Data != null && node.Data.Name.Equals(key)).Data;
-            }
-            set
-            {
-                root.FindTreeNode(node => node.Data.Name.Equals(key)).Data = value;
-            }
-        }
-        public Bone this[int key]
-        {
-            get
-            {
-                return root.FindTreeNode(node => node.Data != null && node.Level == key).Data;
-            }
-            set
-            {
-                root.FindTreeNode(node =>  node.Level == key).Data = value;
-            }
-        }
+    //    public IEnumerator GetEnumerator()
+    //    {
+    //        return root.GetEnumerator();
 
-        public IEnumerator GetEnumerator()
-        {
-            return root.GetEnumerator();
+    //    }
 
-        }
-
-        IEnumerator<TreeNode<Bone>> IEnumerable<TreeNode<Bone>>.GetEnumerator()
-        {
-            return root.GetEnumerator();
-        }
-    }
+    //    IEnumerator<TreeNode<Bone>> IEnumerable<TreeNode<Bone>>.GetEnumerator()
+    //    {
+    //        return root.GetEnumerator();
+    //    }
+    //}
 }
