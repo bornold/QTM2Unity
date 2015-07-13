@@ -47,11 +47,9 @@ namespace QTM2Unity
                     /////////////////////////////////////////////// Special END//////////////////////////////
                     //7.3kb garbage
                     MissingJoint(bone);
-                    //MissingJoint(bone);
-                    //12.8kb
+                    //12.2kb
                 }
             }
-            //if (test) FixRotation(skeleton.Root);
             lastSkel = skeleton;
         }
 
@@ -63,39 +61,21 @@ namespace QTM2Unity
         private void MissingJoint(TreeNode<Bone> missingJoint)
         { 
             // missings joints parent from last frame is root in solution
-            TreeNode<Bone> curr = missingJoint.Parent;
-            TreeNode<Bone> first = curr;
-            TreeNode<Bone> referenceBone = curr.Parent;
             //root of chain 
             TreeNode<Bone> lastSkelBone = lastSkel.Root.FindTreeNode(a => a.Data.Name == missingJoint.Data.Name);
-            Bone last = lastSkelBone.Parent.Data;
-            Bone lastReference = lastSkelBone.Parent.Parent.Data;
-
             List<Bone> missingChain = new List<Bone>(); // chain to be solved
             // The root if the chain
-            Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
-            CopyFromLast(curr, last);
-            curr.Data.Pos += offset;
-            missingChain.Add(curr.Data);
-
-            // first missing, copy data from last frame
-            curr = missingJoint;
-            last = lastSkelBone.Data;
-            CopyFromLast(curr, last);
-            curr.Data.Pos += offset;
-            missingChain.Add(curr.Data);
-
+            Vector3 offset = missingJoint.Parent.Data.Pos - lastSkelBone.Parent.Data.Pos; // offset to move last frames chain to this frames' position
+            CopyFromLast(missingJoint.Parent.Data, lastSkelBone.Parent.Data);
+            missingJoint.Parent.Data.Pos += offset;
+            missingChain.Add(missingJoint.Parent.Data);
             bool iksolved = false;
-            IEnumerator skelEnum, lastSkelEnum;
-            skelEnum = missingJoint.GetEnumerator();
-            lastSkelEnum = lastSkelBone.GetEnumerator();
-            skelEnum.MoveNext();
-            lastSkelEnum.MoveNext();
-            while (!curr.IsLeaf && skelEnum.MoveNext() && lastSkelEnum.MoveNext()) //while not leaf
+            IEnumerator lastSkelEnum = lastSkelBone.GetEnumerator();
+            Bone last;
+            foreach(var curr in missingJoint)
             {
-                curr = ((TreeNode<Bone>)skelEnum.Current);
+                lastSkelEnum.MoveNext();
                 last = ((TreeNode<Bone>)lastSkelEnum.Current).Data;
-
                 if (curr.Data.Exists) // target found! it the last in list
                 {
                     Bone target = new Bone(
@@ -107,34 +87,32 @@ namespace QTM2Unity
                         target.Orientation =
                             new Quaternion(curr.Data.Orientation.Xyz, curr.Data.Orientation.W);
                     }
-                    CopyFromLast(curr, last);
+                    CopyFromLast(curr.Data, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
-                    string tarrot = curr.Data.Orientation.ToString();
-                    IKSolver.SolveBoneChain(missingChain.ToArray(), target, referenceBone.Data); // solve with IK
+                    IKSolver.SolveBoneChain(missingChain.ToArray(), target, missingJoint.Parent.Parent.Data); // solve with IK
                     iksolved = true;
                     break;
                 }
-                CopyFromLast(curr, last);
+                CopyFromLast(curr.Data, last);
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
             }
             if (!iksolved)
             {
-                var q2 = referenceBone.Data.Orientation;
-                var q1 = lastReference.Orientation;
-                FK(first, (q2 * Quaternion.Invert(q1)));
-            }
-            if (iksolved && test)
+                var q2 = missingJoint.Parent.Parent.Data.Orientation;
+                var q1 = lastSkelBone.Parent.Parent.Data.Orientation;
+                FK(missingJoint.Parent, (q2 * Quaternion.Invert(q1)));
+            } else if (test)
             {
-                JerkingTest(first);
-                ConstraintsBeforeReturn(first);
+                JerkingTest(missingJoint.Parent);
+                ConstraintsBeforeReturn(missingJoint.Parent);
             }
         }
-        private void CopyFromLast(TreeNode<Bone> curr, Bone last)
+        private void CopyFromLast(Bone curr, Bone last)
         {
-            curr.Data.Pos = new Vector3(last.Pos);
-            curr.Data.Orientation = new Quaternion(new Vector3(last.Orientation.Xyz), last.Orientation.W);
+            curr.Pos = new Vector3(last.Pos);
+            curr.Orientation = new Quaternion(new Vector3(last.Orientation.Xyz), last.Orientation.W);
         }
         private bool FixRotation(TreeNode<Bone> boneTree, bool endWithEndEffector = false)
         {

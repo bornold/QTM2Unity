@@ -94,6 +94,14 @@ namespace QTM2Unity
                 if (setPos && !float.IsNaN(b.Pos.X)) go.position = go.parent.position + b.Pos.Convert();
             }
         }
+        Quaternion footRot = Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180),
+            armLeftRot = Quaternion.Euler(Vector3.forward * 270),
+            armRightRot = Quaternion.Euler(Vector3.forward * 90),
+            handLeftRot = Quaternion.Euler(Vector3.forward * 300),
+            handRightRot = Quaternion.Euler(Vector3.forward * 60),
+            thumbLeftRot = Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 270),
+            thumbRightRot = Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 90)
+            ;
         private void setGO(Transform go, string name, Quaternion rot)
         {
             setGO(go, name, rot, false);
@@ -112,35 +120,32 @@ namespace QTM2Unity
         }
         private void setGOFoot(Transform go, string name)
         {
-            setGO(go, name, Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180));
+            setGO(go, name, footRot);// Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180));
         }
-
         private void setGOArmLeft(Transform go, string name)
         {
-            setGO(go, name, Quaternion.Euler(Vector3.forward * 270));
+            setGO(go, name, armLeftRot);//Quaternion.Euler(Vector3.forward * 270));
         }
-
         private void setGOArmRight(Transform go, string name)
         {
-            setGO(go, name, Quaternion.Euler(Vector3.forward * 90));
+            setGO(go, name, armRightRot);// Quaternion.Euler(Vector3.forward * 90));
         }
-
         private void setGOHandLeft(Transform go, string name)
         {
-            setGO(go, name,  Quaternion.Euler(Vector3.forward * 300));
+            setGO(go, name, handLeftRot);// Quaternion.Euler(Vector3.forward * 300));
         }
         private void setGOHandRight(Transform go, string name)
         {
-            setGO(go, name,  Quaternion.Euler(Vector3.forward * 60)); //30?
+            setGO(go, name, handRightRot); //30?
         }
 
         private void setGOThumbLeft(Transform go, string name)
         {
-            setGO(go, name, Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 270));
+            setGO(go, name, thumbLeftRot);//Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 270));
         }
         private void setGOThumbRight(Transform go, string name)
         {
-            setGO(go, name, Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 90));
+            setGO(go, name, thumbRightRot);//Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 90));
         }
 
 
