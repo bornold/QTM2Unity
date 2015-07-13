@@ -61,24 +61,12 @@ namespace QTM2Unity
         /// <returns>matrix with cooridnate system based on vectors</returns>
         public static Matrix4 GetMatrix(Vector3 position, Vector3 front, Vector3 up, Vector3 right)
         {
-            Matrix4 mat;// = Matrix4.Identity;
-            
-            Matrix4 translation, rotation, scale;
-            translation = Matrix4.CreateTranslation(position);
-            rotation = Matrix4.CreateFromAxisAngle(Vector3.One,0f);
-            scale = Matrix4.Scale(1);
-
-            mat = scale * rotation * translation;
-            
-            //Vector4 right4v = new Vector4(right);
-            //Vector4 up4v = new Vector4(up);
-            //Vector4 front4v = new Vector4(front);
-            //Vector4 pos = new Vector4(root);
-            mat.Row0 = new Vector4(right);
-            mat.Row1 = new Vector4(up);
-            mat.Row2 = new Vector4(front);
-            
-            return mat;
+            return new Matrix4(
+                    new Vector4(right),
+                    new Vector4(up),
+                    new Vector4(front),
+                    new Vector4(position.X, position.Y, position.Z, 1)
+                );
         }
         ///// <summary>
         ///// creates a transformation matrix from a two position vectors and a direction vector defined as up (Z)

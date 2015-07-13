@@ -20,7 +20,6 @@ namespace QTM2Unity
             base.UpdateNext();
             if (ikApplier == null) ikApplier = new IKApplier();
             ikApplier.test = Extrapolate;
-            // GC 5.1kB
             ikApplier.ApplyIK(ref skeleton);
         }
     }

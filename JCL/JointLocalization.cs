@@ -54,90 +54,24 @@ namespace QTM2Unity
         private Vector3 UnitY = Vector3.UnitY;
         private Vector3 UnitZ = Vector3.UnitZ;
         #endregion
-        private void empty(Bone b) { }
-        public JointLocalization(List<string> mn)
-        {
-            jcFuncs = new List<Action<Bone>>() {
-                    (b) => Plevis(b), 
-                    (b) => SpineRoot(b)
-            };
-            if (mn.Contains(MarkerNames.neck) && mn.Contains(MarkerNames.chest))
-            {
-                    jcFuncs.Add((b) => MidSpine(b));
-            }
-            else
-            {
-                jcFuncs.Add(b => empty(b));
-            }
-
-            
-                    jcFuncs.Add((b) => SpineEnd(b));
-                    jcFuncs.Add((b) => Neck(b));
-                    // GC 1.5kB
-                    jcFuncs.Add((b) => GetHead(b));
-                    // GC 1.7kB
-                    jcFuncs.Add((b) => GetHeadTop(b));
-                    // GC 1.8kB
-                    jcFuncs.Add((b) => GetShoulderLeft(b));
-                    // GC 2.0kB
-                    jcFuncs.Add((b) => GetUpperArmLeft(b));
-                    // GC 2.2kB
-                    jcFuncs.Add((b) => GetLowerArmLeft(b));
-                    jcFuncs.Add((b) => GetWristLeft(b));
-                    jcFuncs.Add((b) => GetTrapLeft(b));
-                    jcFuncs.Add((b) => GetThumbLeft(b));
-                    jcFuncs.Add((b) => GetHandLeft(b));
-                    jcFuncs.Add((b) => GetIndexLeft(b));
-
-                    jcFuncs.Add((b) => GetShoulderRight(b)); 
-                    jcFuncs.Add((b) => GetUpperArmRight(b));
-                    jcFuncs.Add((b) => GetLowerArmRight(b));
-                    jcFuncs.Add((b) => GetWristRight(b));
-                    jcFuncs.Add((b) => GetTrapRight(b));
-                    jcFuncs.Add((b) => GetThumbRight(b));
-                    jcFuncs.Add((b) => GetHandRight(b));
-                    jcFuncs.Add((b) => GetIndexRight(b));
-
-                    jcFuncs.Add((b) => UpperLegLeft(b));       
-                    jcFuncs.Add((b) => LowerLegLeft(b));
-                    jcFuncs.Add((b) => GetAnkleLeft(b));
-                    jcFuncs.Add((b) => GetFootBaseLeft(b));
-                    jcFuncs.Add((b) => GetFootLeft(b));
-                    jcFuncs.Add((b) => UpperLegRight(b));
-                    jcFuncs.Add((b) => LowerLegRight(b)); 
-                    jcFuncs.Add((b) => GetAnkleRight(b));    
-                    jcFuncs.Add((b) => GetFootBaseRight(b));
-                    jcFuncs.Add((b) => GetFootRight(b));
-        }
         public JointLocalization()
         {
             jcFuncs = new List<Action<Bone>>() {
-                    //GC 0.7kB
-                    (b) => Plevis(b), 
-                    //GC 0.9kB
-                    (b) => SpineRoot(b), 
-                    // GC 1.1kB
+                    (b) => Plevis(b),
+                    (b) => SpineRoot(b),
                     (b) => MidSpine(b),
-                    // GC 1.2kB
                     (b) => SpineEnd(b),
-                    // GC 1.4kB
                     (b) => Neck(b),
-                    // GC 1.5kB
                     (b) => GetHead(b),
-                    // GC 1.7kB
                     (b) => GetHeadTop(b),
-                    // GC 1.8kB
                     (b) => GetShoulderLeft(b),
-                    // GC 2.0kB
                     (b) => GetUpperArmLeft(b),
-                    // GC 2.2kB
                     (b) => GetLowerArmLeft(b),
                     (b) => GetWristLeft(b),
                     (b) => GetTrapLeft(b),
                     (b) => GetThumbLeft(b),
                     (b) => GetHandLeft(b),
                     (b) => GetIndexLeft(b),
-
                     (b) => GetShoulderRight(b), 
                     (b) => GetUpperArmRight(b),
                     (b) => GetLowerArmRight(b),
@@ -146,7 +80,6 @@ namespace QTM2Unity
                     (b) => GetThumbRight(b),
                     (b) => GetHandRight(b),
                     (b) => GetIndexRight(b),
-
                     (b) => UpperLegLeft(b),       
                     (b) => LowerLegLeft(b),
                     (b) => GetAnkleLeft(b),
@@ -162,28 +95,31 @@ namespace QTM2Unity
         public void GetJointLocation(Dictionary<string, Vector3> markerData, ref BipedSkeleton skeleton)
         {
             o = new Values(); // reset joint pos and orientations
+            //GC388 // ( (32*4*3)qautermions + (32*3*27bits)Vectors ) = 372bytes
             markers = markerData;
             // collect data from markers about body proportions
             // this is necessary for shoulder joint localization 
             // Locate hiporientation, hip orientation is important for IK solver,
             bd.CalculateBodyData(markers, ChestOrientation);
-            //492B GC so far
+            //GC452 (+64B)
             // get all joints
-            //IEnumerator it = skeleton.GetEnumerator();
-            //it.MoveNext();
-            //foreach (var action in jointFunctions)
-            //{
-            //    action(((TreeNode<Bone>)it.Current).Data);
-            //    it.MoveNext();
-            //}
             int i = 0;
-            skeleton.Root.Traverse(z => jcFuncs[i++](z));
-
-            //3.7kB GC so far
-   
+            SetJointsRecursive(skeleton.Root, ref i); // 3.3kb gc
+        }
+        private void SetJointsRecursive(TreeNode<Bone> currBone, ref int index) 
+        {
+            jcFuncs[index++](currBone.Data);
+            if (!currBone.IsLeaf) SetJointsRecursive(currBone.Children, ref index);
+        }
+        private void SetJointsRecursive(ICollection<TreeNode<Bone>> boneList, ref int index)
+        {
+            var l = boneList.ToArray();
+            for (int i = 0; i < l.Length; i++)
+            {
+                SetJointsRecursive(l[i], ref index);
+            }
         }
         #region Getters and Setters used for joint localization
-
         private Quaternion HipOrientation
         {
             get

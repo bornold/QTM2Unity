@@ -17,7 +17,7 @@ namespace QTM2Unity
             public float traceLength = 0.08f;
             public bool resetSkeleton = false;
         }
-    class RT_JC : RT
+    class RT_JC : RT_Markers
     {
         public BodyRig bodyRig;
         protected BipedSkeleton skeleton;
@@ -29,6 +29,7 @@ namespace QTM2Unity
 
         public override void StartNext()
         {
+            base.StartNext();
             skeleton = new BipedSkeleton();
             skeletonBuffer = new BipedSkeleton();
             mp = new MarkersPreprocessor();
@@ -38,6 +39,7 @@ namespace QTM2Unity
         // Update is called once per frame
         public override void UpdateNext()
         {
+            base.UpdateNext();
             if ((bodyRig != null && bodyRig.resetSkeleton) || joints == null || skeleton == null || skeletonBuffer == null || mp == null)
             {
                 UnityEngine.Debug.LogWarning("Reseting");

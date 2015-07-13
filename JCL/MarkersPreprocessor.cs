@@ -10,8 +10,8 @@ namespace QTM2Unity
     class MarkersPreprocessor
     {
         private List<string> markersList;
-        private Dictionary<string, Vector3> markers;
-        private Dictionary<string, Vector3> markersLastFrame;
+        private Dictionary<string, Vector3> markers = new Dictionary<string, Vector3>();
+        private Dictionary<string, Vector3> markersLastFrame = new Dictionary<string, Vector3>();
         private bool nameSet = false;
         private string prefix;
 
@@ -54,7 +54,15 @@ namespace QTM2Unity
             var temp = markers;
             markers = markersLastFrame;
             markersLastFrame = temp;
-            markers = labelMarkers.ToDictionary(key => key.label, pos => pos.position);
+            markers.Clear();
+            for (int i = 0; i < labelMarkers.Count; i++)
+            {
+                markers.Add(labelMarkers[i].label, labelMarkers[i].position);
+            }
+            //foreach (var lv in labelMarkers)
+            //{
+            //    markers.Add(lv.label, lv.position);
+            //}
             if (!nameSet)
             {
                 NameSet(markers);
@@ -62,7 +70,8 @@ namespace QTM2Unity
                 markersLastFrame = new Dictionary<string, Vector3>();
                 foreach (var mark in markersList)
                 {
-                    if (!markersLastFrame.ContainsKey(mark)) {
+                    if (!markersLastFrame.ContainsKey(mark))
+                    {
                         markersLastFrame.Add(mark, Vector3Helper.NaN);
                     }
                     if (!markersLastFrame.ContainsKey(mark))
@@ -77,11 +86,11 @@ namespace QTM2Unity
             }
 
             // GC: 40B GC 
-            foreach (var name in markersList)
+            for (int i = 0; i < markersList.Count; i++)
             {
-                if (!markers.ContainsKey(name))
+                if (!markers.ContainsKey(markersList[i]))
                 {
-                    markers.Add(name, Vector3Helper.NaN);
+                    markers.Add(markersList[i], Vector3Helper.NaN);
                 }
             }
 
@@ -234,24 +243,27 @@ namespace QTM2Unity
             Vector3 trans = (isRightKnee) ? 
                 new Vector3(-BodyData.MarkerCentreToSkinSurface * 0.7071f, -BodyData.MarkerCentreToSkinSurface * 0.7071f, 0f) :
                 new Vector3(-BodyData.MarkerCentreToSkinSurface * 0.7071f, BodyData.MarkerCentreToSkinSurface * 0.7071f, 0f);
-            //if (isRightKnee) trans = Vector3.Multiply(trans, negateY);//Vector3.Multiply(ref trans, ref negateY, out trans);
-            Vector3 newM1 = Vector3.TransformVector(trans, R) + M1;
+            Vector3 newM1 = Vector3.TransformVector(
+                (isRightKnee) ?
+                new Vector3(-BodyData.MarkerCentreToSkinSurface * 0.7071f, -BodyData.MarkerCentreToSkinSurface * 0.7071f, 0f) :
+                new Vector3(-BodyData.MarkerCentreToSkinSurface * 0.7071f, BodyData.MarkerCentreToSkinSurface * 0.7071f, 0f), 
+                R) + M1;
 
             x = Vector3Helper.MidPoint(M1, M2) - M3;
             z = M2 - M1;
             R = Matrix4Helper.GetOrientationMatrix(x, z);
-            if (isRightKnee) trans = Vector3.Multiply(trans, negateY); //Vector3.Multiply(ref trans, ref negateY, out trans);
-            Vector3 newM2 = Vector3.TransformVector(trans, R) + M2;
+            //if (isRightKnee) trans = Vector3.Multiply(trans, negateY);
+            //Vector3 newM2 = Vector3.TransformVector(trans, R) + M2;
 
             if (isRightKnee)
             {
                 markers[MarkerNames.rightOuterKnee] = newM1;//FLE
-                markers[MarkerNames.rightOuterAnkle] = newM2;//FAL
+                markers[MarkerNames.rightOuterAnkle] = Vector3.TransformVector(Vector3.Multiply(trans, negateY), R) + M2;//FAL
             }
             else
             {
                 markers[MarkerNames.leftOuterKnee] = newM1;//FLE
-                markers[MarkerNames.leftOuterAnkle] = newM2;//FAL
+                markers[MarkerNames.leftOuterAnkle] = Vector3.TransformVector(trans, R) + M2;//FAL
             }
         }
         private void NameSet(Dictionary<string, Vector3> llm, string prefix = "")
