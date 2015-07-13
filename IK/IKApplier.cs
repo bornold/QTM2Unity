@@ -65,32 +65,33 @@ namespace QTM2Unity
         /// <param name="lastSkelEnum">The enumurator to the missing bone position from the last skeleton</param>
         private void MissingJoint(TreeNode<Bone> missingJoint)
         {
-            IEnumerator skelEnum = missingJoint.GetEnumerator();
-            skelEnum.MoveNext();
+
             bool iksolved = false;
             List<Bone> missingChain = new List<Bone>(); // chain to be solved
             //root of chain 
             // missings joints parent from last frame is root in solution
-            TreeNode<Bone> curr = missingJoint.Parent;//((TreeNode<Bone>)skelEnum.Current).Parent;
-            TreeNode<Bone> first = curr;
+            TreeNode<Bone> curr = missingJoint.Parent;
             TreeNode<Bone> referenceBone = curr.Parent;
             // The root if the chain
 
-            var lastSkelEnum = lastSkel.Root.FindTreeNode(a => a.Data.Name == curr.Data.Name).GetEnumerator();
-            lastSkelEnum.MoveNext();
-            string firstRot = first.Data.Orientation.ToString();
-            Bone last = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Data;
-            Bone cpylast = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Parent.Data;
+            var lastSkelBone = lastSkel.Root.FindTreeNode(a => a.Data.Name == curr.Data.Name);
+            Bone last = lastSkelBone.Parent.Data;
+            Bone cpylast = lastSkelBone.Parent.Parent.Data;
             Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
             CopyFromLast(curr, last); 
             curr.Data.Pos += offset;
             missingChain.Add(curr.Data); 
             // first missing, copy data from last frame
-            curr = ((TreeNode<Bone>)skelEnum.Current);
-            last = ((TreeNode<Bone>)lastSkelEnum.Current).Data;
+            curr = missingJoint;
+            last = lastSkelBone.Data;
             CopyFromLast(curr, last);
             curr.Data.Pos += offset;
             missingChain.Add(curr.Data);
+
+            IEnumerator skelEnum = missingJoint.GetEnumerator();
+            skelEnum.MoveNext();
+            var lastSkelEnum = lastSkelBone.GetEnumerator();
+            lastSkelEnum.MoveNext();
             while (!curr.IsLeaf && skelEnum.MoveNext() && lastSkelEnum.MoveNext()) //while not leaf
             {
                 curr = ((TreeNode<Bone>)skelEnum.Current);
@@ -126,12 +127,12 @@ namespace QTM2Unity
             {
                 var q2 = referenceBone.Data.Orientation;
                 var q1 = cpylast.Orientation;
-                FK(first, (q2 * Quaternion.Invert(q1)));
+                FK(missingJoint, (q2 * Quaternion.Invert(q1)));
             }
             if (iksolved && test)
             {
-                JerkingTest(first);
-                ConstraintsBeforeReturn(first);
+                JerkingTest(missingJoint);
+                ConstraintsBeforeReturn(missingJoint);
             }
         }
         private void CopyFromLast(TreeNode<Bone> curr, Bone last)
