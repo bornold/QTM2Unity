@@ -26,45 +26,36 @@ namespace QTM2Unity
         /// <param name="skeleton">The skeleton with joints</param>
         public void ApplyIK(ref BipedSkeleton skeleton)
         {
-
-            IEnumerator skelEnumer = skeleton.Root.GetEnumerator();
-            IEnumerator lastSkelEnumer = lastSkel.Root.GetEnumerator();
             //Root and all of roots children MUST have set possition
-            TreeNode<Bone> bone;
-            while (skelEnumer.MoveNext() && lastSkelEnumer.MoveNext())
+            foreach (var bone in skeleton.Root)
             {
-                bone = (TreeNode<Bone>)skelEnumer.Current;
                 if (!bone.Data.Exists) // Possition of joint no knowned, Solve with IK
                 {
                     ///////////////////////////////////////////////Special cases/////////////////////////
-                    if (bone.IsRoot || bone.Parent.IsRoot)
-                    {
-
-                        CopyFromLast(ref bone, lastSkel [bone.Data.Name]);
-                        UnityEngine.Debug.LogWarning("Root is undefined!");
-                        continue;
-                    }
-                    else if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3) 
+                    //if (bone.IsRoot || bone.Parent.IsRoot)
+                    //{
+                    //    CopyFromLast(bone, lastSkel[bone.Data.Name]);
+                    //    continue;
+                    //}
+                    
+                    if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3)
                                 || bone.Data.Name.StartsWith("trap"))
                     {
                         bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
                         bone.Data.Orientation = QuaternionHelper.LookAtUp(
-                            bone.Data.Pos, 
+                            bone.Data.Pos,
                             bone.Children.First().Data.Pos,
                             bone.Parent.Data.GetZAxis());
                         continue;
                     }
                     /////////////////////////////////////////////// Special END//////////////////////////////
-                    //GC so far 11.5kB
-                    MissingJoint(ref skelEnumer, ref lastSkelEnumer);
-                    //GC so far 20.2kB
+                    //7.3kb garbage
+                    MissingJoint(bone);
+                    //12.8kb
                 }
             }
-
             //if (test) FixRotation(skeleton.Root);
-
             lastSkel = skeleton;
-            //GC So far 21.3
         }
 
         /// <summary>
@@ -72,29 +63,32 @@ namespace QTM2Unity
         /// </summary>
         /// <param name="skelEnum">The enumurator to the missing bone position</param>
         /// <param name="lastSkelEnum">The enumurator to the missing bone position from the last skeleton</param>
-        private void MissingJoint(ref IEnumerator skelEnum, ref IEnumerator lastSkelEnum)
+        private void MissingJoint(TreeNode<Bone> missingJoint)
         {
+            IEnumerator skelEnum = missingJoint.GetEnumerator();
+            skelEnum.MoveNext();
             bool iksolved = false;
             List<Bone> missingChain = new List<Bone>(); // chain to be solved
-
             //root of chain 
             // missings joints parent from last frame is root in solution
-            TreeNode<Bone> curr = ((TreeNode<Bone>)skelEnum.Current).Parent;
+            TreeNode<Bone> curr = missingJoint.Parent;//((TreeNode<Bone>)skelEnum.Current).Parent;
             TreeNode<Bone> first = curr;
             TreeNode<Bone> referenceBone = curr.Parent;
             // The root if the chain
 
+            var lastSkelEnum = lastSkel.Root.FindTreeNode(a => a.Data.Name == curr.Data.Name).GetEnumerator();
+            lastSkelEnum.MoveNext();
             string firstRot = first.Data.Orientation.ToString();
             Bone last = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Data;
             Bone cpylast = ((TreeNode<Bone>)lastSkelEnum.Current).Parent.Parent.Data;
             Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
-            CopyFromLast(ref curr, last); 
+            CopyFromLast(curr, last); 
             curr.Data.Pos += offset;
             missingChain.Add(curr.Data); 
             // first missing, copy data from last frame
             curr = ((TreeNode<Bone>)skelEnum.Current);
             last = ((TreeNode<Bone>)lastSkelEnum.Current).Data;
-            CopyFromLast(ref curr, last);
+            CopyFromLast(curr, last);
             curr.Data.Pos += offset;
             missingChain.Add(curr.Data);
             while (!curr.IsLeaf && skelEnum.MoveNext() && lastSkelEnum.MoveNext()) //while not leaf
@@ -116,7 +110,7 @@ namespace QTM2Unity
                             new Quaternion(curr.Data.Orientation.Xyz, curr.Data.Orientation.W);
                         torgentation = target.Orientation.ToString();
                     }
-                    CopyFromLast(ref curr, last);
+                    CopyFromLast(curr, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
                     string tarrot = curr.Data.Orientation.ToString();
@@ -124,7 +118,7 @@ namespace QTM2Unity
                     iksolved = true;
                     break;
                 }
-                CopyFromLast(ref curr, last);
+                CopyFromLast(curr, last);
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
             }
@@ -140,7 +134,7 @@ namespace QTM2Unity
                 ConstraintsBeforeReturn(first);
             }
         }
-        private void CopyFromLast(ref TreeNode<Bone> curr, Bone last)
+        private void CopyFromLast(TreeNode<Bone> curr, Bone last)
         {
             curr.Data.Pos = new Vector3(last.Pos);
             curr.Data.Orientation = new Quaternion(new Vector3(last.Orientation.Xyz), last.Orientation.W);
