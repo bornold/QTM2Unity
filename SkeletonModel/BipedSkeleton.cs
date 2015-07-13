@@ -199,14 +199,6 @@ namespace QTM2Unity
                                         wristLeftPos,
                                         wristLeftRot));
                                     {
-                                        TreeNode<Bone> trapezoidLeft = wristLeft.AddChild(new Bone(TRAP_L,
-                                                wristLeftPos,
-                                                trapezoidLeftRot));
-                                        {
-                                            trapezoidLeft.AddChild(new Bone(THUMB_L,
-                                            thumbLeftPos,
-                                            QuaternionHelper.Zero));
-                                        }
                                         TreeNode<Bone> handLeft = wristLeft.AddChild(new Bone(HAND_L,
                                            handLeftPos,
                                            handLeftRot));
@@ -214,6 +206,14 @@ namespace QTM2Unity
                                             handLeft.AddChild(new Bone(INDEX_L,
                                            indexLeftPos,
                                            QuaternionHelper.Zero));
+                                        }
+                                        TreeNode<Bone> trapezoidLeft = wristLeft.AddChild(new Bone(TRAP_L,
+                                                wristLeftPos,
+                                                trapezoidLeftRot));
+                                        {
+                                            trapezoidLeft.AddChild(new Bone(THUMB_L,
+                                            thumbLeftPos,
+                                            QuaternionHelper.Zero));
                                         }
                                     }
                                 }
@@ -237,6 +237,13 @@ namespace QTM2Unity
                                         wristRightPos, 
                                         wristRightRot));    
                                     {
+                                        TreeNode<Bone> handRight = wristRight.AddChild(new Bone(HAND_R, 
+                                            handRightPos,
+                                            handRightRot));
+                                        {
+                                            handRight.AddChild(new Bone(INDEX_R,
+                                            indexRightPos,
+                                            QuaternionHelper.Zero));
                                         TreeNode<Bone> trapezoidRight = wristRight.AddChild(new Bone(TRAP_R,
                                             wristRightPos,
                                             trapezoidRightRot));
@@ -245,13 +252,6 @@ namespace QTM2Unity
                                             thumbRightPos,
                                             QuaternionHelper.Zero));
                                         }
-                                        TreeNode<Bone> handRight = wristRight.AddChild(new Bone(HAND_R, 
-                                            handRightPos,
-                                            handRightRot));
-                                        {
-                                            handRight.AddChild(new Bone(INDEX_R,
-                                            indexRightPos,
-                                            QuaternionHelper.Zero));
                                         }
                                     }
                                 }

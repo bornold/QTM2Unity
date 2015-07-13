@@ -19,11 +19,7 @@ namespace QTM2Unity
                 //fabrik.MaxIterations = 20;
                 //IKSolver.MaxIterations = 200;
         }
-        /// <summary>
-        /// Given an incomplete skeleton, returns a complete skeleton
-        /// Using IK to fill in the gaps between the joints, or the last skeleton if whole limps are missing
-        /// </summary>
-        /// <param name="skeleton">The skeleton with joints</param>
+
         public void ApplyIK(ref BipedSkeleton skeleton)
         {
             //Root and all of roots children MUST have set possition
@@ -51,6 +47,7 @@ namespace QTM2Unity
                     /////////////////////////////////////////////// Special END//////////////////////////////
                     //7.3kb garbage
                     MissingJoint(bone);
+                    //MissingJoint(bone);
                     //12.8kb
                 }
             }
@@ -64,23 +61,23 @@ namespace QTM2Unity
         /// <param name="skelEnum">The enumurator to the missing bone position</param>
         /// <param name="lastSkelEnum">The enumurator to the missing bone position from the last skeleton</param>
         private void MissingJoint(TreeNode<Bone> missingJoint)
-        {
-
-            bool iksolved = false;
-            List<Bone> missingChain = new List<Bone>(); // chain to be solved
-            //root of chain 
+        { 
             // missings joints parent from last frame is root in solution
             TreeNode<Bone> curr = missingJoint.Parent;
+            TreeNode<Bone> first = curr;
             TreeNode<Bone> referenceBone = curr.Parent;
-            // The root if the chain
-
-            var lastSkelBone = lastSkel.Root.FindTreeNode(a => a.Data.Name == curr.Data.Name);
+            //root of chain 
+            TreeNode<Bone> lastSkelBone = lastSkel.Root.FindTreeNode(a => a.Data.Name == missingJoint.Data.Name);
             Bone last = lastSkelBone.Parent.Data;
-            Bone cpylast = lastSkelBone.Parent.Parent.Data;
+            Bone lastReference = lastSkelBone.Parent.Parent.Data;
+
+            List<Bone> missingChain = new List<Bone>(); // chain to be solved
+            // The root if the chain
             Vector3 offset = curr.Data.Pos - last.Pos; // offset to move last frames chain to this frames' position
-            CopyFromLast(curr, last); 
+            CopyFromLast(curr, last);
             curr.Data.Pos += offset;
-            missingChain.Add(curr.Data); 
+            missingChain.Add(curr.Data);
+
             // first missing, copy data from last frame
             curr = missingJoint;
             last = lastSkelBone.Data;
@@ -88,9 +85,11 @@ namespace QTM2Unity
             curr.Data.Pos += offset;
             missingChain.Add(curr.Data);
 
-            IEnumerator skelEnum = missingJoint.GetEnumerator();
+            bool iksolved = false;
+            IEnumerator skelEnum, lastSkelEnum;
+            skelEnum = missingJoint.GetEnumerator();
+            lastSkelEnum = lastSkelBone.GetEnumerator();
             skelEnum.MoveNext();
-            var lastSkelEnum = lastSkelBone.GetEnumerator();
             lastSkelEnum.MoveNext();
             while (!curr.IsLeaf && skelEnum.MoveNext() && lastSkelEnum.MoveNext()) //while not leaf
             {
@@ -99,17 +98,14 @@ namespace QTM2Unity
 
                 if (curr.Data.Exists) // target found! it the last in list
                 {
-
-                    string torgentation = "";
                     Bone target = new Bone(
                         curr.Data.Name,
                         new Vector3(curr.Data.Pos)
                         );
                     if (!curr.Data.Orientation.IsNaN())
                     {
-                        target.Orientation = 
+                        target.Orientation =
                             new Quaternion(curr.Data.Orientation.Xyz, curr.Data.Orientation.W);
-                        torgentation = target.Orientation.ToString();
                     }
                     CopyFromLast(curr, last);
                     curr.Data.Pos += offset;
@@ -117,14 +113,6 @@ namespace QTM2Unity
                     string tarrot = curr.Data.Orientation.ToString();
                     IKSolver.SolveBoneChain(missingChain.ToArray(), target, referenceBone.Data); // solve with IK
                     iksolved = true;
-                    //UnityEngine.Debug.LogFormat("Solving from {0} to {1}", first.Data.Name, curr.Data.Name);
-                    //UnityEngine.Debug.LogFormat("First {2} rot before: {0}\n And after: {1}", firstRot, first.Data.Orientation.ToString(), first.Data.Name);
-                    UnityEngine.Debug.LogFormat(
-                        "{2}\t before: {0,-50}\n" +
-                        "\t after:    {1,-50}\n" +
-                        "\t target   {3,-50}\n{4}\n{5}",
-                        tarrot, curr.Data.Orientation.ToString(), curr.Data.Name,target.Orientation,target.Name, torgentation);
-
                     break;
                 }
                 CopyFromLast(curr, last);
@@ -134,13 +122,13 @@ namespace QTM2Unity
             if (!iksolved)
             {
                 var q2 = referenceBone.Data.Orientation;
-                var q1 = cpylast.Orientation;
-                FK(missingJoint, (q2 * Quaternion.Invert(q1)));
+                var q1 = lastReference.Orientation;
+                FK(first, (q2 * Quaternion.Invert(q1)));
             }
             if (iksolved && test)
             {
                 JerkingTest(first);
-                //ConstraintsBeforeReturn(first);
+                ConstraintsBeforeReturn(first);
             }
         }
         private void CopyFromLast(TreeNode<Bone> curr, Bone last)
