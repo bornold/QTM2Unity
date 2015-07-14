@@ -76,9 +76,9 @@ namespace QTM2Unity
                         markersLastFrame.Add(mark, Vector3Helper.NaN);
                     }
                 }
-                markersLastFrame[MarkerNames.bodyBase] = new Vector3(0f, 1.0f, 0f); //mid of (0.0774 1.0190 -0.1151, -0.0716 1.0190 -0.1138)
-                markersLastFrame[MarkerNames.leftHip] = new Vector3(-0.1f, 1.0f, 0.15f); // 0.0925 0.9983 0.1052
-                markersLastFrame[MarkerNames.rightHip] = new Vector3(0.1f, 1.0f, 0.15f); //-0.0887 1.0021 0.1112
+                markersLastFrame[MarkerNames.bodyBase] = lastSACRUMknown;
+                markersLastFrame[MarkerNames.leftHip] = lastLIASknown;
+                markersLastFrame[MarkerNames.rightHip] = lastRIASknown;
                 nameSet = true;
             }
 
@@ -90,14 +90,16 @@ namespace QTM2Unity
                     markers.Add(markersList[i], Vector3Helper.NaN);
                 }
             }
-
+            UnityDebug.DrawLine(lastSACRUMknown, lastLIASknown);
+            UnityDebug.DrawLine(lastSACRUMknown, lastRIASknown);
+            UnityDebug.DrawLine(lastRIASknown, lastLIASknown);
             if (markers[MarkerNames.leftHip].IsNaN()
                 || markers[MarkerNames.rightHip].IsNaN()
                 || markers[MarkerNames.bodyBase].IsNaN())
             {
                 MissingEssientialMarkers(markers);
             }
-            else
+            //else
             {
                 lastSACRUMknown = markers[MarkerNames.bodyBase];
                 lastRIASknown = markers[MarkerNames.rightHip];
@@ -111,7 +113,7 @@ namespace QTM2Unity
         private void MissingEssientialMarkers(Dictionary<string,Vector3> markers)
         {
             Vector3 dirVec1, dirVec2, possiblePos1, possiblePos2,
-                    sacrumlastFrame = lastSACRUMknown,
+                    sacrumLastFrame = lastSACRUMknown,
                     liasLastFrame   = lastLIASknown,
                     riasLastFrame   = lastRIASknown;
 
@@ -126,11 +128,11 @@ namespace QTM2Unity
             {
                 if (r) // sacrum and rias exist, lias missing
                 {
-                    dirVec1 = liasLastFrame - sacrumlastFrame; // vector from sacrum too lias in last frame
+                    dirVec1 = liasLastFrame - sacrumLastFrame; // vector from sacrum too lias in last frame
                     dirVec2 = liasLastFrame - riasLastFrame;
                     Quaternion between = Quaternion.Invert(
                                 QuaternionHelper.GetRotationBetween(
-                                (RIAS - Sacrum), (riasLastFrame - sacrumlastFrame))
+                                (RIAS - Sacrum), (riasLastFrame - sacrumLastFrame))
                                 );
                     Vector3 transVec1 = Vector3.Transform(dirVec1, (between));
                     Vector3 transVec2 = Vector3.Transform(dirVec2, (between));
@@ -141,11 +143,11 @@ namespace QTM2Unity
                 }
                 else if (l) // sacrum  and lias exists, rias missing
                 {
-                    dirVec1 = riasLastFrame - sacrumlastFrame;
+                    dirVec1 = riasLastFrame - sacrumLastFrame;
                     dirVec2 = riasLastFrame - liasLastFrame;
                     Quaternion between = Quaternion.Invert(
                                             QuaternionHelper.GetRotationBetween(
-                                            (LIAS - Sacrum), (liasLastFrame - sacrumlastFrame))
+                                            (LIAS - Sacrum), (liasLastFrame - sacrumLastFrame))
                                             );
                     Vector3 transVec1 = Vector3.Transform(dirVec1, (between));
                     Vector3 transVec2 = Vector3.Transform(dirVec2, (between));
@@ -155,16 +157,16 @@ namespace QTM2Unity
                 }
                 else // only sacrum exists, lias and rias missing
                 {
-                    markers[MarkerNames.rightHip] = Sacrum + riasLastFrame - sacrumlastFrame;
-                    markers[MarkerNames.leftHip] = Sacrum + liasLastFrame - sacrumlastFrame;
+                    markers[MarkerNames.rightHip] = Sacrum + riasLastFrame - sacrumLastFrame;
+                    markers[MarkerNames.leftHip] = Sacrum + liasLastFrame - sacrumLastFrame;
                 }
             }
             else if (r) // rias exists, sacrum missing
             {
                 if (l) // rias and ias exists, sacrum missing
                 {
-                    dirVec1 = sacrumlastFrame - riasLastFrame;
-                    dirVec2 = sacrumlastFrame - liasLastFrame;
+                    dirVec1 = sacrumLastFrame - riasLastFrame;
+                    dirVec2 = sacrumLastFrame - liasLastFrame;
 
                     Quaternion between = Quaternion.Invert(
                         QuaternionHelper.GetRotationBetween(
@@ -178,13 +180,13 @@ namespace QTM2Unity
                 }
                 else // only rias exists, lias and sacrum missing
                 {
-                    markers[MarkerNames.bodyBase] = RIAS + sacrumlastFrame - riasLastFrame;
+                    markers[MarkerNames.bodyBase] = RIAS + sacrumLastFrame - riasLastFrame;
                     markers[MarkerNames.leftHip] = RIAS + liasLastFrame - riasLastFrame;
                 }
             }
             else if (l) // only lias exists, rias and sacrum missing
             {
-                markers[MarkerNames.bodyBase] = LIAS + sacrumlastFrame - liasLastFrame;
+                markers[MarkerNames.bodyBase] = LIAS + sacrumLastFrame - liasLastFrame;
                 markers[MarkerNames.rightHip] = LIAS + riasLastFrame - liasLastFrame;
             }
             else // all markers missing
@@ -204,16 +206,13 @@ namespace QTM2Unity
 
                     markers[MarkerNames.rightHip] = riasLastFrame + offset;
                     markers[MarkerNames.leftHip] = liasLastFrame + offset;
-                    markers[MarkerNames.bodyBase] = sacrumlastFrame + offset;
-                    lastSACRUMknown = markers[MarkerNames.bodyBase];
-                    lastRIASknown = markers[MarkerNames.rightHip];
-                    lastLIASknown = markers[MarkerNames.leftHip];
+                    markers[MarkerNames.bodyBase] = sacrumLastFrame + offset;
                 }
                 else
                 {
                     markers[MarkerNames.rightHip] = riasLastFrame;
                     markers[MarkerNames.leftHip] = liasLastFrame;
-                    markers[MarkerNames.bodyBase] = sacrumlastFrame;
+                    markers[MarkerNames.bodyBase] = sacrumLastFrame;
                 }
             }
         }

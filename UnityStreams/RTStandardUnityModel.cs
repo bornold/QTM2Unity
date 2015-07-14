@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 namespace QTM2Unity
 {
-    class RTStandardUnityModel : RT_IK_Constrained
+    class RTStandardUnityModel : RT_IK
     {
         Quaternion localRotation;
         Transform hips;
