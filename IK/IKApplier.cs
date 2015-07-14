@@ -23,36 +23,27 @@ namespace QTM2Unity
         public void ApplyIK(ref BipedSkeleton skeleton)
         {
             //Root and all of roots children MUST have set possition
-            foreach (var bone in skeleton.Root)
-            {
-                if (!bone.Data.Exists) // Possition of joint no knowned, Solve with IK
-                {
-                    ///////////////////////////////////////////////Special cases/////////////////////////
-                    //if (bone.IsRoot || bone.Parent.IsRoot)
-                    //{
-                    //    CopyFromLast(bone, lastSkel[bone.Data.Name]);
-                    //    continue;
-                    //}
-                    
-                    if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3)
-                                || bone.Data.Name.StartsWith("trap"))
-                    {
-                        bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
-                        bone.Data.Orientation = QuaternionHelper.LookAtUp(
-                            bone.Data.Pos,
-                            bone.Children.First().Data.Pos,
-                            bone.Parent.Data.GetZAxis());
-                        continue;
-                    }
-                    /////////////////////////////////////////////// Special END//////////////////////////////
-                    //7.3kb garbage
-                    MissingJoint(bone);
-                    //12.2kb
-                }
-            }
+            skeleton.Root.Traverse(t => TraversFunc(t));
             lastSkel = skeleton;
         }
 
+        private void TraversFunc(TreeNode<Bone> bone)
+        {
+            if (!bone.Data.Exists)
+            {
+                if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3)
+                            || bone.Data.Name.StartsWith("trap"))
+                {
+                    bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
+                    bone.Data.Orientation = QuaternionHelper.LookAtUp(
+                        bone.Data.Pos,
+                        bone.Children.First().Data.Pos,
+                        bone.Parent.Data.GetZAxis());
+                    return;
+                }
+                MissingJoint(bone);
+            }
+        }
         /// <summary>
         /// If a joints is missing from the skeletontree, fill the joints with the previus frames joints and solve with ik if a joint is found, or return the previus frames joint pos offseted the new position
         /// </summary>

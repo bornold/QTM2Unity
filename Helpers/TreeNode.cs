@@ -68,7 +68,12 @@ namespace QTM2Unity
             foreach (var child in Children)
                 child.Traverse(action);
         }
-
+        public void Traverse(Action<TreeNode<T>> action)
+        {
+            action(this);
+            foreach (var child in Children)
+                child.Traverse(action);
+        }
         public override string ToString()
         {
             return Data != null ? Data.ToString() : "[data null]";

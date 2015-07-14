@@ -59,10 +59,7 @@ namespace QTM2Unity
             {
                 markers.Add(labelMarkers[i].label, labelMarkers[i].position);
             }
-            //foreach (var lv in labelMarkers)
-            //{
-            //    markers.Add(lv.label, lv.position);
-            //}
+
             if (!nameSet)
             {
                 NameSet(markers);

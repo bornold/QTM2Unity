@@ -113,10 +113,9 @@ namespace QTM2Unity
         }
         private void SetJointsRecursive(ICollection<TreeNode<Bone>> boneList, ref int index)
         {
-            var l = boneList.ToArray();
-            for (int i = 0; i < l.Length; i++)
+            foreach (var b in boneList)
             {
-                SetJointsRecursive(l[i], ref index);
+                SetJointsRecursive(b, ref index);
             }
         }
         #region Getters and Setters used for joint localization

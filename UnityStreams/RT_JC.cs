@@ -2,22 +2,22 @@
 using UnityEngine;
 namespace QTM2Unity
 {
-        [System.Serializable]
-        public class BodyRig
-        {
-            public string bodyPrefix = "";
-            public bool showSkeleton = false;
-            public Color skelettColor = Color.black;
-            public bool showJoints = false;
-            [Range(0.01f, 0.1f)]
-            public float jointScale = 0.015f;
-            public Color jointColor = Color.green;
-            public bool showRotationTrace = false;
-            [Range(0.01f, 1.0f)]
-            public float traceLength = 0.08f;
-            public bool resetSkeleton = false;
-        }
-    class RT_JC : RT_Markers
+    [System.Serializable]
+    public class BodyRig
+    {
+        public string bodyPrefix = "";
+        public bool showSkeleton = false;
+        public Color skelettColor = Color.black;
+        public bool showJoints = false;
+        [Range(0.01f, 0.1f)]
+        public float jointScale = 0.015f;
+        public Color jointColor = Color.green;
+        public bool showRotationTrace = false;
+        [Range(0.01f, 1.0f)]
+        public float traceLength = 0.08f;
+        public bool resetSkeleton = false;
+    }
+    class RT_JC : RT
     {
         public BodyRig bodyRig;
         protected BipedSkeleton skeleton;
