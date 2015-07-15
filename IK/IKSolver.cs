@@ -6,7 +6,7 @@ namespace QTM2Unity
     {
         abstract public bool SolveBoneChain(Bone[] bones, Bone target, Bone parent);
         protected float threshold = 0.01f;
-        protected int maxIterations = 200;
+        protected int maxIterations = 100;
         public int MaxIterations 
         {
             get { return maxIterations; }

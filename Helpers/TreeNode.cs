@@ -33,18 +33,18 @@ namespace QTM2Unity
         {
             get { return Children.Count == 0; }
         }
-        /// <summary>
-        /// Returns the depth from the parent node
-        /// </summary>
-        public int Level
-        {
-            get
-            {
-                if (this.IsRoot)
-                    return 0;
-                return Parent.Level + 1;
-            }
-        }
+        ///// <summary>
+        ///// Returns the depth from the parent node
+        ///// </summary>
+        //public int Level
+        //{
+        //    get
+        //    {
+        //        if (this.IsRoot)
+        //            return 0;
+        //        return Parent.Level + 1;
+        //    }
+        //}
 
         /// <summary>
         /// Constructor for a new node
@@ -53,10 +53,7 @@ namespace QTM2Unity
         public TreeNode(T data)
         {
             this.Data = data;
-            this.Children = new LinkedList<TreeNode<T>>();
-
-            this.ElementsIndex = new LinkedList<TreeNode<T>>();
-            this.ElementsIndex.Add(this);
+            this.Children = new List<TreeNode<T>>();
         }
 
         /// <summary>
@@ -69,28 +66,9 @@ namespace QTM2Unity
             TreeNode<T> childNode = new TreeNode<T>(child) { Parent = this };
             this.Children.Add(childNode);
 
-            this.RegisterChildForSearch(childNode);
+            //this.RegisterChildForSearch(childNode);
 
             return childNode;
-        }
-        /// <summary>
-        /// Removes remove a child from this node
-        /// </summary>
-        /// <param name="node">The child to be killed</param>
-        /// <returns>True if the removal was successfull</returns>
-        public bool RemoveChild(TreeNode<T> node)
-        {
-            return Children.Remove(node);
-        }
-        /// <summary>
-        /// Replace a child with a new node
-        /// </summary>
-        /// <param name="child">The data of the new child</param>
-        /// <param name="node">The node to be removed</param>
-        /// <returns>The new node, null if the given node is not among the children</returns>
-        public TreeNode<T> ReplaceChildWith(T child, TreeNode<T> node)
-        {
-            return (Children.Remove(node)) ? AddChild(child) : null;
         }
 
         /// <summary>
@@ -122,14 +100,7 @@ namespace QTM2Unity
 
         #region searching
         
-        private ICollection<TreeNode<T>> ElementsIndex { get; set; }
 
-        private void RegisterChildForSearch(TreeNode<T> node)
-        {
-            ElementsIndex.Add(node);
-            if (Parent != null)
-                Parent.RegisterChildForSearch(node);
-        }
         /// <summary>
         /// Returns the first TreeNode of which the first predicate is true, otherwise default
         /// </summary>
@@ -137,9 +108,14 @@ namespace QTM2Unity
         /// <returns></returns>
         public TreeNode<T> FindTreeNode(Func<TreeNode<T>, bool> predicate)
         {
-            return this.ElementsIndex.FirstOrDefault(predicate);
+            if (predicate(this)) return this;
+            else foreach (var child in Children)
+                {
+                    var res = child.FindTreeNode(predicate);
+                    if (res != null) return res;
+                }
+            return null;
         }
-
         #endregion
 
 

@@ -8,13 +8,16 @@ namespace QTM2Unity
     class IKApplier
     {
         private BipedSkeleton lastSkel;
-        public IKSolver IKSolver { private get; set; } 
+        public IKSolver IKSolver { private get; set; }
+        public IKSolver FABRIK { private get; set; } 
+
         public bool test = false;
         public IKApplier()
         {
                 lastSkel = new BipedSkeleton();
                 IKSolver = new CCD();
-                //fabrik.MaxIterations = 20;
+                FABRIK = new FABRIK();
+                FABRIK.MaxIterations = 20;
                 //IKSolver.MaxIterations = 200;
         }
 
@@ -51,7 +54,7 @@ namespace QTM2Unity
         { 
             // missings joints parent from last frame is root in solution
             //root of chain 
-            TreeNode<Bone> lastSkelBone = lastSkel.Root.FindTreeNode(a => a.Data.Name == missingJoint.Data.Name);
+            TreeNode<Bone> lastSkelBone = lastSkel.Root.FindTreeNode(node => node.Data.Name.Equals(missingJoint.Data.Name));
             List<Bone> missingChain = new List<Bone>(); // chain to be solved
             // The root if the chain
             Vector3 offset = missingJoint.Parent.Data.Pos - lastSkelBone.Parent.Data.Pos; // offset to move last frames chain to this frames' position
@@ -79,7 +82,11 @@ namespace QTM2Unity
                     CopyFromLast(curr.Data, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
-                    IKSolver.SolveBoneChain(missingChain.ToArray(), target, missingJoint.Parent.Parent.Data); // solve with IK
+                    if (!IKSolver.SolveBoneChain(missingChain.ToArray(), target, missingJoint.Parent.Parent.Data))// solve with IK
+                    {
+                        FABRIK.SolveBoneChain(missingChain.ToArray(), target, missingJoint.Parent.Parent.Data);
+                    }
+                        
                     iksolved = true;
                     break;
                 }
@@ -162,7 +169,7 @@ namespace QTM2Unity
             foreach (TreeNode<Bone> bone in bones)
             {
                 if (bone.IsRoot || bone.Data.HasNaN) continue;
-                Bone lastFrameBone = lastSkel[bone.Data.Name];
+                Bone lastFrameBone = lastSkel.Root.FindTreeNode(tn => tn.Data.Name == bone.Data.Name).Data;
                 #region Poss
 
                 //Vector3 posFinal = currBone.Pos;

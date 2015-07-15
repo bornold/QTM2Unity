@@ -402,10 +402,16 @@ namespace QTM2Unity
                     {
                         neckPos = front - transformedNeckToChestVector;
                     }
+                    else if (!back.IsNaN())
+                    {
+                        neckPos =
+                            //Vector3Helper.MidPoint(markers[MarkerNames.leftShoulder], markers[MarkerNames.rightShoulder]);
+                         Vector3.NormalizeFast(back) * BodyData.MarkerToSpineDist;
+                    }
                     else
                     {
-                        neckPos = Vector3Helper.MidPoint(markers[MarkerNames.leftShoulder], markers[MarkerNames.rightShoulder]);
-                        // Vector3.NormalizeFast(back) * BodyData.MarkerToSpineDist;
+                        neckPos =
+                            Vector3Helper.MidPoint(markers[MarkerNames.leftShoulder], markers[MarkerNames.rightShoulder]);
                     }
                     o.sternumClacicle = neckPos;
                 }

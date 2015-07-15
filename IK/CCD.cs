@@ -15,7 +15,8 @@ namespace QTM2Unity
 
             int numberOfBones = bones.Length;
             int iter = 0;
-            int degrees = 5;
+            int degreeStep = 10;
+            int degrees = degreeStep;
             bool toggle = false;
             bool doneOneLapAroundYAxis = false;
             int maxdegrees = 120;
@@ -28,8 +29,12 @@ namespace QTM2Unity
                     if (!doneOneLapAroundYAxis && degrees > maxdegrees)
                     {
                         doneOneLapAroundYAxis = true;
-                        degrees = 2;
-                    }   
+                        degrees = degreeStep;
+                    }
+                    else if (degrees > maxdegrees)
+                    {
+                        break;
+                    }
                     Quaternion q = doneOneLapAroundYAxis ?
                         QuaternionHelper.RotationX(MathHelper.DegreesToRadians(toggle ? degrees : -degrees))
                       :
@@ -37,7 +42,7 @@ namespace QTM2Unity
                     ForwardKinematics(ref bones, q);
                     if (toggle)
                     {
-                        degrees = degrees + 2;
+                        degrees += degreeStep;
                     }
                     toggle = !toggle;
                 }
