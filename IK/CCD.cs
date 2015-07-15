@@ -3,7 +3,6 @@ namespace QTM2Unity
 {
     class CCD : IKSolver
     {
-        // Note: The end effector is assumed to be the last element in bones
         override public bool SolveBoneChain(Bone[] bones, Bone target, Bone grandparent)
         {
             
@@ -17,7 +16,6 @@ namespace QTM2Unity
             int numberOfBones = bones.Length;
             int iter = 0;
             int degrees = 5;
-            //int loopsWithSameDist = 0;
             bool toggle = false;
             bool doneOneLapAroundYAxis = false;
             int maxdegrees = 120;
@@ -25,9 +23,7 @@ namespace QTM2Unity
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
             while (distToTarget > threshold && ++iter < maxIterations && (!doneOneLapAroundYAxis || degrees < maxdegrees))
             {
-                //loopsWithSameDist = (distToTarget >= lastDistToTarget) ? loopsWithSameDist + 1 : 0;
-                //if (loopsWithSameDist > 2)
-                    if ((distToTarget >= lastDistToTarget))
+                if ((distToTarget >= lastDistToTarget))
                 {
                     if (!doneOneLapAroundYAxis && degrees > maxdegrees)
                     {
@@ -71,7 +67,6 @@ namespace QTM2Unity
 
                     if (bones[i].HasConstraints)
                     {
-
                         //Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
                         Vector3 res;
                         Quaternion rot;
@@ -81,9 +76,6 @@ namespace QTM2Unity
                             bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation), // Target
                             out res, out rot))
                         {
-                            //a = bones[i + 1].Pos - bones[i].Pos;
-                            //b = res - bones[i].Pos;
-                            //rotation = QuaternionHelper.GetRotationBetween(a, b);
                             rotation = rot * rotation;
                         }
                     }

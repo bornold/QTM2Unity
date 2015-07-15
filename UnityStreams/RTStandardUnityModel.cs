@@ -47,61 +47,53 @@ namespace QTM2Unity
             }
         }
 
-        public void SetAll()
-        {
-            setGO(hips, BipedSkeleton.PELVIS, setPos: true);
-            setGO(spine, BipedSkeleton.SPINE0);
-            setGO(spine1, BipedSkeleton.SPINE1);
-            setGO(spine2, BipedSkeleton.SPINE3);
-
-            setGO(neck, BipedSkeleton.NECK);
-            setGO(head, BipedSkeleton.HEAD);
-
-            setGOLeg(upLegLeft, BipedSkeleton.HIP_L);
-            setGOLeg(upLegRight, BipedSkeleton.HIP_R);
-            setGOLeg(legLeft, BipedSkeleton.KNEE_L);
-            setGOLeg(legRight, BipedSkeleton.KNEE_R);
-            setGOFoot(footLeft, BipedSkeleton.FOOTBASE_L);
-            setGOFoot(footRight, BipedSkeleton.FOOTBASE_R);
-
-
-            setGOArmLeft(shoulderLeft, BipedSkeleton.CLAVICLE_L);
-            setGOArmLeft(armLeft, BipedSkeleton.SHOULDER_L);
-            setGOArmLeft(foreArmLeft, BipedSkeleton.ELBOW_L);
-            setGOHandLeft(handLeft, BipedSkeleton.WRIST_L);
-            foreach (var fing in fingersLeft)
-            {
-                setGOHandLeft(fing, BipedSkeleton.HAND_L);
-            }
-            setGOThumbLeft(thumbLeft, BipedSkeleton.TRAP_L);
-
-            setGOArmRight(shoulderRight, BipedSkeleton.CLAVICLE_R);
-            setGOArmRight(armRight, BipedSkeleton.SHOULDER_R);
-            setGOArmRight(foreArmRight, BipedSkeleton.ELBOW_R);
-            setGOHandRight(handRight, BipedSkeleton.WRIST_R);
-            foreach (var fing in fingersRight)
-            {
-                setGOHandRight(fing, BipedSkeleton.HAND_R);
-            }
-            setGOThumbRight(thumbRight, BipedSkeleton.TRAP_R);
-        }
-        private void setGO(Transform go, string name, Quaternion rot, bool setPos)
-        {
-            Bone b = skeleton[name];
-            if (b != null && !float.IsNaN(b.Orientation.W))
-            {
-                go.rotation = localRotation * b.Orientation.Convert() * rot ;
-                if (setPos && !float.IsNaN(b.Pos.X)) go.position = go.parent.position + b.Pos.Convert();
-            }
-        }
         Quaternion footRot = Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180),
             armLeftRot = Quaternion.Euler(Vector3.forward * 270),
             armRightRot = Quaternion.Euler(Vector3.forward * 90),
             handLeftRot = Quaternion.Euler(Vector3.forward * 300),
             handRightRot = Quaternion.Euler(Vector3.forward * 60),
             thumbLeftRot = Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 270),
-            thumbRightRot = Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 90)
+            thumbRightRot = Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 90),
+            legRot = Quaternion.Euler(Vector3.forward * 180)
             ;
+        public void SetAll()
+        {
+            setGO(hips, BipedSkeleton.PELVIS, setPos: true);
+            setGO(spine, BipedSkeleton.SPINE0);
+            setGO(spine1, BipedSkeleton.SPINE1);
+            setGO(spine2, BipedSkeleton.SPINE3);
+            setGO(neck, BipedSkeleton.NECK);
+            setGO(head, BipedSkeleton.HEAD);
+            setGO(upLegLeft, BipedSkeleton.HIP_L, legRot);
+            setGO(upLegRight, BipedSkeleton.HIP_R, legRot);
+            setGO(legLeft, BipedSkeleton.KNEE_L, legRot);
+            setGO(legRight, BipedSkeleton.KNEE_R, legRot);
+            setGO(footLeft, BipedSkeleton.FOOTBASE_L, footRot);
+            setGO(footRight, BipedSkeleton.FOOTBASE_R, footRot);
+            setGO(shoulderLeft, BipedSkeleton.CLAVICLE_L, armLeftRot);
+            setGO(armLeft, BipedSkeleton.SHOULDER_L, armLeftRot);
+            setGO(foreArmLeft, BipedSkeleton.ELBOW_L, armLeftRot);
+            setGO(handLeft, BipedSkeleton.WRIST_L, handLeftRot);
+            foreach (var fing in fingersLeft) setGO(fing, BipedSkeleton.HAND_L, handLeftRot);
+            setGO(thumbLeft, BipedSkeleton.TRAP_L, thumbLeftRot);
+            setGO(shoulderRight, BipedSkeleton.CLAVICLE_R, armRightRot);
+            setGO(armRight, BipedSkeleton.SHOULDER_R, armRightRot);
+            setGO(foreArmRight, BipedSkeleton.ELBOW_R, armRightRot);
+            setGO(handRight, BipedSkeleton.WRIST_R, handRightRot);
+            foreach (var fing in fingersRight) setGO(fing, BipedSkeleton.HAND_R, handRightRot);
+            setGO(thumbRight, BipedSkeleton.TRAP_R, thumbRightRot);
+        }
+        private void setGO(Transform go, string name, Quaternion rot, bool setPos)
+        {
+            Bone b;
+            b = skeleton[name];
+            //b = skeleton.Find(name);
+            if (b != null && !float.IsNaN(b.Orientation.W))
+            {
+                go.rotation = localRotation * b.Orientation.Convert() * rot ;
+                if (setPos && !float.IsNaN(b.Pos.X)) go.position = go.parent.position + b.Pos.Convert();
+            }
+        }
         private void setGO(Transform go, string name, Quaternion rot)
         {
             setGO(go, name, rot, false);
@@ -114,39 +106,7 @@ namespace QTM2Unity
         {
             setGO(go, name, Quaternion.identity, false);
         }
-        private void setGOLeg(Transform go, string name)
-        {
-            setGO(go, name, Quaternion.Euler(Vector3.forward * 180));
-        }
-        private void setGOFoot(Transform go, string name)
-        {
-            setGO(go, name, footRot);// Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180));
-        }
-        private void setGOArmLeft(Transform go, string name)
-        {
-            setGO(go, name, armLeftRot);//Quaternion.Euler(Vector3.forward * 270));
-        }
-        private void setGOArmRight(Transform go, string name)
-        {
-            setGO(go, name, armRightRot);// Quaternion.Euler(Vector3.forward * 90));
-        }
-        private void setGOHandLeft(Transform go, string name)
-        {
-            setGO(go, name, handLeftRot);// Quaternion.Euler(Vector3.forward * 300));
-        }
-        private void setGOHandRight(Transform go, string name)
-        {
-            setGO(go, name, handRightRot); //30?
-        }
 
-        private void setGOThumbLeft(Transform go, string name)
-        {
-            setGO(go, name, thumbLeftRot);//Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 270));
-        }
-        private void setGOThumbRight(Transform go, string name)
-        {
-            setGO(go, name, thumbRightRot);//Quaternion.Euler(Vector3.right * 330) * Quaternion.Euler(Vector3.forward * 90));
-        }
 
 
         private void FindTransform()

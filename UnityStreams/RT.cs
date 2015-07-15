@@ -14,7 +14,7 @@ namespace QTM2Unity
         public class Markers 
         {
             public bool markers = false;
-            [Range(0.001f, 0.1f)]
+            [Range(0.001f, 0.05f)]
             public float scale = 0.01f;
             public bool bones = false;
             public Color boneColor = Color.blue;
@@ -32,6 +32,7 @@ namespace QTM2Unity
         protected List<string> markersLabels;
         public virtual void StartNext(){}
         public virtual void UpdateNext(){}
+        private bool needReset = false;
         void Start()
         {
             rtClient = RTClient.getInstance();
@@ -44,7 +45,12 @@ namespace QTM2Unity
             if (streaming)
             {
                 markerData = rtClient.Markers;
-                if (markerData == null || markerData.Count == 0 ) return;
+                if (markerData == null || markerData.Count == 0)
+                {
+                    needReset = true;
+                    return;
+                }
+                if (needReset) { StartNext(); needReset = false; }
             }
             if (streaming || debugFlag)
             {

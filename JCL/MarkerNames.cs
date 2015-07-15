@@ -10,8 +10,11 @@ namespace QTM2Unity
             bodyBase = "SACR";
         public static readonly List<string>
             bodyBaseAKA = new List<string>() { "SACR", "SACRUM", "LOWER_LUMBAR", "LV5_S1", "S1" };
-        public static readonly List<string>
-            bodyBasebetween = new List<string>() { "R_IPS ", "L_IPS", "Rt Lower PSIS", "Lt Lower PSIS", "L_Sacrum","R_Sacrum" };
+        public static readonly List<string[]>
+            bodyBasebetween = new List<string[]>() { 
+                new string[] { "R_IPS", "L_IPS" }, 
+                new string[] { "Rt Lower PSIS", "Lt Lower PSIS" }, 
+                new string[] { "L_Sacrum", "R_Sacrum" } };
         public static string 
             leftHip = "L_IAS";
         public static readonly List<string> 
@@ -36,8 +39,8 @@ namespace QTM2Unity
             neck =  "TV2";
         public static readonly List<string> 
             neckAKA = new List<string>() { "TV2", "TV1", "C7", "C7_TOP_SPINE" };
-        public static readonly List<string>
-            neckBetween = new List<string>() { "Lt Up Back", "Rt Up Back" };
+        public static readonly List<string[]>
+            neckBetween = new List<string[]>() {new string[] {"Lt Up Back", "Rt Up Back" }};
         public static string 
             chest =  "SME";
         public static readonly List<string> 
@@ -55,17 +58,17 @@ namespace QTM2Unity
         public static string 
             head =  "SGL";
         public static readonly List<string>
-            headAKA = new List<string>() {"SGL", "Front of Head" };
-        public static readonly List<string>  
-            headBetween = new List<string>() { "head_left_front", "head_right_front" };
+            headAKA = new List<string>() {"SGL", "Front of Head", "F_HEAD" };
+        public static readonly List<string[]>  
+            headBetween = new List<string[]>() {new string[] {"head_left_front", "head_right_front"}};
         public static string 
             leftHead = "L_HEAD";
         public static readonly List<string> 
-            leftHeadAKA = new List<string>() {"L_HEAD", "HEAD_LEFT_FRONT" ,"Left Head"};
+            leftHeadAKA = new List<string>() {"L_HEAD", "HEAD_LEFT_FRONT" ,"Left Head","L_HEAD"};
         public static string 
             rightHead = "R_HEAD";
         public static readonly List<string>
-            rightHeadAKA = new List<string>() {"R_HEAD", "HEAD_RIGHT_FRONT", "Right Head" };
+            rightHeadAKA = new List<string>() {"R_HEAD", "HEAD_RIGHT_FRONT", "Right Head","R_HEAD" };
         #endregion
         #region elbow
         #region left elbow

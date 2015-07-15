@@ -7,21 +7,35 @@ namespace QTM2Unity
 {
     public class TreeNode<T> : IEnumerable<TreeNode<T>>
     {
-
+        /// <summary>
+        /// The data contained in the TreeNode
+        /// </summary>
         public T Data { get; set; }
+        /// <summary>
+        /// A pointer to the parent Node
+        /// </summary>
         public TreeNode<T> Parent { get; set; }
+        /// <summary>
+        /// A collection of children Node
+        /// </summary>
         public ICollection<TreeNode<T>> Children { get; set; }
-
+        /// <summary>
+        /// Returns if Node has no Parent 
+        /// </summary>
         public Boolean IsRoot
         {
             get { return Parent == null; }
         }
-
+        /// <summary>
+        /// Returns true if Node has no Children
+        /// </summary>
         public Boolean IsLeaf
         {
             get { return Children.Count == 0; }
         }
-
+        /// <summary>
+        /// Returns the depth from the parent node
+        /// </summary>
         public int Level
         {
             get
@@ -32,7 +46,10 @@ namespace QTM2Unity
             }
         }
 
-
+        /// <summary>
+        /// Constructor for a new node
+        /// </summary>
+        /// <param name="data">The Data the node should contain</param>
         public TreeNode(T data)
         {
             this.Data = data;
@@ -42,6 +59,11 @@ namespace QTM2Unity
             this.ElementsIndex.Add(this);
         }
 
+        /// <summary>
+        /// Adding a new node as child to this node
+        /// </summary>
+        /// <param name="child">The Data of the child node</param>
+        /// <returns>A reference to the child node</returns>
         public TreeNode<T> AddChild(T child)
         {
             TreeNode<T> childNode = new TreeNode<T>(child) { Parent = this };
@@ -51,29 +73,47 @@ namespace QTM2Unity
 
             return childNode;
         }
-
+        /// <summary>
+        /// Removes remove a child from this node
+        /// </summary>
+        /// <param name="node">The child to be killed</param>
+        /// <returns>True if the removal was successfull</returns>
         public bool RemoveChild(TreeNode<T> node)
         {
             return Children.Remove(node);
         }
-
+        /// <summary>
+        /// Replace a child with a new node
+        /// </summary>
+        /// <param name="child">The data of the new child</param>
+        /// <param name="node">The node to be removed</param>
+        /// <returns>The new node, null if the given node is not among the children</returns>
         public TreeNode<T> ReplaceChildWith(T child, TreeNode<T> node)
         {
             return (Children.Remove(node)) ? AddChild(child) : null;
         }
 
+        /// <summary>
+        /// Apply an action to all the Data in the tree
+        /// </summary>
+        /// <param name="action">The action to be applied on the Data</param>
         public void Traverse(Action<T> action)
         {
             action(Data);
             foreach (var child in Children)
                 child.Traverse(action);
         }
+        /// <summary>
+        /// Apply and action on all the Nodes in the tree
+        /// </summary>
+        /// <param name="action">The action on wich to be applied to the tree</param>
         public void Traverse(Action<TreeNode<T>> action)
         {
             action(this);
             foreach (var child in Children)
                 child.Traverse(action);
         }
+
         public override string ToString()
         {
             return Data != null ? Data.ToString() : "[data null]";
@@ -90,7 +130,11 @@ namespace QTM2Unity
             if (Parent != null)
                 Parent.RegisterChildForSearch(node);
         }
-
+        /// <summary>
+        /// Returns the first TreeNode of which the first predicate is true, otherwise default
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
         public TreeNode<T> FindTreeNode(Func<TreeNode<T>, bool> predicate)
         {
             return this.ElementsIndex.FirstOrDefault(predicate);

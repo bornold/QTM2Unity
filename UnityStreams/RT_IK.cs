@@ -20,14 +20,11 @@ namespace QTM2Unity
     {
         public JointsConstrains jointsConstrains;
         public bool Extrapolate = false;
-        protected ConstraintsExamples constraints = new ConstraintsExamples();
         private IKApplier ikApplier;
         public override void StartNext()
         {
             base.StartNext();
             ikApplier = new IKApplier();
-            constraints.SetConstraints(ref skeleton);
-            constraints.SetConstraints(ref skeletonBuffer);
         }
         public override void UpdateNext()
         {
@@ -35,8 +32,6 @@ namespace QTM2Unity
             if (ikApplier == null)
             {
                 ikApplier = new IKApplier();
-                constraints.SetConstraints(ref skeleton);
-                constraints.SetConstraints(ref skeletonBuffer);
             }
             ikApplier.test = Extrapolate;
             ikApplier.ApplyIK(ref skeleton);

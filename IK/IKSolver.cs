@@ -6,7 +6,7 @@ namespace QTM2Unity
     {
         abstract public bool SolveBoneChain(Bone[] bones, Bone target, Bone parent);
         protected float threshold = 0.01f;
-        protected int maxIterations = 150;
+        protected int maxIterations = 200;
         public int MaxIterations 
         {
             get { return maxIterations; }
@@ -98,7 +98,6 @@ namespace QTM2Unity
                 // Since target is reachable it is on the line
                 return true;
             }
-
             return false;
         }
 
@@ -115,7 +114,6 @@ namespace QTM2Unity
                 return false;
             }
             Vector3 thisY = b.GetYAxis();
-
             Quaternion referenceRotation = refBone.Orientation * b.ParentPointer;
             Vector3 reference = Vector3.Transform(
                     Vector3.Transform(Vector3.UnitZ, referenceRotation),

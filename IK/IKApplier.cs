@@ -7,10 +7,8 @@ namespace QTM2Unity
 {
     class IKApplier
     {
-        //private uint c = 0;
         private BipedSkeleton lastSkel;
         public IKSolver IKSolver { private get; set; } 
-        //private IKSolver fabrik = new FABRIK();
         public bool test = false;
         public IKApplier()
         {
@@ -170,10 +168,10 @@ namespace QTM2Unity
                 //Vector3 posFinal = currBone.Pos;
                 Vector3 posInitial = lastFrameBone.Pos;
                 Vector3 diffInitToFinalVec = (bone.Data.Pos - posInitial);
-                if (diffInitToFinalVec.Length > 0.1f)
+                if (diffInitToFinalVec.Length > 0.025f)
                 {
                     diffInitToFinalVec.NormalizeFast();
-                    diffInitToFinalVec *= 0.05f;
+                    diffInitToFinalVec *= 0.025f;
                     //Vector3 newFinalPos = (posInitial + diffInitToFinalVec);
                     //Vector3 parentPos = bone.Parent.Data.Pos;
                     Quaternion rotToNewPos = 
@@ -205,7 +203,7 @@ namespace QTM2Unity
                 if (!bone.IsLeaf)
                 {
                     float quatDiff = QuaternionHelper.DiffrenceBetween(oriFinal, oriInitial);
-                    if (quatDiff > 0.06f)
+                    if (quatDiff > 0.03f)
                     {
                         //UnityEngine.Debug.Log(currBone.Name + " jerked with " + quatDiff + " amount\n" + "Twisting back " + calc * 100 + "%");
                         //Vector3 prepos = new Vector3(currBone.Pos);

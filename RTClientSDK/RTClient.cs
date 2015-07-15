@@ -84,12 +84,16 @@ namespace QTM2Unity
         {
             eEvent currentEvent = packet.getEvent();
             UnityEngine.Debug.Log("Event occured! : " + currentEvent);
-
             if (currentEvent == eEvent.kEventRTFromFileStarted)
             {
                 // reload settings when we start streaming to get proper settings
+                mMarkers = new List<LabeledMarker>();
                 get3DSettings();
                 get6DOFSettings();
+            }
+            else if (currentEvent == eEvent.kEventRTFromFileSTopped)
+            {
+                mMarkers = null;
             }
         }
 
@@ -159,33 +163,6 @@ namespace QTM2Unity
             }
             return null;
         }
-
-        /// <summary>
-        /// Get list of servers available on network
-        /// </summary>
-        /// <returns><c>true</c>, if discovery packet was sent, <c>false</c> otherwise.</returns>
-        /// <param name="list">List of discovered servers</param>
-        /*public bool getServers(out GUIContent[] list)
-        {
-            //Send discovery packet
-            if( mProtocol.discoverRTServers(1337))
-            {
-                if(mProtocol.DiscoveryResponses.Count > 0)
-                {
-                    //Get list of all servers from protocol
-                    list = new GUIContent[mProtocol.DiscoveryResponses.Count];
-                    for(int i = 0; i < mProtocol.DiscoveryResponses.Count; i++)
-                    {
-                        //add them to our list for user to pick from
-                        list[i] = new GUIContent(mProtocol.DiscoveryResponses[i].hostname + " (" + mProtocol.DiscoveryResponses[i].ipAddress + ")");
-                    }
-                    return true;
-                }
-
-            }
-            list = null;
-            return false;
-        }*/
 
         /// <summary>
         /// Get list of servers available on network

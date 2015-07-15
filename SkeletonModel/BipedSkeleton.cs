@@ -10,6 +10,7 @@ namespace QTM2Unity
     {
         protected TreeNode<Bone> root;
         public TreeNode<Bone> Root { get { return root; } }
+        private ConstraintsExamples constraints = new ConstraintsExamples();
         // String constants for bones in a biped skeleton
         #region joint Names
         //Root
@@ -307,10 +308,17 @@ namespace QTM2Unity
                 #endregion
             }
             #endregion
+            constraints.SetConstraints(this);
         }
         public BipedSkeleton(TreeNode<Bone> pelvis)
         {
             root = pelvis;
+        }
+        public Bone Find(string key)
+        {
+            foreach (var b in root)
+                if (b.Data.Name == key) return b.Data;
+            return null;
         }
         public Bone this[string key]
         {

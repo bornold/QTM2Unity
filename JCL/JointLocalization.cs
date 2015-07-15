@@ -18,6 +18,7 @@ namespace QTM2Unity
         public Vector3 lowerArmForwardRight;
         public Vector3 kneeForwardLeft;
         public Vector3 kneeForwardRight;
+
         public Vector3 lowerLegUpLeft;
         public Vector3 lowerLegUpRight;
         public Vector3 rightHipPos;
@@ -95,7 +96,6 @@ namespace QTM2Unity
         public void GetJointLocation(Dictionary<string, Vector3> markerData, ref BipedSkeleton skeleton)
         {
             o = new Values(); // reset joint pos and orientations
-            //GC388 // ( (32*4*3)qautermions + (32*3*27bits)Vectors ) = 372bytes
             markers = markerData;
             // collect data from markers about body proportions
             // this is necessary for shoulder joint localization 
@@ -148,12 +148,12 @@ namespace QTM2Unity
                     Vector3 Yaxis, Xaxis;
                     Vector3 mid = Vector3Helper.MidPoint(rightShoulderPos, leftShoulderPos);
                     Quaternion rotation;
-                    bool sleart = true;// mid.IsNaN() || leftShoulderPos.IsNaN() || rightShoulderPos.IsNaN();
+                    bool slearp = true;// mid.IsNaN() || leftShoulderPos.IsNaN() || rightShoulderPos.IsNaN();
                     // Find Y axis
                     if (!mid.IsNaN())
                     {
                         Yaxis = mid - markers[MarkerNames.bodyBase];
-                        sleart = false;
+                        slearp = false;
                     }
                     else if (!backspinePos.IsNaN() && !neckPos.IsNaN()) // prio 1, 12th Thoracic to 2nd Thoracic
                     {
@@ -191,7 +191,6 @@ namespace QTM2Unity
                         }
                         else
                         {
-                            //Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f);
                             Xaxis = -Vector3.Transform(UnitX, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
                         }
                     }
@@ -199,7 +198,7 @@ namespace QTM2Unity
                     {
                         Xaxis = -Vector3.Transform(UnitX, Quaternion.Slerp(prevChestOri, HipOrientation, 0.5f));
                     }
-                    rotation = sleart ? 
+                    rotation = slearp ? 
                         Quaternion.Slerp(QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis), prevChestOri, 0.8f) : 
                         QuaternionHelper.GetOrientationFromYX(Yaxis, Xaxis);
                     prevChestOri = rotation;
@@ -292,9 +291,7 @@ namespace QTM2Unity
             {
                 if (o.kneeForwardLeft == ZeroVector3)
                 {
-                    Vector3 knee = KneeLeft;
-                    Vector3 kneeOuter = markers[MarkerNames.leftOuterKnee];
-                    o.kneeForwardLeft = knee - kneeOuter;
+                    o.kneeForwardLeft = KneeLeft - markers[MarkerNames.leftOuterKnee];
                 }
                 return o.kneeForwardLeft;
             }
@@ -305,10 +302,7 @@ namespace QTM2Unity
             {
                 if (o.kneeForwardRight == ZeroVector3)
                 {
-                    Vector3 knee = KneeRight;
-                    Vector3 kneeOuter = markers[MarkerNames.rightOuterKnee];
-                    o.kneeForwardRight = kneeOuter - knee;
-                    //kneeForwardRight = GetKneeForwardRight();
+                    o.kneeForwardRight = markers[MarkerNames.rightOuterKnee] - KneeRight;
                 }
                 return o.kneeForwardRight;
             }
@@ -410,7 +404,8 @@ namespace QTM2Unity
                     }
                     else
                     {
-                        neckPos = Vector3.NormalizeFast(back) * BodyData.MarkerToSpineDist;
+                        neckPos = Vector3Helper.MidPoint(markers[MarkerNames.leftShoulder], markers[MarkerNames.rightShoulder]);
+                        // Vector3.NormalizeFast(back) * BodyData.MarkerToSpineDist;
                     }
                     o.sternumClacicle = neckPos;
                 }
@@ -655,9 +650,9 @@ namespace QTM2Unity
             Vector3 x, z, M1, M2, M3, negateY = new Vector3(1f, -1f, 1f);
                 if (isRightKnee)
                 {
-                   M1 =  markers[MarkerNames.rightOuterKnee];//FLE
-                   M2 = markers[MarkerNames.rightOuterAnkle];//FAL
-                   M3 = markers[MarkerNames.rightLowerKnee];//TTC
+                    M1 =  markers[MarkerNames.rightOuterKnee];//FLE
+                    M2 = markers[MarkerNames.rightOuterAnkle];//FAL
+                    M3 = markers[MarkerNames.rightLowerKnee];//TTC
                 }
                 else
                 {
@@ -705,7 +700,6 @@ namespace QTM2Unity
             return Vector3.TransformVector(trans, R) + M2;
         } 
         #endregion
-
 
         // Functions for filling bones
         #region Funcions

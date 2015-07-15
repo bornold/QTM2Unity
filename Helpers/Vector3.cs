@@ -14,30 +14,42 @@ namespace QTM2Unity
         public static Vector3 NaN = new Vector3(float.NaN, float.NaN, float.NaN);
 
         /// <summary>
-        /// The point in between two points 
+        /// Check if any element in vector is NaN
+        /// </summary>
+        /// <param name="vector"> Vector to be checked </param>
+        /// <returns>True if any of x, y, z is NaN</returns>
+        public static bool IsNaN(this Vector3 v)
+        {
+            return float.IsNaN(v.X) || float.IsNaN(v.Y) || float.IsNaN(v.Z);
+        }
+
+        /// <summary>
+        /// The vector at the center or in of two vectors
         /// </summary>
         /// <param name="left vector">the first vector</param>
         /// <param name="right vector">the secound vector</param>
-        /// <returns>Vector3 in between the points</returns>
+        /// <returns>Vector3 at the center the vectors</returns>
         public static Vector3 MidPoint(this Vector3 leftVect, Vector3 rightVect)
         {
             return PointBetween(leftVect, rightVect, 0.5f);
         }
         /// <summary>
-        /// The point d between two points 
+        /// Gives the vector at a distance from one vector towards the other
         /// </summary>
-        /// <param name="left vector">the first vector</param>
-        /// <param name="right vector">the secound vector</param>
-        /// <param name="distance">distans closeer to right</param>
-        /// <returns>Vector3 in between the points</returns>
+        /// <param name="left vector">The first vector</param>
+        /// <param name="right vector">The secound vector</param>
+        /// <param name="distance">Distans from the first vector in precent towards the second</param>
+        /// <returns>Vector3 in between the points at a given precent distance</returns>
         public static Vector3 PointBetween(this Vector3 leftVect, Vector3 rightVect, float dist)
         {
             return (leftVect - rightVect) * dist + rightVect;
         }
+
         /// <summary>
-        /// Applies Gram-Schmitt Ortho-normalization to the given set of input Vectro3 objects.
+        /// Applies Gram-Schmitt Ortho-normalization to the given two input Vectro3 objects. 
         /// </summary>
-        /// <param name="vector array">Array of Vector3 objects to be ortho-normalized</param>
+        /// <param name="vec1">The first Vector3 objects to be ortho-normalized</param>
+        /// <param name="vec2">The secound Vector3 objects to be ortho-normalized</param>
         public static void OrthoNormalize(ref Vector3 vec1, ref Vector3 vec2)
         {
             vec1.NormalizeFast();
@@ -78,20 +90,15 @@ namespace QTM2Unity
         public static Vector3 Project(Vector3 a, Vector3 b)
         {
             return (Vector3.Dot(a, b) / Vector3.Dot(b, b)) * b;
-
-            //return new Vector3((Vector3.Dot(a, b) / Vector3.Dot(b, b)) * b);
         }
 
         /// <summary>
-        /// Check if any element in vector is NaN
+        /// Checks if the two given vectors are parallel 
         /// </summary>
-        /// <param name="vector"> Vector to be checked </param>
-        /// <returns>True if any of x, y, z is NaN</returns>
-        public static bool IsNaN(this Vector3 v)
-        {
-            return float.IsNaN(v.X) || float.IsNaN(v.Y) ||  float.IsNaN(v.Z);
-        }
-
+        /// <param name="a">The first vector</param>
+        /// <param name="b">The secound vector</param>
+        /// <param name="precision">Precison to be tollerated </param>
+        /// <returns>True if the two vectors are parallel or any of the vecor contains NaN, false other</returns>
         public static bool Parallel(Vector3 a, Vector3 b, float precision)
         {
             if (a.IsNaN() || b.IsNaN()) return true; // what?

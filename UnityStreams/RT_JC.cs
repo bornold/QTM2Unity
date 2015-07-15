@@ -9,11 +9,11 @@ namespace QTM2Unity
         public bool showSkeleton = false;
         public Color skelettColor = Color.black;
         public bool showJoints = false;
-        [Range(0.01f, 0.1f)]
+        [Range(0.01f, 0.05f)]
         public float jointScale = 0.015f;
         public Color jointColor = Color.green;
         public bool showRotationTrace = false;
-        [Range(0.01f, 1.0f)]
+        [Range(0.01f, 0.5f)]
         public float traceLength = 0.08f;
         public bool resetSkeleton = false;
     }

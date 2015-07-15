@@ -14,7 +14,8 @@ namespace QTM2Unity
         private Dictionary<string, Vector3> markersLastFrame = new Dictionary<string, Vector3>();
         private bool nameSet = false;
         private string prefix;
-
+        private bool sacrumBetween = false;
+        private string[] sacrumBetweenMarkers;
         private Vector3 lastSACRUMknown = Vector3Helper.MidPoint(new Vector3(0.0774f, 1.0190f, -0.1151f), new Vector3(-0.0716f, 1.0190f, -0.1138f));
         private Vector3 lastRIASknown = new Vector3(0.0925f, 0.9983f, 0.1052f);
         private Vector3 lastLIASknown = new Vector3(-0.0887f, 1.0021f, 0.1112f);
@@ -82,22 +83,31 @@ namespace QTM2Unity
                 nameSet = true;
             }
 
+
             // GC: 40B GC 
             for (int i = 0; i < markersList.Count; i++)
             {
                 if (!markers.ContainsKey(markersList[i]))
                 {
+                    //UnityEngine.Debug.Log("Adding " + markersList[i]);
                     markers.Add(markersList[i], Vector3Helper.NaN);
                 }
             }
-            UnityDebug.DrawLine(lastSACRUMknown, lastLIASknown);
-            UnityDebug.DrawLine(lastSACRUMknown, lastRIASknown);
-            UnityDebug.DrawLine(lastRIASknown, lastLIASknown);
+
+            if (sacrumBetween)
+            {
+                markers[MarkerNames.bodyBase] = 
+                    Vector3Helper.MidPoint(markers[sacrumBetweenMarkers[0]],
+                                            markers[sacrumBetweenMarkers[1]]);
+            }
             if (markers[MarkerNames.leftHip].IsNaN()
                 || markers[MarkerNames.rightHip].IsNaN()
                 || markers[MarkerNames.bodyBase].IsNaN())
             {
                 MissingEssientialMarkers(markers);
+                //UnityDebug.DrawLine(markers[MarkerNames.bodyBase], markers[MarkerNames.rightHip]);
+                //UnityDebug.DrawLine(markers[MarkerNames.bodyBase], markers[MarkerNames.leftHip]);
+                //UnityDebug.DrawLine(markers[MarkerNames.leftHip], markers[MarkerNames.rightHip]);
             }
             //else
             {
@@ -233,6 +243,7 @@ namespace QTM2Unity
                 M3 = markers[MarkerNames.leftLowerKnee];//TTC
                 M2 = markers[MarkerNames.leftOuterAnkle];//FAL
             }
+            if (M1.IsNaN() || M2.IsNaN() || M3.IsNaN()) return;
             x = Vector3Helper.MidPoint(M1, M2) - M3;
             z = M1 - M2;
             R = Matrix4Helper.GetOrientationMatrix(x, z);
@@ -266,9 +277,19 @@ namespace QTM2Unity
         {
             //Dictionary<string, Vector3> llm = ll.ToDictionary(key => key.label, pos => pos.position);
             var quary = MarkerNames.bodyBaseAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            //else return false;
-            MarkerNames.bodyBase = prefix + ((quary == null) ? MarkerNames.bodyBase : quary);
+            if (quary == null)
+            {
+                var q2 = MarkerNames.bodyBasebetween.FirstOrDefault(n => llm.ContainsKey(n[0]) && llm.ContainsKey(n[1]));
+                if (q2 != null)
+                {
+                    sacrumBetween = true;
+                    sacrumBetweenMarkers = q2;
+                }
+            } else
+            {
+                MarkerNames.bodyBase = prefix + quary;
+            }
+            
 
             quary = MarkerNames.leftHipAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
             //if (quary != null) markersList.Add(quary);
