@@ -28,11 +28,12 @@ namespace QTM2Unity
         protected RTClient rtClient;
         protected OpenTK.Vector3 pos;
         protected bool streaming = false;
+        protected bool fileStreaming = false;
+        protected bool reset = false;
         protected List<LabeledMarker> markerData;
         protected List<string> markersLabels;
         public virtual void StartNext(){}
         public virtual void UpdateNext(){}
-        private bool needReset = false;
         void Start()
         {
             rtClient = RTClient.getInstance();
@@ -40,27 +41,36 @@ namespace QTM2Unity
         }
         void Update()
         {
-            if (rtClient == null) rtClient = RTClient.getInstance();
+            if (rtClient == null)
+            {
+                //UnityEngine.Debug.Log("RTClient was null");
+                rtClient = RTClient.getInstance();
+            }
             streaming = rtClient.getStreamingStatus();
-            if (streaming)
+            fileStreaming = rtClient.fileStreamRunning;
+            if (streaming && fileStreaming)
             {
                 markerData = rtClient.Markers;
                 if (markerData == null || markerData.Count == 0)
                 {
-                    needReset = true;
+                    //UnityEngine.Debug.LogError((markerData != null) ? "M is null " : "M is empty");
                     return;
                 }
-                if (needReset) { StartNext(); needReset = false; }
             }
-            if (streaming || debugFlag)
+            if ((streaming && fileStreaming) || debugFlag)
             {
                 pos = (this.transform.position + debug.offset).Convert();
                 UpdateNext();
             }
+            reset = streaming && !fileStreaming;
         }
         void OnDrawGizmos()
         {
-            if (Application.isPlaying && streaming && markerData != null && markerData.Count > 0 )
+            ShouldWeDraw();
+        }
+        protected void ShouldWeDraw()
+        {
+            if (Application.isPlaying && streaming && markerData != null && markerData.Count > 0)
             {
                 Draw();
             }

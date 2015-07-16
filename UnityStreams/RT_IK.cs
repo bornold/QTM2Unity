@@ -29,7 +29,7 @@ namespace QTM2Unity
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if (ikApplier == null)
+            if (ikApplier == null || reset)
             {
                 ikApplier = new IKApplier();
             }
@@ -39,10 +39,7 @@ namespace QTM2Unity
 
         void OnDrawGizmos()
         {
-            if (debugFlag || Application.isPlaying && streaming && skeleton != null)
-            {
-                Draw();
-            }
+            ShouldWeDraw();
         }
         public override void Draw()
         {

@@ -32,6 +32,7 @@ namespace QTM2Unity
         {
             if (!bone.Data.Exists)
             {
+                if (bone.IsRoot || bone.Parent.IsRoot) return;
                 if (bone.Parent.Data.Name.Equals(BipedSkeleton.SPINE3)
                             || bone.Data.Name.StartsWith("trap"))
                 {

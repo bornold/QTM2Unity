@@ -32,7 +32,7 @@ namespace QTM2Unity
             base.StartNext();
             skeleton = new BipedSkeleton();
             skeletonBuffer = new BipedSkeleton();
-            mp = new MarkersPreprocessor();
+            mp = new MarkersPreprocessor(bodyPrefix: bodyRig.bodyPrefix);
             joints = new JointLocalization();
         }
 
@@ -40,7 +40,7 @@ namespace QTM2Unity
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if ((bodyRig != null && bodyRig.resetSkeleton) || joints == null || skeleton == null || skeletonBuffer == null || mp == null)
+            if ((bodyRig != null && bodyRig.resetSkeleton) || joints == null || skeleton == null || skeletonBuffer == null || mp == null || reset)
             {
                 UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
@@ -50,7 +50,7 @@ namespace QTM2Unity
                 bodyRig.resetSkeleton = false;
                 return;
             }
-            if (!mp.ProcessMarkers(markerData, out markers))
+            if (!mp.ProcessMarkers(markerData, out markers, bodyRig.bodyPrefix))
             {
                 Debug.LogError("markers...");
                 return;
@@ -65,10 +65,7 @@ namespace QTM2Unity
         }
         void OnDrawGizmos()
         {
-            if (Application.isPlaying && streaming && skeleton != null)
-            {
-                Draw();
-            }
+            ShouldWeDraw();
         }
         public override void Draw()
         {

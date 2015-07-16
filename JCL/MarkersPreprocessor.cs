@@ -15,7 +15,11 @@ namespace QTM2Unity
         private bool nameSet = false;
         private string prefix;
         private bool sacrumBetween = false;
+        private bool frontHeadBetween = false;
+
         private string[] sacrumBetweenMarkers;
+        private string[] frontHeadBetweenMarkers;
+
         private Vector3 lastSACRUMknown = Vector3Helper.MidPoint(new Vector3(0.0774f, 1.0190f, -0.1151f), new Vector3(-0.0716f, 1.0190f, -0.1138f));
         private Vector3 lastRIASknown = new Vector3(0.0925f, 0.9983f, 0.1052f);
         private Vector3 lastLIASknown = new Vector3(-0.0887f, 1.0021f, 0.1112f);
@@ -50,7 +54,7 @@ namespace QTM2Unity
              MarkerNames.leftIndex, MarkerNames.rightIndex,
             };
         }
-        public bool ProcessMarkers(List<LabeledMarker> labelMarkers, out Dictionary<string,Vector3> newMarkers)
+        public bool ProcessMarkers(List<LabeledMarker> labelMarkers, out Dictionary<string,Vector3> newMarkers, string prefix)
         {
             var temp = markers;
             markers = markersLastFrame;
@@ -61,8 +65,9 @@ namespace QTM2Unity
                 markers.Add(labelMarkers[i].label, labelMarkers[i].position);
             }
 
-            if (!nameSet)
+            if (!nameSet || this.prefix != prefix)
             {
+                this.prefix = prefix;
                 NameSet(markers);
                 markersList.ForEach(z => z = prefix + z);
                 markersLastFrame = new Dictionary<string, Vector3>();
@@ -81,15 +86,26 @@ namespace QTM2Unity
                 markersLastFrame[MarkerNames.leftHip] = lastLIASknown;
                 markersLastFrame[MarkerNames.rightHip] = lastRIASknown;
                 nameSet = true;
+                //UnityEngine.Debug.Log(prefix);
+                //foreach (var mn in markersList) UnityEngine.Debug.Log(mn);
+                //if (sacrumBetween)
+                //{
+                //    UnityEngine.Debug.Log(sacrumBetweenMarkers[0]);
+                //    UnityEngine.Debug.Log(sacrumBetweenMarkers[1]);
+                //}
+                //else { UnityEngine.Debug.LogError("erroll HIP"); }
+                //if (frontHeadBetween) 
+                //{
+                //    UnityEngine.Debug.Log(frontHeadBetweenMarkers[0]);
+                //    UnityEngine.Debug.Log(frontHeadBetweenMarkers[1]);
+                //}
+                //else { UnityEngine.Debug.LogError("erroll HEAD"); }
             }
-
-
             // GC: 40B GC 
             for (int i = 0; i < markersList.Count; i++)
             {
                 if (!markers.ContainsKey(markersList[i]))
                 {
-                    //UnityEngine.Debug.Log("Adding " + markersList[i]);
                     markers.Add(markersList[i], Vector3Helper.NaN);
                 }
             }
@@ -99,6 +115,16 @@ namespace QTM2Unity
                 markers[MarkerNames.bodyBase] = 
                     Vector3Helper.MidPoint(markers[sacrumBetweenMarkers[0]],
                                             markers[sacrumBetweenMarkers[1]]);
+                //UnityDebug.DrawLine(markers[sacrumBetweenMarkers[0]], markers[sacrumBetweenMarkers[1]], UnityEngine.Color.red);
+                //UnityDebug.DrawLine(Vector3.Zero, markers[MarkerNames.bodyBase], UnityEngine.Color.red);
+
+            }
+
+            if (frontHeadBetween)
+            {
+                markers[MarkerNames.head] = 
+                        Vector3Helper.MidPoint(markers[frontHeadBetweenMarkers[0]],
+                                            markers[frontHeadBetweenMarkers[1]]);
             }
             if (markers[MarkerNames.leftHip].IsNaN()
                 || markers[MarkerNames.rightHip].IsNaN()
@@ -116,8 +142,8 @@ namespace QTM2Unity
                 lastLIASknown = markers[MarkerNames.leftHip];
             }
             newMarkers = markers;
-            MoveLegMarkers(ref markers, true);
-            MoveLegMarkers(ref markers, false);
+            //MoveLegMarkers(ref markers, true);
+            //MoveLegMarkers(ref markers, false);
             return true;
         }
         private void MissingEssientialMarkers(Dictionary<string,Vector3> markers)
@@ -273,178 +299,168 @@ namespace QTM2Unity
                 markers[MarkerNames.leftOuterAnkle] = Vector3.TransformVector(trans, R) + M2;//FAL
             }
         }
-        private void NameSet(Dictionary<string, Vector3> llm, string prefix = "")
+        private void NameSet(Dictionary<string, Vector3> llm)
         {
-            //Dictionary<string, Vector3> llm = ll.ToDictionary(key => key.label, pos => pos.position);
+            
+            #region hip
             var quary = MarkerNames.bodyBaseAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
             if (quary == null)
             {
-                var q2 = MarkerNames.bodyBasebetween.FirstOrDefault(n => llm.ContainsKey(n[0]) && llm.ContainsKey(n[1]));
+                var q2 = MarkerNames.bodyBasebetween.FirstOrDefault(n => llm.ContainsKey(prefix + n[0]) && llm.ContainsKey(prefix + n[1]));
                 if (q2 != null)
                 {
                     sacrumBetween = true;
-                    sacrumBetweenMarkers = q2;
+                    sacrumBetweenMarkers = new string[2];
+                    sacrumBetweenMarkers[0] = prefix + q2[0];
+                    sacrumBetweenMarkers[1] = prefix + q2[1];
+
                 }
-            } else
-            {
-                MarkerNames.bodyBase = prefix + quary;
-            }
-            
+            } else MarkerNames.bodyBase = prefix + quary;
 
             quary = MarkerNames.leftHipAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            //else return false;
-            MarkerNames.leftHip = prefix + ((quary == null) ? MarkerNames.leftHip : quary);
+            MarkerNames.leftHip = ((quary == null) ? MarkerNames.leftHip : prefix + quary);
 
             quary = MarkerNames.rightHipAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            //else return false;
-            MarkerNames.rightHip = prefix + ((quary == null) ? MarkerNames.rightHip : quary);
+            MarkerNames.rightHip = ((quary == null) ? MarkerNames.rightHip : prefix + quary);
+            #endregion
 
+            #region upperbody
             quary = MarkerNames.spineAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.spine = prefix + ((quary == null) ? MarkerNames.spine : quary);
+            MarkerNames.spine = ((quary == null) ? MarkerNames.spine :prefix + quary);
 
             quary = MarkerNames.neckAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.neck = prefix + ((quary == null) ? MarkerNames.neck : quary);
+            MarkerNames.neck = ((quary == null) ? MarkerNames.neck :prefix + quary);
 
             quary = MarkerNames.chestAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.chest = prefix + ((quary == null) ? MarkerNames.chest : quary);
+            MarkerNames.chest = ((quary == null) ? MarkerNames.chest :prefix + quary);
 
             quary = MarkerNames.leftShoulderAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftShoulder = prefix + ((quary == null) ? MarkerNames.leftShoulder : quary);
+            MarkerNames.leftShoulder = ((quary == null) ? MarkerNames.leftShoulder :prefix + quary);
 
             quary = MarkerNames.rightShoulderAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightShoulder = prefix + ((quary == null) ? MarkerNames.rightShoulder : quary);
+            MarkerNames.rightShoulder = ((quary == null) ? MarkerNames.rightShoulder :prefix + quary);
+            #endregion
 
+            #region head
             quary = MarkerNames.headAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.head = prefix + ((quary == null) ? MarkerNames.head : quary);
+            if (quary == null)
+            {
+                var q2 = MarkerNames.headBetween.FirstOrDefault(n => llm.ContainsKey(prefix + n[0]) && llm.ContainsKey(prefix + n[1]));
+                if (q2 != null)
+                {
+                    frontHeadBetween = true;
+                    frontHeadBetweenMarkers = new string[2];;
+                    frontHeadBetweenMarkers[0] = prefix + q2[0];
+                    frontHeadBetweenMarkers[1] = prefix + q2[1];
+                }
+            } else MarkerNames.head = prefix + quary;
 
             quary = MarkerNames.leftHeadAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftHead = prefix + ((quary == null) ? MarkerNames.leftHead : quary);
+            MarkerNames.leftHead = ((quary == null) ? MarkerNames.leftHead :prefix + quary);
 
             quary = MarkerNames.rightHeadAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightHead = prefix + ((quary == null) ? MarkerNames.rightHead : quary);
+            MarkerNames.rightHead = ((quary == null) ? MarkerNames.rightHead :prefix + quary);
+            #endregion
 
+            #region legs
             quary = MarkerNames.leftUpperKneeAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftUpperKnee = prefix + ((quary == null) ? MarkerNames.leftUpperKnee : quary);
+            MarkerNames.leftUpperKnee = ((quary == null) ? MarkerNames.leftUpperKnee :prefix + quary);
 
             quary = MarkerNames.rightUpperKneeAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightUpperKnee = prefix + ((quary == null) ? MarkerNames.rightUpperKnee : quary);
+            MarkerNames.rightUpperKnee = ((quary == null) ? MarkerNames.rightUpperKnee :prefix + quary);
 
             quary = MarkerNames.leftOuterKneeAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftOuterKnee = prefix + ((quary == null) ? MarkerNames.leftOuterKnee : quary);
+            MarkerNames.leftOuterKnee = ((quary == null) ? MarkerNames.leftOuterKnee :prefix + quary);
 
             quary = MarkerNames.rightOuterKneeAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightOuterKnee = prefix + ((quary == null) ? MarkerNames.rightOuterKnee : quary);
+            MarkerNames.rightOuterKnee = ((quary == null) ? MarkerNames.rightOuterKnee :prefix + quary);
 
             quary = MarkerNames.leftLowerKneeAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftLowerKnee = prefix + ((quary == null) ? MarkerNames.leftLowerKnee : quary);
+            MarkerNames.leftLowerKnee = ((quary == null) ? MarkerNames.leftLowerKnee :prefix + quary);
 
             quary = MarkerNames.rightLowerKneeAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightLowerKnee = prefix + ((quary == null) ? MarkerNames.rightLowerKnee : quary);
+            MarkerNames.rightLowerKnee = ((quary == null) ? MarkerNames.rightLowerKnee :prefix + quary);
+            #endregion
 
+            #region foot
             quary = MarkerNames.leftOuterAnkleAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftOuterAnkle = prefix + ((quary == null) ? MarkerNames.leftOuterAnkle : quary);
+            MarkerNames.leftOuterAnkle = ((quary == null) ? MarkerNames.leftOuterAnkle :prefix + quary);
 
             quary = MarkerNames.rightOuterAnkleAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightOuterAnkle = prefix + ((quary == null) ? MarkerNames.rightOuterAnkle : quary);
+            MarkerNames.rightOuterAnkle = ((quary == null) ? MarkerNames.rightOuterAnkle :prefix + quary);
 
             quary = MarkerNames.leftHeelAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftHeel = prefix + ((quary == null) ? MarkerNames.leftHeel : quary);
+            MarkerNames.leftHeel = ((quary == null) ? MarkerNames.leftHeel :prefix + quary);
 
             quary = MarkerNames.rightHeelAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightHeel = prefix + ((quary == null) ? MarkerNames.rightHeel : quary);
+            MarkerNames.rightHeel = ((quary == null) ? MarkerNames.rightHeel :prefix + quary);
 
             quary = MarkerNames.leftToe2AKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftToe2 = prefix + ((quary == null) ? MarkerNames.leftToe2 : quary);
+            if (quary == null)
+            {
+                quary = MarkerNames.leftToe1AKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
+            }
+            MarkerNames.leftToe2 = ((quary == null) ? MarkerNames.leftToe2 :prefix + quary);
 
             quary = MarkerNames.rightToe2AKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightToe2 = prefix + ((quary == null) ? MarkerNames.rightToe2 : quary);
+            if (quary == null)
+            {
+                quary = MarkerNames.rightToe1AKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
+            }
+            MarkerNames.rightToe2 = ((quary == null) ? MarkerNames.rightToe2 :prefix + quary);
+            #endregion
 
+            #region arms
             quary = MarkerNames.leftElbowAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftElbow = prefix + ((quary == null) ? MarkerNames.leftElbow : quary);
+            MarkerNames.leftElbow = ((quary == null) ? MarkerNames.leftElbow :prefix + quary);
 
             quary = MarkerNames.rightElbowAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightElbow = prefix + ((quary == null) ? MarkerNames.rightElbow : quary);
+            MarkerNames.rightElbow = ((quary == null) ? MarkerNames.rightElbow :prefix + quary);
 
             quary = MarkerNames.leftInnerElbowAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftInnerElbow = prefix + ((quary == null) ? MarkerNames.leftInnerElbow : quary);
+            MarkerNames.leftInnerElbow = ((quary == null) ? MarkerNames.leftInnerElbow :prefix + quary);
 
             quary = MarkerNames.rightInnerElbowAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightInnerElbow = prefix + ((quary == null) ? MarkerNames.rightInnerElbow : quary);
+            MarkerNames.rightInnerElbow = ((quary == null) ? MarkerNames.rightInnerElbow :prefix + quary);
 
             quary = MarkerNames.leftOuterElbowAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftOuterElbow = prefix + ((quary == null) ? MarkerNames.leftOuterElbow : quary);
+            MarkerNames.leftOuterElbow = ((quary == null) ? MarkerNames.leftOuterElbow :prefix + quary);
 
             quary = MarkerNames.rightOuterElbowAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightOuterElbow = prefix + ((quary == null) ? MarkerNames.rightOuterElbow : quary);
+            MarkerNames.rightOuterElbow = ((quary == null) ? MarkerNames.rightOuterElbow :prefix + quary);
 
             quary = MarkerNames.leftWristAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftWrist = prefix + ((quary == null) ? MarkerNames.leftWrist : quary);
+            MarkerNames.leftWrist = ((quary == null) ? MarkerNames.leftWrist :prefix + quary);
 
             quary = MarkerNames.rightWristAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightWrist = prefix + ((quary == null) ? MarkerNames.rightWrist : quary);
+            MarkerNames.rightWrist = ((quary == null) ? MarkerNames.rightWrist :prefix + quary);
 
             quary = MarkerNames.leftWristRadiusAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftWristRadius = prefix + ((quary == null) ? MarkerNames.leftWristRadius : quary);
+            MarkerNames.leftWristRadius = ((quary == null) ? MarkerNames.leftWristRadius :prefix + quary);
 
             quary = MarkerNames.rightWristRadiusAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightWristRadius = prefix + ((quary == null) ? MarkerNames.rightWristRadius : quary);
+            MarkerNames.rightWristRadius = ((quary == null) ? MarkerNames.rightWristRadius :prefix + quary);
+            #endregion
 
+            #region hands
             quary = MarkerNames.leftHandAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftHand = prefix + ((quary == null) ? MarkerNames.leftHand : quary);
+            MarkerNames.leftHand = ((quary == null) ? MarkerNames.leftHand :prefix + quary);
 
             quary = MarkerNames.rightHandAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightHand = prefix + ((quary == null) ? MarkerNames.rightHand : quary);
+            MarkerNames.rightHand = ((quary == null) ? MarkerNames.rightHand :prefix + quary);
             
             quary = MarkerNames.rightIndexAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightIndex = prefix + ((quary == null) ? MarkerNames.rightIndex : quary);
+            MarkerNames.rightIndex = ((quary == null) ? MarkerNames.rightIndex :prefix + quary);
 
             quary = MarkerNames.leftIndexAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftIndex = prefix + ((quary == null) ? MarkerNames.leftIndex : quary);
+            MarkerNames.leftIndex = ((quary == null) ? MarkerNames.leftIndex :prefix + quary);
 
             quary = MarkerNames.rightThumbAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.rightThumb = prefix + ((quary == null) ? MarkerNames.rightThumb : quary);
+            MarkerNames.rightThumb = ((quary == null) ? MarkerNames.rightThumb :prefix + quary);
 
             quary = MarkerNames.leftThumbAKA.FirstOrDefault(n => llm.ContainsKey(prefix + n));
-            //if (quary != null) markersList.Add(quary);
-            MarkerNames.leftThumb = prefix + ((quary == null) ? MarkerNames.leftIndex : quary);
-            //return true;
+            MarkerNames.leftThumb = ((quary == null) ? MarkerNames.leftThumb :prefix + quary);
+            #endregion
         }
     }
 }

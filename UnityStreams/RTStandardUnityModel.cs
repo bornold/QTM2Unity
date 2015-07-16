@@ -39,12 +39,10 @@ namespace QTM2Unity
         // Update is called once per frame
         public override void UpdateNext()
         {
-            if (streaming || debugFlag)
-            {
-                base.UpdateNext();
-                localRotation = transform.gameObject.transform.rotation;
-                SetAll();
-            }
+            base.UpdateNext();
+            localRotation = transform.gameObject.transform.rotation;
+            SetAll();
+            
         }
 
         Quaternion footRot = Quaternion.Euler(Vector3.right * 90) * Quaternion.Euler(Vector3.up * 180),

@@ -14,26 +14,27 @@ namespace QTM2Unity
             bodyBasebetween = new List<string[]>() { 
                 new string[] { "R_IPS", "L_IPS" }, 
                 new string[] { "Rt Lower PSIS", "Lt Lower PSIS" }, 
-                new string[] { "L_Sacrum", "R_Sacrum" } };
+                new string[] { "L_Sacrum", "R_Sacrum" },
+                new string[] { "RBWT", "LBWT"} };
         public static string 
             leftHip = "L_IAS";
         public static readonly List<string> 
-            leftHipAKA = new List<string>() { "L_IAS", "L_ASIS","LASIS","LEFT_HIP","L_ICT","Lt Hip Front"};
+            leftHipAKA = new List<string>() { "L_IAS", "L_ASIS","LASIS","LEFT_HIP","L_ICT","Lt Hip Front", "LFWT"};
         public static string 
             rightHip = "R_IAS";
         public static readonly List<string>
-            rightHipAKA = new List<string>() {"R_IAS", "R_ASIS", "RASIS", "RIGHT_HIP", "R_ICT","Rt Hip Front"  };
+            rightHipAKA = new List<string>() { "R_IAS", "R_ASIS", "RASIS", "RIGHT_HIP", "R_ICT", "Rt Hip Front", "RFWT" };
         #endregion
         #region upperbody
         public static string
             spine= "TV12";
         public static readonly List<string>
             spineAKA = new List<string>() 
-            {   "TV12", "TH12", "D12", 
-                "TV11", "TH11", "D11", 
-                "TV13", "TH13", "D13", 
-                "TV10", "TH10", "D10", 
-                "TV14", "TV14", "D14",
+            {   "TV12", "TH12", "D12", "T12",
+                "TV11", "TH11", "D11", "T11", 
+                "TV13", "TH13", "D13", "T13", 
+                "TV10", "TH10", "D10", "T10", 
+                "TV14", "TV14", "D14", "T14",
                 "L1",   "LV3"       };
         public static string 
             neck =  "TV2";
@@ -43,16 +44,16 @@ namespace QTM2Unity
             neckBetween = new List<string[]>() {new string[] {"Lt Up Back", "Rt Up Back" }};
         public static string 
             chest =  "SME";
-        public static readonly List<string> 
-            chestAKA = new List<string>() { "SME", "SJN" };
+        public static readonly List<string>
+            chestAKA = new List<string>() { "SME", "SJN", "CLAV" };
         public static string 
             leftShoulder = "L_SAE";
         public static readonly List<string>
-            leftShoulderAKA = new List<string>() {"L_SAE", "L_ACR", "LEFT_SHOULDER", "L_SHOULDER", "L_ACROMION", "LEFTSHOULDER", "LEFT SHOULDER" };
+            leftShoulderAKA = new List<string>() {"L_SAE", "L_ACR", "LEFT_SHOULDER", "L_SHOULDER", "L_ACROMION", "LEFTSHOULDER", "LEFT SHOULDER", "LSHO" };
         public static string 
             rightShoulder = "R_SAE";
         public static readonly List<string>
-            rightShoulderAKA = new List<string>() {"R_SAE", "R_ACR", "RIGHT_SHOULDER", "R_SHOULDER", "R_ACROMION", "RIGHTSHOULDER", "RIGHT SHOULDER" };
+            rightShoulderAKA = new List<string>() { "R_SAE", "R_ACR", "RIGHT_SHOULDER", "R_SHOULDER", "R_ACROMION", "RIGHTSHOULDER", "RIGHT SHOULDER", "RSHO" };
         #endregion
         #region head
         public static string 
@@ -60,15 +61,19 @@ namespace QTM2Unity
         public static readonly List<string>
             headAKA = new List<string>() {"SGL", "Front of Head", "F_HEAD" };
         public static readonly List<string[]>  
-            headBetween = new List<string[]>() {new string[] {"head_left_front", "head_right_front"}};
+            headBetween = new List<string[]>() 
+            {
+                new string[] {"head_left_front", "head_right_front"},
+                new string[] {"RFHD", "LFHD"}
+            };
         public static string 
             leftHead = "L_HEAD";
-        public static readonly List<string> 
-            leftHeadAKA = new List<string>() {"L_HEAD", "HEAD_LEFT_FRONT" ,"Left Head","L_HEAD"};
+        public static readonly List<string>
+            leftHeadAKA = new List<string>() { "L_HEAD", "HEAD_LEFT_FRONT", "Left Head", "L_HEAD", "LBHD" };
         public static string 
             rightHead = "R_HEAD";
         public static readonly List<string>
-            rightHeadAKA = new List<string>() {"R_HEAD", "HEAD_RIGHT_FRONT", "Right Head","R_HEAD" };
+            rightHeadAKA = new List<string>() { "R_HEAD", "HEAD_RIGHT_FRONT", "Right Head", "R_HEAD", "RBHD" };
         #endregion
         #region elbow
         #region left elbow
@@ -82,8 +87,8 @@ namespace QTM2Unity
             leftInnerElbowAKA = new List<string>() { "L_HME", "L_ELBOW_MED" };
         public static string 
             leftOuterElbow  = "L_HLE";
-        public static readonly List<string> 
-            leftOuterElbowAKA = new List<string>() {"L_HLE", "L_ELBOW","Lt Elbow"  };
+        public static readonly List<string>
+            leftOuterElbowAKA = new List<string>() { "L_HLE", "L_ELBOW", "Lt Elbow", "LELB" };
         #endregion
         #region right elbow
 
@@ -98,7 +103,7 @@ namespace QTM2Unity
         public static string 
             rightOuterElbow  = "R_HLE";
         public static readonly List<string>
-            rightOuterElbowAKA = new List<string>() { "R_HLE", "R_ELBOW", "Rt Elbow" };
+            rightOuterElbowAKA = new List<string>() { "R_HLE", "R_ELBOW", "Rt Elbow", "RELB" };
         #endregion
         #endregion
         #region hand
@@ -106,15 +111,15 @@ namespace QTM2Unity
         public static string 
             leftWrist  = "L_USP";
         public static readonly List<string>
-            leftWristAKA = new List<string>() { "L_USP","L_ULNA", "LEFT_WRIST_INNER", "L_WRIST_MED", "Lt Wrist Ulna", "LT Ulna" };
+            leftWristAKA = new List<string>() { "L_USP", "L_ULNA", "LEFT_WRIST_INNER", "L_WRIST_MED", "Lt Wrist Ulna", "LT Ulna", "LWRB" };
         public static string 
             leftWristRadius  = "L_RSP";
         public static readonly List<string>
-            leftWristRadiusAKA = new List<string>() {"L_RSP", "L_RADUIS", "LEFT_WRIST_OUTER", "L_WRIST_LAT", "Lt Wrist Radius", "Lt Radius" };
+            leftWristRadiusAKA = new List<string>() { "L_RSP", "L_RADUIS", "LEFT_WRIST_OUTER", "L_WRIST_LAT", "Lt Wrist Radius", "Lt Radius", "LWRA" };
         public static string 
             leftHand  = "L_HM2";
-        public static readonly List<string> 
-            leftHandAKA = new List<string>() {"L_HM2", "Lt 3rd Digita"  };
+        public static readonly List<string>
+            leftHandAKA = new List<string>() { "L_HM2", "Lt 3rd Digita", "LFIN" };
         public static string
             leftIndex = "L_Index";
         public static readonly List<string>
@@ -127,16 +132,16 @@ namespace QTM2Unity
         #region right hand
         public static string 
             rightWrist  = "R_USP";
-        public static readonly List<string> 
-            rightWristAKA = new List<string>() {"R_USP", "R_ULNA", "RIGHT_WRIST_INNER", "R_WRIST_MED", "Rt Wrist Ulna","LT Ulna"  };
+        public static readonly List<string>
+            rightWristAKA = new List<string>() { "R_USP", "R_ULNA", "RIGHT_WRIST_INNER", "R_WRIST_MED", "Rt Wrist Ulna", "RT Ulna", "RWRB" };
         public static string 
             rightWristRadius  = "R_RSP";
         public static readonly List<string>
-            rightWristRadiusAKA = new List<string>() {"R_RSP", "R_RADUIS", "RIGHT_WRIST_OUTER", "R_WRIST_LAT", "Rt Wrist Radius" ,"LT Radius" };
+            rightWristRadiusAKA = new List<string>() {"R_RSP", "R_RADUIS", "RIGHT_WRIST_OUTER", "R_WRIST_LAT", "Rt Wrist Radius" ,"RT Radius", "RWRA" };
         public static string 
             rightHand  = "R_HM2";
         public static readonly List<string>
-            rightHandAKA = new List<string>() { "R_HM2", "Rt 3rd Digita" };
+            rightHandAKA = new List<string>() { "R_HM2", "Rt 3rd Digita", "RFIN" };
         public static string
             rightIndex = "R_Index";
         public static readonly List<string>
@@ -156,7 +161,7 @@ namespace QTM2Unity
         public static string 
             leftOuterKnee  = "L_FLE";
         public static readonly List<string>
-            leftOuterKneeAKA = new List<string>() { "L_FLE", "L_LKNEE", "LEFT_KNEE", "l_knjntln", "Lt Lat Knee", "L_KNEE_LAT" };
+            leftOuterKneeAKA = new List<string>() { "L_FLE", "L_LKNEE", "LEFT_KNEE", "l_knjntln", "Lt Lat Knee", "L_KNEE_LAT", "LKNE" };
         public static string 
             leftInnerKnee  = "L_FME";
         public static readonly List<string>
@@ -175,7 +180,7 @@ namespace QTM2Unity
         public static string 
             rightOuterKnee  = "R_FLE";
         public static readonly List<string>
-            rightOuterKneeAKA = new List<string>() {"R_FLE", "R_LKNEE", "RIGHT_KNEE", "r_knjntln","Rt Lat Knee", "R_KNEE_LAT"};
+            rightOuterKneeAKA = new List<string>() {"R_FLE", "R_LKNEE", "RIGHT_KNEE", "r_knjntln","Rt Lat Knee", "R_KNEE_LAT", "RKNE"};
         public static string 
             rightInnerKnee  = "R_FME";
         public static readonly List<string>
@@ -192,7 +197,7 @@ namespace QTM2Unity
         public static string 
             leftOuterAnkle  = "L_FAL";
         public static readonly List<string>
-            leftOuterAnkleAKA = new List<string>() { "L_FAL", "L_LMAL", "LEFT_ANKLE_OUTER", "l_ankle", "Lt Ankle", "L_ANKLE_LAT" };
+            leftOuterAnkleAKA = new List<string>() { "L_FAL", "L_LMAL", "LEFT_ANKLE_OUTER", "l_ankle", "Lt Ankle", "L_ANKLE_LAT", "LANK" };
         public static string 
             leftInnerAnkle  = "L_TAM";
         public static readonly List<string>
@@ -200,13 +205,13 @@ namespace QTM2Unity
         public static string 
             leftHeel  = "L_FCC";
         public static readonly List<string>
-            leftHeelAKA = new List<string>() {"L_FCC", "L_HEEL_CALC", "LEFT_HEEL", "l_heel", "L_FCC1", "L_FCC2", "Lt Heel"};
+            leftHeelAKA = new List<string>() {"L_FCC", "L_HEEL_CALC", "LEFT_HEEL", "l_heel", "L_FCC1", "L_FCC2", "Lt Heel", "LHEE"};
         #endregion
         #region right foot
         public static string    
             rightOuterAnkle  = "R_FAL";
         public static readonly List<string>
-            rightOuterAnkleAKA = new List<string>() {"R_FAL", "R_LMAL", "RIGHT_ANKLE_OUTER", "l_ankle", "Rt Ankle", "R_ANKLE_LAT" };
+            rightOuterAnkleAKA = new List<string>() {"R_FAL", "R_LMAL", "RIGHT_ANKLE_OUTER", "l_ankle", "Rt Ankle", "R_ANKLE_LAT", "RANK" };
         public static string 
             rightInnerAnkle  = "R_TAM";
         public static readonly List<string>
@@ -214,14 +219,14 @@ namespace QTM2Unity
         public static string 
             rightHeel  = "R_FCC";
         public static readonly List<string>
-            rightHeelAKA = new List<string>() {"R_FCC", "R_HEEL_CALC", "RIGHT_HEEL", "r_heel", "R_FCC1", "R_FCC2", "Rt Heel" };
+            rightHeelAKA = new List<string>() {"R_FCC", "R_HEEL_CALC", "RIGHT_HEEL", "r_heel", "R_FCC1", "R_FCC2", "Rt Heel", "RHEE" };
         #endregion
         #region toes
         #region left toes
         public static string
             leftToe1  = "L_FM1";
         public static readonly List<string>
-            leftToe1AKA = new List<string>() { "L_FM1", "L_TOE_1_MET", "L_MT_1" };
+            leftToe1AKA = new List<string>() { "L_FM1", "L_TOE_1_MET", "L_MT_1", "LTOE" };
         public static string 
             leftToe2  = "L_FM2";
         public static readonly List<string>
@@ -229,25 +234,25 @@ namespace QTM2Unity
         public static readonly List<string>
             lightToe2Between = new List<string>() { "L_FM1", "L_FM2", "L_TOE_5_MET", "L_TOE_5_MET", "L_MT_5", "L_MT_1" };
         public static string
-            leftToe5 = "L_FM1";
+            leftToe5 = "L_FM5";
         public static readonly List<string>
-            leftToe5AKA = new List<string>() { "L_FM1", "L_TOE_5_MET", "Lt 5th Toe", "L_MT_5" };
+            leftToe5AKA = new List<string>() { "L_FM5", "L_TOE_5_MET", "Lt 5th Toe", "L_MT_5", "LMT5" };
         #endregion
         #region right toes
         public static string
             rightToe1  = "R_FM1";
         public static readonly List<string>
-            rightToe1AKA = new List<string>() { "R_FM1", "R_TOE_1_MET", "R_MT_1" };
+            rightToe1AKA = new List<string>() { "R_FM1", "R_TOE_1_MET", "R_MT_1", "RTOE" };
         public static string 
             rightToe2  = "R_FM2";
         public static readonly List<string>
             rightToe2AKA = new List<string>() { "R_FM2", "r_toe","Rt 2nd Toe" };
         public static readonly List<string>
-            rightToe2Between = new List<string>() { "R_FM1", "R_FM2", "R_TOE_5_MET", "R_TOE_5_MET", "R_MT_5", "R_MT_1" };
+            rightToe2Between = new List<string>() { "R_FM1", "R_FM5", "R_TOE_1_MET", "R_TOE_5_MET", "R_MT_1", "R_MT_5" };
         public static string
             rightToe5  = "R_FM5";
         public static readonly List<string>
-            rightToe5AKA = new List<string>() {"R_FM5", "R_TOE_5_MET","Rt 5th Toe", "R_MT_5" };
+            rightToe5AKA = new List<string>() {"R_FM5", "R_TOE_5_MET","Rt 5th Toe", "R_MT_5", "RMT5" };
         #endregion
         #endregion
         #endregion

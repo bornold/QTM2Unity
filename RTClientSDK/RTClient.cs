@@ -11,7 +11,7 @@ namespace QTM2Unity
     {
         RTProtocol mProtocol;
         private static RTClient mInstance;
-
+        public bool fileStreamRunning { private set; get; }
         private List<sixDOFBody> mBodies;
         public List<sixDOFBody> Bodies { get { return mBodies; } }
 
@@ -87,13 +87,13 @@ namespace QTM2Unity
             if (currentEvent == eEvent.kEventRTFromFileStarted)
             {
                 // reload settings when we start streaming to get proper settings
-                mMarkers = new List<LabeledMarker>();
+                fileStreamRunning = true;
                 get3DSettings();
                 get6DOFSettings();
             }
             else if (currentEvent == eEvent.kEventRTFromFileSTopped)
             {
-                mMarkers = null;
+                fileStreamRunning = false;
             }
         }
 
@@ -116,6 +116,7 @@ namespace QTM2Unity
             mBones = new List<MarkerBone>();
 
             mStreamingStatus = false;
+            fileStreamRunning = false;
 
             mPacket = RTPacket.ErrorPacket;
         }
@@ -190,14 +191,6 @@ namespace QTM2Unity
             return false;
         }
 
-
-        public bool _connected;
-        public int _pickedServer;
-        public short _udpPort;
-        public int _streammode;
-        public int _streamval;
-        public bool _stream6d;
-        public bool _stream3d;
         /// <summary>
         /// Connect the specified pickedServer.
         /// </summary>
@@ -237,6 +230,7 @@ namespace QTM2Unity
         public void disconnect()
         {
             mStreamingStatus = false;
+            fileStreamRunning = false;
             mProtocol.streamFramesStop();
             mProtocol.stopStreamListen();
             mProtocol.disconnect();
@@ -353,6 +347,7 @@ namespace QTM2Unity
                 if (mProtocol.listenToStream())
                 {
                     mStreamingStatus = true;
+                    fileStreamRunning = true;
                     message = "No errors";
                     return true;
                 }
