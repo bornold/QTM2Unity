@@ -52,7 +52,6 @@ namespace QTM2Unity
         }
         public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, float scale)
         {
-            Color c = Color.yellow;
             if (b.Orientation.Xyz.IsNaN() || refBone.Orientation.Xyz.IsNaN())
             {
                 return;
@@ -72,14 +71,14 @@ namespace QTM2Unity
             float startTwistLimit = OpenTK.MathHelper.DegreesToRadians(b.StartTwistLimit);
             OpenTK.Vector3 m = OpenTK.Vector3.Transform(reference, OpenTK.Quaternion.FromAxisAngle(thisY, startTwistLimit));
             m.Normalize();
-            Debug.DrawRay(poss.Convert(), m.Convert() * scale, c);
+            Debug.DrawRay(poss.Convert(), m.Convert() * scale, Color.yellow);
 
             float endTwistLimit = OpenTK.MathHelper.DegreesToRadians(b.EndTwistLimit);
             OpenTK.Vector3 m2 = OpenTK.Vector3.Transform(reference, OpenTK.Quaternion.FromAxisAngle(thisY, endTwistLimit));
             m2.Normalize();
-            Debug.DrawRay(poss.Convert(), m2.Convert() * scale, c);
+            Debug.DrawRay(poss.Convert(), m2.Convert() * scale, Color.magenta);
 
-            Debug.DrawLine((poss + (m*scale)).Convert(), (poss + (m2*scale)).Convert(), c);
+            Debug.DrawLine((poss + (m*scale)).Convert(), (poss + (m2*scale)).Convert(), Color.cyan);
         }
         public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss)
         {
