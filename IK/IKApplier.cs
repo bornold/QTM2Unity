@@ -18,7 +18,6 @@ namespace QTM2Unity
                 IKSolver = new CCD();
                 FABRIK = new FABRIK();
                 FABRIK.MaxIterations = 20;
-                //IKSolver.MaxIterations = 200;
         }
 
         public void ApplyIK(ref BipedSkeleton skeleton)

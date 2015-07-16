@@ -5,7 +5,7 @@ namespace QTM2Unity
     {
         override public bool SolveBoneChain(Bone[] bones, Bone target, Bone grandparent)
         {
-            
+
             if (!IsReachable(bones,target))
             {
                 TargetUnreachable(bones, target.Pos, grandparent);
@@ -92,7 +92,7 @@ namespace QTM2Unity
                         Quaternion rotation2;
                         if (CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : grandparent, out rotation2))
                         {
-                            ForwardKinematics(ref bones, rotation2, i);
+                            ForwardRotation(ref bones, rotation2, i);
                         }
                     }
                 }

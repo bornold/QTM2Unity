@@ -33,18 +33,6 @@ namespace QTM2Unity
         {
             get { return Children.Count == 0; }
         }
-        ///// <summary>
-        ///// Returns the depth from the parent node
-        ///// </summary>
-        //public int Level
-        //{
-        //    get
-        //    {
-        //        if (this.IsRoot)
-        //            return 0;
-        //        return Parent.Level + 1;
-        //    }
-        //}
 
         /// <summary>
         /// Constructor for a new node
@@ -130,12 +118,9 @@ namespace QTM2Unity
         {
             yield return this;
             foreach (var directChild in this.Children)
-            {
                 foreach (var anyChild in directChild)
                     yield return anyChild;
-            }
         }
-
         #endregion
     }
 }

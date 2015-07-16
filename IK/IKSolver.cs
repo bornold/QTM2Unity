@@ -74,6 +74,14 @@ namespace QTM2Unity
                 bones[j].Rotate(rotation);
             }
         }
+        protected void ForwardRotation(ref Bone[] bones, Quaternion rotation, int i = 0)
+        {
+            ForwardRotation(ref bones, rotation, i, bones.Length - 1);
+        }
+        protected void ForwardRotation(ref Bone[] bones, Quaternion rotation, int i, int length)
+        {
+            for (int j = i; j < length; j++) bones[j].Rotate(rotation);
+        }
 
         // Returns true if target is located on the chain
         // Assumes target is reachable
