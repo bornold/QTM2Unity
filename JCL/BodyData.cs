@@ -23,8 +23,10 @@ namespace QTM2Unity
         private uint chestsFrames = 0;
         private uint shoulderFrames = 0;
         private uint heightFrames = 0;
-        public BodyData()
+        private Markers m;
+        public BodyData(Markers m)
         {
+            this.m = m;
             Height = 175; // cm
             Mass = 75; //kg
             ShoulderWidth = 400; //mm
@@ -32,7 +34,7 @@ namespace QTM2Unity
         public void CalculateBodyData(Dictionary<string, Vector3> markers, Quaternion chestOrientation)
         {
             // set chest depth
-            var currentNeckToChestVector = (markers[MarkerNames.chest] - markers[MarkerNames.neck]);
+            var currentNeckToChestVector = (markers[m.chest] - markers[m.neck]);
             if (!currentNeckToChestVector.IsNaN() && !chestOrientation.IsNaN())
             {
                 NeckToChestVector = 
@@ -42,16 +44,16 @@ namespace QTM2Unity
             }
 
             // set shoulder width
-            float tmp = (markers[MarkerNames.leftShoulder] - markers[MarkerNames.rightShoulder]).Length * 500; // to mm half the width
+            float tmp = (markers[m.leftShoulder] - markers[m.rightShoulder]).Length * 500; // to mm half the width
             if (!float.IsNaN(tmp))// && tmp < 500)
             {
                 ShoulderWidth = (ShoulderWidth * shoulderFrames + tmp) / (++shoulderFrames);
             }
             // height and mass
-            tmp = ( (markers[MarkerNames.rightOuterAnkle] - markers[MarkerNames.rightOuterKnee]).LengthFast +
-                    (markers[MarkerNames.rightOuterKnee] - markers[MarkerNames.rightHip]).LengthFast +
-                    (markers[MarkerNames.bodyBase] - markers[MarkerNames.neck]).LengthFast +
-                    (markers[MarkerNames.neck] - markers[MarkerNames.head]).LengthFast
+            tmp = ( (markers[m.rightOuterAnkle] - markers[m.rightOuterKnee]).LengthFast +
+                    (markers[m.rightOuterKnee] - markers[m.rightHip]).LengthFast +
+                    (markers[m.bodyBase] - markers[m.neck]).LengthFast +
+                    (markers[m.neck] - markers[m.head]).LengthFast
                   ) * 100; // cm
             if (!float.IsNaN(tmp) && tmp < 250)
             {

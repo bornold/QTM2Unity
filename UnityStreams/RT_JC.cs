@@ -24,35 +24,38 @@ namespace QTM2Unity
         protected BipedSkeleton skeletonBuffer;
         private MarkersPreprocessor mp;
         private JointLocalization joints;
-        private Dictionary<string, OpenTK.Vector3> markers;
-
-
+        private string prefix;
         public override void StartNext()
         {
             base.StartNext();
             skeleton = new BipedSkeleton();
             skeletonBuffer = new BipedSkeleton();
-            mp = new MarkersPreprocessor(bodyPrefix: bodyRig.bodyPrefix);
-            joints = new JointLocalization();
         }
 
         // Update is called once per frame
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if ((bodyRig != null && bodyRig.resetSkeleton) || joints == null || skeleton == null || skeletonBuffer == null || mp == null || reset)
+            if ((bodyRig != null && bodyRig.resetSkeleton) || skeleton == null || skeletonBuffer == null || reset || bodyRig.bodyPrefix != prefix)
             {
                 UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
                 skeletonBuffer = new BipedSkeleton();
-                mp = new MarkersPreprocessor(bodyPrefix: bodyRig.bodyPrefix);
-                joints = new JointLocalization();
+                mp = null;
+                joints = null;
                 bodyRig.resetSkeleton = false;
+                prefix = bodyRig.bodyPrefix;
                 return;
             }
+            if (mp == null || joints == null)
+            {
+                Markers markersMap;
+                mp = new MarkersPreprocessor(markerData, out markersMap, bodyPrefix: bodyRig.bodyPrefix);
+                joints = new JointLocalization(markersMap);
+            }
+            Dictionary<string, OpenTK.Vector3> markers;
             if (!mp.ProcessMarkers(markerData, out markers, bodyRig.bodyPrefix))
             {
-                Debug.LogError("markers...");
                 return;
             }
             if (!debugFlag)
