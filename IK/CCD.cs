@@ -3,6 +3,7 @@ namespace QTM2Unity
 {
     class CCD : IKSolver
     {
+        int degreeStep = 10;
         override public bool SolveBoneChain(Bone[] bones, Bone target, Bone grandparent)
         {
 
@@ -15,14 +16,13 @@ namespace QTM2Unity
 
             int numberOfBones = bones.Length;
             int iter = 0;
-            int degreeStep = 10;
             int degrees = degreeStep;
             bool toggle = false;
             bool doneOneLapAroundYAxis = false;
             int maxdegrees = 120;
             float lastDistToTarget = float.MaxValue;
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
-            while (distToTarget > threshold && ++iter < maxIterations && (!doneOneLapAroundYAxis || degrees < maxdegrees))
+            while (distToTarget > threshold && ++iter < MaxIterations && (!doneOneLapAroundYAxis || degrees < maxdegrees))
             {
                 if ((distToTarget >= lastDistToTarget))
                 {

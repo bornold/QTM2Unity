@@ -27,7 +27,7 @@ namespace QTM2Unity
             float lastDistToTarget = float.MaxValue;
 
             float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
-            while (distToTarget > threshold && iterations++ < maxIterations && distToTarget < lastDistToTarget)
+            while (distToTarget > threshold && iterations++ < MaxIterations && distToTarget < lastDistToTarget)
             {
                 // Forward reaching
                 ForwardReaching(ref bones, ref distances, target);
