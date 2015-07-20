@@ -18,7 +18,7 @@ namespace QTM2Unity
         /// <summary>
         /// A collection of children Node
         /// </summary>
-        public ICollection<TreeNode<T>> Children { get; set; }
+        public TreeNode<T>[] Children { get; set; }
         /// <summary>
         /// Returns if Node has no Parent 
         /// </summary>
@@ -31,7 +31,7 @@ namespace QTM2Unity
         /// </summary>
         public Boolean IsLeaf
         {
-            get { return Children.Count == 0; }
+            get { return Children.Length == 0; }
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace QTM2Unity
         public TreeNode(T data)
         {
             this.Data = data;
-            this.Children = new List<TreeNode<T>>();
+            this.Children = new TreeNode<T>[0];
         }
 
         /// <summary>
@@ -52,10 +52,10 @@ namespace QTM2Unity
         public TreeNode<T> AddChild(T child)
         {
             TreeNode<T> childNode = new TreeNode<T>(child) { Parent = this };
-            this.Children.Add(childNode);
-
-            //this.RegisterChildForSearch(childNode);
-
+            var temp = new TreeNode<T>[Children.Length + 1];
+            Array.Copy(Children, temp, Children.Length);
+            temp[temp.Length-1] = childNode;
+            Children = temp;
             return childNode;
         }
 
@@ -97,9 +97,9 @@ namespace QTM2Unity
         public TreeNode<T> FindTreeNode(Func<TreeNode<T>, bool> predicate)
         {
             if (predicate(this)) return this;
-            else foreach (var child in Children)
+            else for (int i = 0; i < Children.Length; i++)
                 {
-                    var res = child.FindTreeNode(predicate);
+                    var res = Children[i].FindTreeNode(predicate);
                     if (res != null) return res;
                 }
             return null;
@@ -117,8 +117,8 @@ namespace QTM2Unity
         public IEnumerator<TreeNode<T>> GetEnumerator()
         {
             yield return this;
-            foreach (var directChild in this.Children)
-                foreach (var anyChild in directChild)
+            for (int i = 0; i < this.Children.Length; i++)
+                foreach (var anyChild in this.Children[i])
                     yield return anyChild;
         }
         #endregion
