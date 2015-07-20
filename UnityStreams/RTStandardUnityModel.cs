@@ -61,76 +61,76 @@ namespace QTM2Unity
             {
                 switch (b.Data.Name)
                 {
-                    case BipedSkeleton.PELVIS:
+                    case Joint.PELVIS:
                         setGO(hips, b.Data, setPos: true);
                         break;
-                    case BipedSkeleton.SPINE0:
+                    case Joint.SPINE0:
                         setGO(spine, b.Data);
                         break;
-                    case BipedSkeleton.SPINE1:
+                    case Joint.SPINE1:
                         setGO(spine1, b.Data);
                         break;
-                    case BipedSkeleton.SPINE3:
+                    case Joint.SPINE3:
                         setGO(spine2, b.Data);
                         break;
-                    case BipedSkeleton.NECK:
+                    case Joint.NECK:
                         setGO(neck, b.Data);
                         break;
-                    case BipedSkeleton.HEAD:
+                    case Joint.HEAD:
                         setGO(head, b.Data);
                         break;
-                    case BipedSkeleton.HIP_L:
+                    case Joint.HIP_L:
                         setGO(upLegLeft, b.Data, legRot);
                         break;
-                    case BipedSkeleton.HIP_R:
+                    case Joint.HIP_R:
                         setGO(upLegRight, b.Data, legRot);
                         break;
-                    case BipedSkeleton.KNEE_L:
+                    case Joint.KNEE_L:
                         setGO(legLeft, b.Data, legRot);
                         break;
-                    case BipedSkeleton.KNEE_R:
+                    case Joint.KNEE_R:
                         setGO(legRight, b.Data, legRot);
                         break;
-                    case BipedSkeleton.FOOTBASE_L:
+                    case Joint.FOOTBASE_L:
                         setGO(footLeft, b.Data, footRot);
                         break;
-                    case BipedSkeleton.FOOTBASE_R:
+                    case Joint.FOOTBASE_R:
                         setGO(footRight, b.Data, footRot);
                         break;
-                    case BipedSkeleton.CLAVICLE_L:
+                    case Joint.CLAVICLE_L:
                         setGO(shoulderLeft, b.Data, armLeftRot);
                         break;
-                    case BipedSkeleton.SHOULDER_L:
+                    case Joint.SHOULDER_L:
                         setGO(armLeft, b.Data, armLeftRot);
                         break;
-                    case BipedSkeleton.ELBOW_L:
+                    case Joint.ELBOW_L:
                         setGO(foreArmLeft, b.Data, armLeftRot);
                         break;
-                    case BipedSkeleton.WRIST_L:
+                    case Joint.WRIST_L:
                         setGO(handLeft, b.Data, handLeftRot);
                         break;
-                    case BipedSkeleton.HAND_L:
+                    case Joint.HAND_L:
                         foreach (var fing in fingersLeft) setGO(fing, b.Data, handLeftRot);
                         break;
-                    case BipedSkeleton.TRAP_L:
+                    case Joint.TRAP_L:
                         setGO(thumbLeft, b.Data, thumbLeftRot);
                         break;
-                    case BipedSkeleton.CLAVICLE_R:
+                    case Joint.CLAVICLE_R:
                         setGO(shoulderRight, b.Data, armRightRot);
                         break;
-                    case BipedSkeleton.SHOULDER_R:
+                    case Joint.SHOULDER_R:
                         setGO(armRight, b.Data, armRightRot);
                         break;
-                    case BipedSkeleton.ELBOW_R:
+                    case Joint.ELBOW_R:
                         setGO(foreArmRight, b.Data, armRightRot);
                         break;
-                    case BipedSkeleton.WRIST_R:
+                    case Joint.WRIST_R:
                         setGO(handRight, b.Data, handRightRot);
                         break;
-                    case BipedSkeleton.HAND_R:
+                    case Joint.HAND_R:
                         foreach (var fing in fingersRight) setGO(fing, b.Data, handRightRot);
                         break;
-                    case BipedSkeleton.TRAP_R:
+                    case Joint.TRAP_R:
                         setGO(thumbRight, b.Data, thumbRightRot);
                         break;
                     default:
@@ -139,30 +139,30 @@ namespace QTM2Unity
             }
                  
             /*
-                setGO(hips, BipedSkeleton.PELVIS, setPos: true);
-                setGO(spine, BipedSkeleton.SPINE0);
-                setGO(spine1, BipedSkeleton.SPINE1);
-                setGO(spine2, BipedSkeleton.SPINE3);
-                setGO(neck, BipedSkeleton.NECK);
-                setGO(head, BipedSkeleton.HEAD);
-                setGO(upLegLeft, BipedSkeleton.HIP_L, legRot);
-                setGO(upLegRight, BipedSkeleton.HIP_R, legRot);
-                setGO(legLeft, BipedSkeleton.KNEE_L, legRot);
-                setGO(legRight, BipedSkeleton.KNEE_R, legRot);
-                setGO(footLeft, BipedSkeleton.FOOTBASE_L, footRot);
-                setGO(footRight, BipedSkeleton.FOOTBASE_R, footRot);
-                setGO(shoulderLeft, BipedSkeleton.CLAVICLE_L, armLeftRot);
-                setGO(armLeft, BipedSkeleton.SHOULDER_L, armLeftRot);
-                setGO(foreArmLeft, BipedSkeleton.ELBOW_L, armLeftRot);
-                setGO(handLeft, BipedSkeleton.WRIST_L, handLeftRot);
-                foreach (var fing in fingersLeft) setGO(fing, BipedSkeleton.HAND_L, handLeftRot);
-                setGO(thumbLeft, BipedSkeleton.TRAP_L, thumbLeftRot);
-                setGO(shoulderRight, BipedSkeleton.CLAVICLE_R, armRightRot);
-                setGO(armRight, BipedSkeleton.SHOULDER_R, armRightRot);
-                setGO(foreArmRight, BipedSkeleton.ELBOW_R, armRightRot);
-                setGO(handRight, BipedSkeleton.WRIST_R, handRightRot);
-                foreach (var fing in fingersRight) setGO(fing, BipedSkeleton.HAND_R, handRightRot);
-                setGO(thumbRight, BipedSkeleton.TRAP_R, thumbRightRot);
+                setGO(hips, Joint.PELVIS, setPos: true);
+                setGO(spine, Joint.SPINE0);
+                setGO(spine1, Joint.SPINE1);
+                setGO(spine2, Joint.SPINE3);
+                setGO(neck, Joint.NECK);
+                setGO(head, Joint.HEAD);
+                setGO(upLegLeft, Joint.HIP_L, legRot);
+                setGO(upLegRight, Joint.HIP_R, legRot);
+                setGO(legLeft, Joint.KNEE_L, legRot);
+                setGO(legRight, Joint.KNEE_R, legRot);
+                setGO(footLeft, Joint.FOOTBASE_L, footRot);
+                setGO(footRight, Joint.FOOTBASE_R, footRot);
+                setGO(shoulderLeft, Joint.CLAVICLE_L, armLeftRot);
+                setGO(armLeft, Joint.SHOULDER_L, armLeftRot);
+                setGO(foreArmLeft, Joint.ELBOW_L, armLeftRot);
+                setGO(handLeft, Joint.WRIST_L, handLeftRot);
+                foreach (var fing in fingersLeft) setGO(fing, Joint.HAND_L, handLeftRot);
+                setGO(thumbLeft, Joint.TRAP_L, thumbLeftRot);
+                setGO(shoulderRight, Joint.CLAVICLE_R, armRightRot);
+                setGO(armRight, Joint.SHOULDER_R, armRightRot);
+                setGO(foreArmRight, Joint.ELBOW_R, armRightRot);
+                setGO(handRight, Joint.WRIST_R, handRightRot);
+                foreach (var fing in fingersRight) setGO(fing, Joint.HAND_R, handRightRot);
+                setGO(thumbRight, Joint.TRAP_R, thumbRightRot);
             */
                  
         }

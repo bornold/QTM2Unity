@@ -6,58 +6,54 @@ using OpenTK;
 
 namespace QTM2Unity
 {
+    public enum Joint
+    {
+        PELVIS,
+        // Left leg chain
+        HIP_L,
+        KNEE_L,
+        ANKLE_L,
+        FOOTBASE_L,
+        TOE_L,
+        // Right leg chain
+        HIP_R,
+        KNEE_R,
+        ANKLE_R,
+        FOOTBASE_R,
+        TOE_R,
+        //Spine chain
+        SPINE0,
+        SPINE1,
+        SPINE2,
+        SPINE3,
+        NECK,
+        HEAD,
+        HEADTOP,
+        //Left arm chain
+        CLAVICLE_L,
+        SHOULDER_L,
+        ELBOW_L,
+        WRIST_L,
+        TRAP_L,
+        THUMB_L,
+        HAND_L,
+        INDEX_L,
+        //Right arm chain
+        CLAVICLE_R,
+        SHOULDER_R,
+        ELBOW_R,
+        WRIST_R,
+        TRAP_R,
+        THUMB_R,
+        HAND_R,
+        INDEX_R
+    };
     class BipedSkeleton
     {
         protected TreeNode<Bone> root;
         public TreeNode<Bone> Root { get { return root; } }
         private ConstraintsExamples constraints = new ConstraintsExamples();
-        // String constants for bones in a biped skeleton
-        #region joint Names
-        //Root
-        public const string PELVIS = "pelvis";
-        // Left leg chain
-        public const string HIP_L = "hip_L";
-        public const string KNEE_L = "knee_L";
-        public const string ANKLE_L = "ankle_L";
-        public const string FOOTBASE_L = "footBase_L";
-        public const string TOE_L = "toe_L";
 
-        // Right leg chain
-        public const string HIP_R = "hip_R";
-        public const string KNEE_R = "knee_R";
-        public const string ANKLE_R = "ankle_R";
-        public const string FOOTBASE_R = "footBase_R";
-        public const string TOE_R = "toe_R";
-
-        //Spine chain
-        public const string SPINE0 = "spine0";
-        public const string SPINE1 = "spine1";
-        public const string SPINE2 = "spine2";
-        public const string SPINE3 = "spine3";
-        public const string NECK = "neck";
-        public const string HEAD = "head";
-        public const string HEADTOP = "headtop";
-        //Left arm chain
-        public const string CLAVICLE_L = "clavicle_L";
-        public const string SHOULDER_L = "shoulder_L";
-        public const string ELBOW_L = "elbow_L";
-        public const string WRIST_L = "wrist_L";
-        public const string TRAP_L = "trap_L";
-        public const string THUMB_L = "thumb_L";
-        public const string HAND_L = "hand_L";
-        public const string INDEX_L = "index_L";
-
-        //Right arm chain
-        public const string CLAVICLE_R = "clavicle_R";
-        public const string SHOULDER_R = "shoulder_R";
-        public const string ELBOW_R = "elbow_R";
-        public const string WRIST_R = "wrist_R";
-        public const string TRAP_R = "trap_R";
-        public const string THUMB_R = "thumb_R";
-        public const string HAND_R = "hand_R";
-        public const string INDEX_R = "index_R";
-
-        #endregion
         public BipedSkeleton()
         {
 
@@ -153,66 +149,66 @@ namespace QTM2Unity
 
             #endregion
 
-            root = new TreeNode<Bone>(new Bone(PELVIS,
+            root = new TreeNode<Bone>(new Bone(Joint.PELVIS,
                 pelvisPos, Quaternion.Identity));
             #region bone structure
             {
                 #region upper body 
                 #region spine and head
-                TreeNode<Bone> spine0 = root.AddChild(new Bone(SPINE0, 
+                TreeNode<Bone> spine0 = root.AddChild(new Bone(Joint.SPINE0, 
                     spine0Pos, 
                     spine0Rot));
                 {
-                    TreeNode<Bone> spine1 = spine0.AddChild(new Bone(SPINE1, 
+                    TreeNode<Bone> spine1 = spine0.AddChild(new Bone(Joint.SPINE1, 
                         spine1Pos,
                         spine1Rot));
                     {
-                        TreeNode<Bone> spine3 = spine1.AddChild(new Bone(SPINE3, 
+                        TreeNode<Bone> spine3 = spine1.AddChild(new Bone(Joint.SPINE3, 
                             spine3Pos,
                             spine3Rot));
                     {
-                        TreeNode<Bone> neck = spine3.AddChild(new Bone(NECK, 
+                        TreeNode<Bone> neck = spine3.AddChild(new Bone(Joint.NECK, 
                             neckPos, 
                             neckRot));
                         {
-                            TreeNode<Bone> head = neck.AddChild(new Bone(HEAD, 
+                            TreeNode<Bone> head = neck.AddChild(new Bone(Joint.HEAD, 
                                 headPos, 
                                 headRot));
                             {
-                                head.AddChild(new Bone(HEADTOP, headTopPos, QuaternionHelper.Zero));
+                                head.AddChild(new Bone(Joint.HEADTOP, headTopPos, QuaternionHelper.Zero));
                             }
                         }
                 #endregion
                         #region arm left
-                        TreeNode<Bone> clavicleLeft = spine3.AddChild(new Bone(CLAVICLE_L, 
+                        TreeNode<Bone> clavicleLeft = spine3.AddChild(new Bone(Joint.CLAVICLE_L, 
                             spine3Pos,
                             clavicleLeftRot));
                         {
-                            TreeNode<Bone> shoulderLeft = clavicleLeft.AddChild(new Bone(SHOULDER_L,
+                            TreeNode<Bone> shoulderLeft = clavicleLeft.AddChild(new Bone(Joint.SHOULDER_L,
                                 shoulderLeftPos, 
                                 shoulderLeftRot));
                             {
-                                TreeNode<Bone> elbowLeft = shoulderLeft.AddChild(new Bone(ELBOW_L,
+                                TreeNode<Bone> elbowLeft = shoulderLeft.AddChild(new Bone(Joint.ELBOW_L,
                                     elbowLeftPos, 
                                     elbowLeftRot));
                                 {
-                                    TreeNode<Bone> wristLeft = elbowLeft.AddChild(new Bone(WRIST_L, 
+                                    TreeNode<Bone> wristLeft = elbowLeft.AddChild(new Bone(Joint.WRIST_L, 
                                         wristLeftPos,
                                         wristLeftRot));
                                     {
-                                        TreeNode<Bone> handLeft = wristLeft.AddChild(new Bone(HAND_L,
+                                        TreeNode<Bone> handLeft = wristLeft.AddChild(new Bone(Joint.HAND_L,
                                            handLeftPos,
                                            handLeftRot));
                                         {
-                                            handLeft.AddChild(new Bone(INDEX_L,
+                                            handLeft.AddChild(new Bone(Joint.INDEX_L,
                                            indexLeftPos,
                                            QuaternionHelper.Zero));
                                         }
-                                        TreeNode<Bone> trapezoidLeft = wristLeft.AddChild(new Bone(TRAP_L,
+                                        TreeNode<Bone> trapezoidLeft = wristLeft.AddChild(new Bone(Joint.TRAP_L,
                                                 wristLeftPos,
                                                 trapezoidLeftRot));
                                         {
-                                            trapezoidLeft.AddChild(new Bone(THUMB_L,
+                                            trapezoidLeft.AddChild(new Bone(Joint.THUMB_L,
                                             thumbLeftPos,
                                             QuaternionHelper.Zero));
                                         }
@@ -222,34 +218,34 @@ namespace QTM2Unity
                         }
                         #endregion
                         #region arm right
-                        TreeNode<Bone> clavicleRight = spine3.AddChild(new Bone(CLAVICLE_R, 
+                        TreeNode<Bone> clavicleRight = spine3.AddChild(new Bone(Joint.CLAVICLE_R, 
                             spine3Pos, 
                             clavicleRightRot));
                         {
-                            TreeNode<Bone> shoulderRight = clavicleRight.AddChild(new Bone(SHOULDER_R,
+                            TreeNode<Bone> shoulderRight = clavicleRight.AddChild(new Bone(Joint.SHOULDER_R,
                                 shoulderRightPos, 
                                 shoulderRightRot));
                             {
-                                TreeNode<Bone> elbowRight = shoulderRight.AddChild(new Bone(ELBOW_R,
+                                TreeNode<Bone> elbowRight = shoulderRight.AddChild(new Bone(Joint.ELBOW_R,
                                     elbowRightPos, 
                                     elbowRightRot));
                                 {
-                                    TreeNode<Bone> wristRight = elbowRight.AddChild(new Bone(WRIST_R, 
+                                    TreeNode<Bone> wristRight = elbowRight.AddChild(new Bone(Joint.WRIST_R, 
                                         wristRightPos, 
                                         wristRightRot));    
                                     {
-                                        TreeNode<Bone> handRight = wristRight.AddChild(new Bone(HAND_R, 
+                                        TreeNode<Bone> handRight = wristRight.AddChild(new Bone(Joint.HAND_R, 
                                             handRightPos,
                                             handRightRot));
                                         {
-                                            handRight.AddChild(new Bone(INDEX_R,
+                                            handRight.AddChild(new Bone(Joint.INDEX_R,
                                             indexRightPos,
                                             QuaternionHelper.Zero));
-                                        TreeNode<Bone> trapezoidRight = wristRight.AddChild(new Bone(TRAP_R,
+                                        TreeNode<Bone> trapezoidRight = wristRight.AddChild(new Bone(Joint.TRAP_R,
                                             wristRightPos,
                                             trapezoidRightRot));
                                         {
-                                            trapezoidRight.AddChild(new Bone(THUMB_R,
+                                            trapezoidRight.AddChild(new Bone(Joint.THUMB_R,
                                             thumbRightPos,
                                             QuaternionHelper.Zero));
                                         }
@@ -264,43 +260,43 @@ namespace QTM2Unity
                 }
                 #endregion
                 #region legs left
-                TreeNode<Bone> hipLeft = root.AddChild(new Bone(HIP_L,
+                TreeNode<Bone> hipLeft = root.AddChild(new Bone(Joint.HIP_L,
                 hipLeftPos, 
                 hipLeftRot));
                 {
 
-                    TreeNode<Bone> kneeLeft = hipLeft.AddChild(new Bone(KNEE_L,
+                    TreeNode<Bone> kneeLeft = hipLeft.AddChild(new Bone(Joint.KNEE_L,
                         kneeLeftPos, 
                         kneeLeftRot));
                     {
-                        TreeNode<Bone> ankleLeft = kneeLeft.AddChild(new Bone(ANKLE_L,
+                        TreeNode<Bone> ankleLeft = kneeLeft.AddChild(new Bone(Joint.ANKLE_L,
                             ankleLeftPos, 
                             ankleLeftRot));
                         {
-                            TreeNode<Bone> footBaseLeft = ankleLeft.AddChild(new Bone(FOOTBASE_L, footBaseLeftPos, footBaseLeftRot));
+                            TreeNode<Bone> footBaseLeft = ankleLeft.AddChild(new Bone(Joint.FOOTBASE_L, footBaseLeftPos, footBaseLeftRot));
                             {
-                                footBaseLeft.AddChild(new Bone(TOE_L, toeLeftPos, QuaternionHelper.Zero));
+                                footBaseLeft.AddChild(new Bone(Joint.TOE_L, toeLeftPos, QuaternionHelper.Zero));
                             }
                         }
                     }
                 }
                 #endregion
                 #region legs right
-                TreeNode<Bone> hipRight = root.AddChild(new Bone(HIP_R, 
+                TreeNode<Bone> hipRight = root.AddChild(new Bone(Joint.HIP_R, 
                    hipRightPos, 
                     hipRightRot));
                 {
-                    TreeNode<Bone> kneeRight = hipRight.AddChild(new Bone(KNEE_R,
+                    TreeNode<Bone> kneeRight = hipRight.AddChild(new Bone(Joint.KNEE_R,
                            kneeRightPos, 
                             kneeRightRot));
                     {
-                        TreeNode<Bone> ankleRight = kneeRight.AddChild(new Bone(ANKLE_R,
+                        TreeNode<Bone> ankleRight = kneeRight.AddChild(new Bone(Joint.ANKLE_R,
                             ankleRightPos, 
                             ankleRightRot));
                         {
-                            TreeNode<Bone> footBaseRight = ankleRight.AddChild(new Bone(FOOTBASE_R, footBaseRightPos, footBaseRightRot));
+                            TreeNode<Bone> footBaseRight = ankleRight.AddChild(new Bone(Joint.FOOTBASE_R, footBaseRightPos, footBaseRightRot));
                             {
-                                footBaseRight.AddChild(new Bone(TOE_R, toeRightPos, QuaternionHelper.Zero));
+                                footBaseRight.AddChild(new Bone(Joint.TOE_R, toeRightPos, QuaternionHelper.Zero));
                             }
                         }
                     }
@@ -314,13 +310,13 @@ namespace QTM2Unity
         {
             root = pelvis;
         }
-        public Bone Find(string key)
+        public Bone Find(Joint key)
         {
             foreach (var b in root)
                 if (b.Data.Name == key) return b.Data;
             return null;
         }
-        public Bone this[string key]
+        public Bone this[Joint key]
         {
             get
             {

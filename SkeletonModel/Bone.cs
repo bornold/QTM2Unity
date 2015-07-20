@@ -14,8 +14,8 @@ namespace QTM2Unity
         {
             get { return pos.IsNaN() || orientation.IsNaN(); }
         }
-        private string name;
-        public string Name
+        private Joint name;
+        public Joint Name
         {
             get { return name; }
         }
@@ -88,23 +88,23 @@ namespace QTM2Unity
         #endregion
 
         #region Constructors
-        public Bone(string name)
+        public Bone(Joint name)
         {
             this.name = name;
         }
 
-        public Bone(string name, Vector3 position)
+        public Bone(Joint name, Vector3 position)
             : this(name)
         {
             pos = position;
         }
 
-        public Bone(string name, Vector3 position, Quaternion orientation)
+        public Bone(Joint name, Vector3 position, Quaternion orientation)
             : this(name, position)
         {
             this.orientation = orientation;
         }
-        public Bone(string name, Vector3 position, Quaternion orientation, Vector4 constriants)
+        public Bone(Joint name, Vector3 position, Quaternion orientation, Vector4 constriants)
             : this(name, position, orientation)
         { 
             Constraints = constriants;
