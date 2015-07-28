@@ -645,10 +645,10 @@ namespace QTM2Unity
             // glenohumeral joint centre location identification and comparison with
             // established techniques
             float
-                x = 96.2f - 0.302f * (bd.NeckToChestVector.Length*1000) - 0.364f * bd.Height + 0.385f * bd.Mass,
-                y = -66.32f + 0.30f * (bd.NeckToChestVector.Length * 1000) - 0.432f * bd.Mass,
+                x = 96.2f - 0.302f * bd.ChestDepth - 0.364f * bd.Height + 0.385f * bd.Mass,
+                y = -66.32f + 0.30f * bd.ChestDepth - 0.432f * bd.Mass,
                 z = 66.468f - 0.531f * bd.ShoulderWidth + 0.571f * bd.Mass;
-            if (isRightShoulder) z = -z;
+            if (isRightShoulder) x = -x;
             Vector3 res = new Vector3(x, y, z) / 1000; // to mm
             res = Vector3.Transform(res, ChestOrientation); //QuaternionHelper.Rotate(ChestOrientation, res);
             res += isRightShoulder ? markers[m.rightShoulder] : markers[m.leftShoulder];
@@ -810,12 +810,12 @@ namespace QTM2Unity
         #region arm getters
         private void GetShoulderLeft(Bone b)
         {
-            b.Pos = new Vector3(SternumClavicle);
+            b.Pos = SternumClavicle;
             b.Orientation = QuaternionHelper.LookAtUp(SternumClavicle, ShoulderLeft, ChestForward);
         }
         private void GetShoulderRight(Bone b)
         {
-            b.Pos = new Vector3(SternumClavicle);
+            b.Pos = SternumClavicle;
             b.Orientation = QuaternionHelper.LookAtUp(SternumClavicle, ShoulderRight, ChestForward);
         }
         private void GetUpperArmLeft(Bone b)

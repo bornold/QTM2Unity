@@ -19,6 +19,20 @@ namespace QTM2Unity
         public float Mass { get; private set; }
         public Vector3 NeckToChestVector { get; private set; }
         public float ShoulderWidth { get; private set; }
+        public float ChestDepth
+        {
+            get
+            {
+                if (NeckToChestVector != Vector3.Zero)
+                {
+                    return NeckToChestVector.Length * 1000;
+                }
+                else
+                {
+                    return 170f;
+                }
+            }
+        }
         //private frameCounters
         private uint chestsFrames = 0;
         private uint shoulderFrames = 0;
