@@ -82,7 +82,7 @@ namespace QTM2Unity
 
                 newPos = (1 - l) * bones[i].Pos + l * bones[i + 1].Pos;
 
-                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
+                //Bone prevBone = (i > 0) ? bones[i - 1] : parent;
                 //if (bones[i].HasConstraints)
                 //{
                 //    Vector3 res;

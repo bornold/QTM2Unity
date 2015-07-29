@@ -3,6 +3,8 @@ namespace QTM2Unity
 {
     class RTStandardUnityModel : RT_IK
     {
+        public bool UseFingers = false;
+
         Quaternion localRotation;
         Transform hips;
         Transform upLegLeft;
@@ -107,10 +109,10 @@ namespace QTM2Unity
                         setGO(foreArmLeft, b.Data, armLeftRot);
                         break;
                     case Joint.WRIST_L:
-                        setGO(handLeft, b.Data, handLeftRot);
+                        if (UseFingers) setGO(handLeft, b.Data, handLeftRot);
                         break;
                     case Joint.HAND_L:
-                        foreach (var fing in fingersLeft) setGO(fing, b.Data, handLeftRot);
+                         if (UseFingers) foreach (var fing in fingersLeft) setGO(fing, b.Data, handLeftRot);
                         break;
                     case Joint.TRAP_L:
                         setGO(thumbLeft, b.Data, thumbLeftRot);
@@ -128,10 +130,10 @@ namespace QTM2Unity
                         setGO(handRight, b.Data, handRightRot);
                         break;
                     case Joint.HAND_R:
-                        foreach (var fing in fingersRight) setGO(fing, b.Data, handRightRot);
+                        if (UseFingers) foreach (var fing in fingersRight) setGO(fing, b.Data, handRightRot);
                         break;
                     case Joint.TRAP_R:
-                        setGO(thumbRight, b.Data, thumbRightRot);
+                        if (UseFingers) setGO(thumbRight, b.Data, thumbRightRot);
                         break;
                     default:
                         break;

@@ -188,18 +188,19 @@ namespace QTM2Unity
         /// <returns>The rotation Quaternion from a to b in stiffness amont </returns>
         public static Quaternion GetRotationBetween(Vector3 a, Vector3 b, float stiffness = 1f)
         {
-            if ((a == Vector3.Zero || b == Vector3.Zero) || (a == b) || Vector3Helper.Parallel(a,b,1-precision))
-                return Quaternion.Identity; 
+            return RotationBetween(a, b);
+            //if ((a == Vector3.Zero || b == Vector3.Zero) || (a == b) || Vector3Helper.Parallel(a,b,1-precision))
+            //    return Quaternion.Identity; 
 
-            a.NormalizeFast();
-            b.NormalizeFast();
+            //a.NormalizeFast();
+            //b.NormalizeFast();
 
-            if (Vector3.Dot(a, b) < -precision) // a and b are opposite
-            {
-                return Quaternion.Normalize(Quaternion.FromAxisAngle(Vector3.UnitZ, Mathf.PI * stiffness));
-            }
+            //if (Vector3.Dot(a, b) < -precision) // a and b are opposite
+            //{
+            //    return Quaternion.FromAxisAngle(Vector3.UnitZ, Mathf.PI * stiffness);
+            //}
 
-            return Quaternion.FromAxisAngle(Vector3.Cross(a, b), Vector3.CalculateAngle(a, b) * stiffness);
+            //return Quaternion.FromAxisAngle(Vector3.Cross(a, b), Vector3.CalculateAngle(a, b) * stiffness);
         }
 
         /// <summary>

@@ -32,9 +32,11 @@ namespace QTM2Unity
             if (!bone.Data.Exists)
             {
                 if (bone.IsRoot || bone.Parent.IsRoot) return;
-                if (bone.Parent.Data.Name.Equals(Joint.SPINE3)
-                            || bone.Data.Name.Equals(Joint.TRAP_L)
-                            || bone.Data.Name.Equals(Joint.TRAP_L))
+                if (
+                       bone.Data.Name.Equals(Joint.CLAVICLE_L)
+                    || bone.Data.Name.Equals(Joint.CLAVICLE_R)
+                    || bone.Data.Name.Equals(Joint.TRAP_L)
+                    || bone.Data.Name.Equals(Joint.TRAP_R))
                 {
                     bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
                     bone.Data.Orientation = QuaternionHelper.LookAtUp(

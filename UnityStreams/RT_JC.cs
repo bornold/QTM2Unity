@@ -36,7 +36,9 @@ namespace QTM2Unity
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if ((bodyRig != null && bodyRig.resetSkeleton) || skeleton == null || skeletonBuffer == null || reset || bodyRig.bodyPrefix != prefix)
+
+            if ((bodyRig != null && bodyRig.resetSkeleton) || skeleton == null || skeletonBuffer == null || //reset || 
+                bodyRig.bodyPrefix != prefix)
             {
                 UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
@@ -84,16 +86,16 @@ namespace QTM2Unity
                     {
                         foreach (TreeNode<Bone> child in b.Children)
                         {
-                            UnityDebug.DrawLine(b.Data.Pos + pos, child.Data.Pos + pos, bodyRig.skelettColor);
+                            UnityEngine.Debug.DrawLine(b.Data.Pos.Convert() + pos, child.Data.Pos.Convert() + pos, bodyRig.skelettColor);
                         }
                     }
                     if (bodyRig.showRotationTrace && (!b.IsLeaf))
                     {
-                        UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos + pos, bodyRig.traceLength);
+                        UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos.Convert() + pos, bodyRig.traceLength);
                     }
                     if (bodyRig.showJoints)
                     {
-                        Gizmos.DrawSphere((b.Data.Pos + pos).Convert(), bodyRig.jointScale);
+                        Gizmos.DrawSphere(b.Data.Pos.Convert() + pos, bodyRig.jointScale);
                     }
                 }
             }

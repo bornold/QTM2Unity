@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
-using QTM2Unity.Unity;
+using QTM2Unity;
 using System.Linq;
+using QualisysRealTime.Unity;
+
+
 namespace QTM2Unity
 {
 
@@ -26,43 +29,40 @@ namespace QTM2Unity
 
         public Debugging debug;
         protected RTClient rtClient;
-        protected OpenTK.Vector3 pos;
+        protected Vector3 pos;
         protected bool streaming = false;
-        protected bool fileStreaming = false;
-        protected bool reset = false;
+        //protected bool fileStreaming = false;
+        //protected bool reset = false;
         protected List<LabeledMarker> markerData;
         protected List<string> markersLabels;
         public virtual void StartNext(){}
         public virtual void UpdateNext(){}
         void Start()
         {
-            rtClient = RTClient.getInstance();
+            rtClient = RTClient.GetInstance();
             StartNext();
         }
         void Update()
         {
             if (rtClient == null)
             {
-                //UnityEngine.Debug.Log("RTClient was null");
-                rtClient = RTClient.getInstance();
+                rtClient = RTClient.GetInstance();
             }
-            streaming = rtClient.getStreamingStatus();
-            fileStreaming = rtClient.fileStreamRunning;
-            if (streaming && fileStreaming)
+            streaming = rtClient.GetStreamingStatus();
+            if (streaming)// && fileStreaming)
             {
                 markerData = rtClient.Markers;
                 if (markerData == null || markerData.Count == 0)
                 {
-                    //UnityEngine.Debug.LogError((markerData != null) ? "M is null " : "M is empty");
                     return;
                 }
             }
-            if ((streaming && fileStreaming) || debugFlag)
+            if ((streaming) || debugFlag)// && fileStreaming) || debugFlag)
             {
-                pos = (this.transform.position + debug.offset).Convert();
+                pos = this.transform.position + debug.offset;
                 UpdateNext();
             }
-            reset = streaming && !fileStreaming;
+            //reset = streaming;// && !fileStreaming;
         }
         void OnDrawGizmos()
         {
@@ -82,8 +82,8 @@ namespace QTM2Unity
             {
                 foreach (var lb in markerData)
                 {
-                    Gizmos.color = new Color(lb.color.r, lb.color.b, lb.color.g);
-                    Gizmos.DrawSphere((lb.position + pos).Convert(), debug.markers.scale);
+                    Gizmos.color = new Color(lb.Color.r, lb.Color.g, lb.Color.b);
+                    Gizmos.DrawSphere(lb.Position + pos, debug.markers.scale);
                 }
             }
 
@@ -91,9 +91,9 @@ namespace QTM2Unity
             {
                 foreach (var lb in rtClient.Bones)
 	            {
-                    OpenTK.Vector3 from = markerData.Find(md => md.label == lb.from).position + pos;
-                    OpenTK.Vector3 to = markerData.Find(md => md.label == lb.to).position + pos;
-                    Debug.DrawLine(from.Convert(), to.Convert(), debug.markers.boneColor);
+                    var from = markerData.Find(md => md.Label == lb.From).Position + pos;
+                    var to = markerData.Find(md => md.Label == lb.To).Position + pos;
+                    Debug.DrawLine(from, to, debug.markers.boneColor);
                 }
 	        }
         }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using QualisysRealTime.Unity;
+
 namespace QTM2Unity
 {
     class MarkersPreprocessor
@@ -30,9 +32,10 @@ namespace QTM2Unity
             markers = new Dictionary<string, Vector3>();
             for (int i = 0; i < labelMarkers.Count; i++)
             {
-                markers.Add(labelMarkers[i].label, labelMarkers[i].position);
+                markers.Add(labelMarkers[i].Label, labelMarkers[i].Position.Convert());
             }
             markerNames  = NameSet(markers);
+            foreach (var n in markerNames) UnityEngine.Debug.Log(n);
             m = markerNames;
             markersLastFrame = new Dictionary<string, Vector3>();
             foreach (var mark in markerNames)
@@ -51,7 +54,7 @@ namespace QTM2Unity
             markers.Clear();
             for (int i = 0; i < labelMarkers.Count; i++)
             {
-                markers.Add(labelMarkers[i].label, labelMarkers[i].position);
+                markers.Add(labelMarkers[i].Label, labelMarkers[i].Position.Convert());
             }
 
             foreach (var markername in m)
@@ -67,7 +70,6 @@ namespace QTM2Unity
                 markers[m.bodyBase] = 
                     Vector3Helper.MidPoint(markers[sacrumBetweenMarkers[0]],
                                             markers[sacrumBetweenMarkers[1]]);
-
             }
 
             if (frontHeadBetween)

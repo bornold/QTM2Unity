@@ -455,9 +455,10 @@ namespace QTM2Unity
                 {
                     Vector3 headPos = Vector3Helper.MidPoint(markers[m.leftHead], markers[m.rightHead]);
                     //Move head position down
-                    Vector3 down = -Vector3.Transform(UnitY, HeadOrientation);
+                    //Vector3 down = (SternumClavicle - headPos);//-Vector3.Transform(UnitY, HeadOrientation);
                     //down.NormalizeFast();
-                    headPos += down * BodyData.MidHeadToHeadJoint;
+                    //down *= BodyData.MidHeadToHeadJoint;
+                    //headPos += down;
                     o.head = headPos;
                 }
                 return o.head;

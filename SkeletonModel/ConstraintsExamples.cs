@@ -9,11 +9,11 @@ namespace QTM2Unity
         //Vector4(blue, red, green, yellow);
         public Vector4 Femur = new Vector4(15, 150, 40, 55);
         public Vector4 Knee = new Vector4(15, 0, 15, 160);
-        public Vector4 Ankle = new Vector4(10, 30, 10, 30);
-        public Vector4 FootBase = new Vector4(20, 10, 30, 10);
+        public Vector4 Ankle = new Vector4(5, 10, 30, 30);
+        public Vector4 FootBase = new Vector4(30, 10, 30, 10);
 
         //TWIST(Yellow,magenta);
-        public Vector2 FemurTwist = new Vector2(335, 25);
+        public Vector2 FemurTwist = new Vector2(300, 50);
         public Vector2 KneeTwist = new Vector2(320, 40);
         public Vector2 AnkleTwist = new Vector2(345, 15);
         public Vector2 FootBaseTwist = new Vector2(350, 10);

@@ -87,12 +87,13 @@ namespace QTM2Unity
 
                     ForwardKinematics(ref bones, rotation, i);
 
-                    if ( bones[i].HasTwistConstraints)
+                    if (bones[i].HasTwistConstraints)
                     {
                         Quaternion rotation2;
                         if (CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : grandparent, out rotation2))
                         {
-                            ForwardRotation(ref bones, rotation2, i);
+                            //ForwardRotation(ref bones, rotation2, i);
+                            ForwardKinematics(ref bones, rotation2, i);
                         }
                     }
                 }

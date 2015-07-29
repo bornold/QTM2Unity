@@ -32,8 +32,8 @@ namespace QTM2Unity
                     //UnityEngine.Debug.LogError(ray1 + " and " + ray2);
                     ray1.NormalizeFast();
                     ray2.NormalizeFast();
-                    UnityDebug.DrawRay(b.Parent.Data.Pos, ray1, UnityEngine.Color.black);
-                    UnityDebug.DrawRay(b.Parent.Data.Pos, ray2, UnityEngine.Color.blue);
+                    UnityDebug.DrawVector(b.Parent.Data.Pos, ray1, UnityEngine.Color.black);
+                    UnityDebug.DrawVector(b.Parent.Data.Pos, ray2, UnityEngine.Color.blue);
 
                 }
             }
@@ -50,6 +50,7 @@ namespace QTM2Unity
                 }
             }
         }
+
         public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, float scale)
         {
             if (b.Orientation.Xyz.IsNaN() || refBone.Orientation.Xyz.IsNaN())
@@ -86,37 +87,34 @@ namespace QTM2Unity
         }
         public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos, float scale)
         {
-
             OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
             OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
             OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot);
-            Debug.DrawRay(pos, cv(up) * scale, Color.green);
-            Debug.DrawRay(pos, cv(right) * scale, Color.red);
-            Debug.DrawRay(pos, cv(forward) * scale, Color.blue);
+            Debug.DrawRay(pos, up.Convert() * scale, Color.green);
+            Debug.DrawRay(pos, right.Convert() * scale, Color.red);
+            Debug.DrawRay(pos, forward.Convert() * scale, Color.blue);
         }
         public static void DrawRays(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale)
         {
-            DrawRays(rot, cv(pos), scale);
+            DrawRays(rot, pos.Convert(), scale);
         }
+        public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos)
+        {
+            DrawRays(rot, pos, 0.07f);
+        }
+        public static void DrawRays(OpenTK.Quaternion rot, OpenTK.Vector3 pos)
+        {
+            DrawRays(rot, pos.Convert());
+        }
+        
         public static void DrawRays2(Quaternion rot, Vector3 pos, float scale)
         {
-
             OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot.Convert());
             OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot.Convert());
             OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot.Convert());
-            Debug.DrawRay(pos, cv(up) * scale, Color.yellow);
-            Debug.DrawRay(pos, cv(right) * scale, Color.magenta);
-            Debug.DrawRay(pos, cv(forward) * scale, Color.cyan);
-        }
-        public static void DrawRays3(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale = 0.07f)
-        {
-
-            OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
-            OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
-            OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot);
-            Debug.DrawRay(pos.Convert(), up.Convert() * scale, Color.white);
-            Debug.DrawRay(pos.Convert(), right.Convert() * scale, Color.black);
-            Debug.DrawRay(pos.Convert(), forward.Convert() * scale, Color.gray);
+            Debug.DrawRay(pos, up.Convert() * scale, Color.yellow);
+            Debug.DrawRay(pos, right.Convert() * scale, Color.magenta);
+            Debug.DrawRay(pos, forward.Convert() * scale, Color.cyan);
         }
         public static void DrawRays2(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale)
         {
@@ -126,79 +124,33 @@ namespace QTM2Unity
         {
             DrawRays2(rot.Convert(), pos.Convert(), 0.07f);
         }
-        public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos)
+        
+        public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir, Color c)
         {
-            DrawRays(rot, pos, 0.07f);
+            Debug.DrawRay(pos.Convert(), dir.Convert(), c);
         }
-        public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir, Color c)
+        public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir, float size)
         {
-            Debug.DrawRay(cv(pos), cv(dir), c);
+            Debug.DrawRay(pos.Convert(), Vector3.Normalize(dir.Convert()) * size, Color.black);
+        }
+        public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir, float size, Color c)
+        {
+            Debug.DrawRay(pos.Convert(), Vector3.Normalize(dir.Convert()) * size, c);
+        }
+        public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir)
+        {
+            DrawVector(pos, dir, Color.black);
+        }
 
-        }
-        public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir, float size)
-        {
-            Debug.DrawRay(cv(pos), Vector3.Normalize(cv(dir)) * size, Color.black);
-
-        }
-        public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir, Color c, float size)
-        {
-            Debug.DrawRay(cv(pos), Vector3.Normalize(cv(dir)) * size, c);
-
-        }
-        public static void DrawRay(UnityEngine.Vector3 pos, OpenTK.Vector3 dir, Color c)
-        {
-            Debug.DrawRay(pos, cv(dir), c);
-
-        }
-        public static void DrawRay(OpenTK.Vector3 pos, OpenTK.Vector3 dir)
-        {
-            DrawRay(pos, dir, Color.black);
-
-        }
-        public static void DrawRays(OpenTK.Quaternion rot, OpenTK.Vector3 pos)
-        {
-            DrawRays(rot, cv(pos));
-        }
-        public static void DrawVector(OpenTK.Vector3 start, OpenTK.Vector3 vec)
-        {
-            DrawLine(start, start + vec);
-        }
         public static void DrawLine(OpenTK.Vector3 start, OpenTK.Vector3 end)
         {
-            Debug.DrawLine(cv(start) , cv(end));
+            Debug.DrawLine(start.Convert(), end.Convert());
         }
         public static void DrawLine(OpenTK.Vector3 start, OpenTK.Vector3 end, Color c)
         {
-            Debug.DrawLine(cv(start), cv(end),c);
+            Debug.DrawLine(start.Convert(), end.Convert(), c);
         }
-        public static void DrawLine(OpenTK.Vector2 start, OpenTK.Vector2 end, Color c)
-        {
-            Debug.DrawLine(new Vector3(start.X,start.Y,0.0f), new Vector3(end.X,end.Y,0.0f), c);
-        }
-        public static void DrawLine(OpenTK.Vector2 start, OpenTK.Vector2 end)
-        {
-            Debug.DrawLine(new Vector3(start.X, start.Y, 0.0f), new Vector3(end.X, end.Y, 0.0f));
-        }
-        public static Vector3 cv(OpenTK.Vector3 v)
-        {
-            return new Vector3(v.X, v.Y, v.Z);
-        }
-        public static OpenTK.Vector3 cv(Vector3 v)
-        {
-            return new OpenTK.Vector3(v.x, v.y, v.z);
-        }
-        public static Quaternion cq(OpenTK.Quaternion q)
-        {
-            return new Quaternion(q.X, q.Y, q.Z, q.W);
-        }
-        public static void CreateEllipse(float x, float y, int resolution)
-        {
-            CreateEllipse(x, y, Vector3.zero, Quaternion.identity, resolution, Color.white);
-        }
-        public static void CreateEllipse(float x, float y, int resolution, Color c)
-        {
-            CreateEllipse(x, y, Vector3.zero, Quaternion.identity, resolution, c);
-        }
+
         public static void CreateEllipse(float x, float y, Vector3 pos, Quaternion rot, int resolution, Color c)
         {
 
@@ -215,14 +167,6 @@ namespace QTM2Unity
             }
             Debug.DrawLine(positions[0], positions[positions.Length-1], c);
 
-        }
-        public static void CreateEllipse(float x, float y, OpenTK.Vector3 pos, Quaternion rot, int resolution,Color c)
-        {
-            CreateEllipse(x, y, cv(pos), rot, resolution,c);
-        }
-        public static void CreateEllipse(float x, float y, OpenTK.Vector3 pos, OpenTK.Quaternion rot, int resolution, Color c)
-        {
-            CreateEllipse(x, y, cv(pos), cq(rot), resolution,c);
         }
 
         public static OpenTK.Vector3[] CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 L1, OpenTK.Quaternion rot, int resolution, float scale)

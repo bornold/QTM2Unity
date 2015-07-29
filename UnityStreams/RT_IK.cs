@@ -29,10 +29,11 @@ namespace QTM2Unity
         public override void UpdateNext()
         {
             base.UpdateNext();
-            if (ikApplier == null || reset)
+            if (ikApplier == null )//|| reset)
             {
                 ikApplier = new IKApplier();
             }
+
             ikApplier.test = Extrapolate;
             ikApplier.ApplyIK(ref skeleton);
         }
@@ -54,7 +55,7 @@ namespace QTM2Unity
                     {
                         OpenTK.Quaternion parentRotation =
                             b.Parent.Data.Orientation * b.Data.ParentPointer;
-                        OpenTK.Vector3 poss = b.Data.Pos + pos;
+                        OpenTK.Vector3 poss = b.Data.Pos + pos.Convert();
                         if (jointsConstrains.showConstraints)
                         {
                             UnityDebug.CreateIrregularCone(
