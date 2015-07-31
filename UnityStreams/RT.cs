@@ -62,6 +62,7 @@ namespace QTM2Unity
                 pos = this.transform.position + debug.offset;
                 UpdateNext();
             }
+
             //reset = streaming;// && !fileStreaming;
         }
         void OnDrawGizmos()
@@ -70,7 +71,7 @@ namespace QTM2Unity
         }
         protected void ShouldWeDraw()
         {
-            if (Application.isPlaying && streaming && markerData != null && markerData.Count > 0)
+            if (Application.isPlaying && (streaming && markerData != null && markerData.Count > 0) || debugFlag)
             {
                 Draw();
             }

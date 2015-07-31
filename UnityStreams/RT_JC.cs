@@ -49,6 +49,7 @@ namespace QTM2Unity
                 prefix = bodyRig.bodyPrefix;
                 return;
             }
+            if (debugFlag) return;
             if (mp == null || joints == null)
             {
                 Markers markersMap;
@@ -56,17 +57,15 @@ namespace QTM2Unity
                 joints = new JointLocalization(markersMap);
             }
             Dictionary<string, OpenTK.Vector3> markers;
+
             if (!mp.ProcessMarkers(markerData, out markers, bodyRig.bodyPrefix))
             {
                 return;
             }
-            if (!debugFlag)
-            {
-                var temp = skeleton;
-                skeleton = skeletonBuffer;
-                skeletonBuffer = temp;
-                joints.GetJointLocation(markers, ref skeleton);
-            }
+            var temp = skeleton;
+            skeleton = skeletonBuffer;
+            skeletonBuffer = temp;
+            joints.GetJointLocation(markers, ref skeleton);
         }
         void OnDrawGizmos()
         {

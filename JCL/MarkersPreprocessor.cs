@@ -25,6 +25,7 @@ namespace QTM2Unity
         private Vector3 lastLIASknown = new Vector3(-0.0887f, 1.0021f, 0.1112f);
         private Vector3 offset = Vector3.Zero;
         private Markers m;
+
         public MarkersPreprocessor(List<LabeledMarker> labelMarkers, out Markers markerNames, string bodyPrefix = "")
         {
 
@@ -35,7 +36,7 @@ namespace QTM2Unity
                 markers.Add(labelMarkers[i].Label, labelMarkers[i].Position.Convert());
             }
             markerNames  = NameSet(markers);
-            foreach (var n in markerNames) UnityEngine.Debug.Log(n);
+            //foreach (var n in markerNames) UnityEngine.Debug.Log(n);
             m = markerNames;
             markersLastFrame = new Dictionary<string, Vector3>();
             foreach (var mark in markerNames)
