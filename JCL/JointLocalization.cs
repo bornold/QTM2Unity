@@ -46,7 +46,7 @@ namespace QTM2Unity
         // Contains all functions for finding joint position
         private List<Action<Bone>> jcFuncs;
         private Dictionary<string, Vector3> markers;
-        private Markers m;
+        private MarkersNames m;
         #region varible necessary to estimate joints
         private BodyData bd;
         private Quaternion prevChestOri = Quaternion.Identity;
@@ -56,7 +56,7 @@ namespace QTM2Unity
         private Vector3 UnitY = Vector3.UnitY;
         private Vector3 UnitZ = Vector3.UnitZ;
         #endregion
-        public JointLocalization(Markers markers)
+        public JointLocalization(MarkersNames markers)
         {
             this.m = markers;
             bd = new BodyData(m);

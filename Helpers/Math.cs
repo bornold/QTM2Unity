@@ -8,14 +8,38 @@ namespace QTM2Unity
 {
     public static class Mathf
     {
+        /// <summary>
+        /// Math.Cos function casted to float
+        /// </summary>
         public static Func<float, float> Cos = angleR => (float)Math.Cos(angleR);
+        /// <summary>
+        /// Math.Sin  function casted to float
+        /// </summary>
         public static Func<float, float> Sin = angleR => (float)Math.Sin(angleR);
+        /// <summary>
+        /// Math.ACos  function casted to float
+        /// </summary>
         public static Func<float, float> Acos = angleR => (float)Math.Acos(angleR);
+        /// <summary>
+        /// Math.Tan function casted to float
+        /// </summary>
         public static Func<float, float> Tan = angleR => (float)Math.Tan(angleR);
+        /// <summary>
+        /// Math.Sqrt function casted to float
+        /// </summary>
         public static Func<float, float> Sqrt = power => (float)Math.Sqrt(power);
+        /// <summary>
+        /// Math.PI casted to float
+        /// </summary>
         public static float PI = (float)Math.PI;
 
-
+        /// <summary>
+        /// Float clamping function
+        /// </summary>
+        /// <param name="value">The Value to be clamped</param>
+        /// <param name="min">The minimim value of the clamped value can have</param>
+        /// <param name="max">The maximum value of the clamped value can have</param>
+        /// <returns></returns>
         public static float Clamp(float value, float min, float max)
         {
             if (value < min) return min;
@@ -90,7 +114,7 @@ namespace QTM2Unity
         /// <param name="z1"></param>
         /// <param name="g"></param>
         /// <returns></returns>
-        public static float GetRoot(float r0, float z0, float z1, float g)
+        private static float GetRoot(float r0, float z0, float z1, float g)
         {
             int maxIterations = 149; 
 

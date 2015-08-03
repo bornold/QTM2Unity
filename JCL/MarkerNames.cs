@@ -3,7 +3,24 @@ using System.Collections;
 using System.Collections.Generic;
 namespace QTM2Unity
 {
-    class Markers : IEnumerable<string>
+    [System.Serializable]
+    public enum JointMarker
+    {
+        Hip,
+        Knee,
+        Ankle,
+        Foot,
+        Spine,
+        ClavicleSternum,
+        Shoulder,
+        Elbow,
+        Wrist,
+        Hand,
+        Thumb,
+        Finger,
+        Head
+    }
+    class MarkersNames : IEnumerable<string>
     {
         public string
             bodyBase = "Sacrum",
@@ -111,21 +128,19 @@ namespace QTM2Unity
             yield return rightToe5;
         }
     }
+    [System.Serializable]
     static class MarkerNames
     {
-    public static readonly List<string>
-     LeftNames = new List<string> { "L_", "L", "LT", "Lt", "LEFT", "LEFT ", "LEFT_", " L ", "_L_", "-L-", " l ", "_l_", "-l-", "Left", "left", "_LEFT_" },
-     RightNames = new List<string> { "R_", "R", "RT", "Rt", "RIGHT", "RIGHT ", "RIGHT_", " R ", "_R_", "-R-", " r ", "_r_", "-r-", "Right", "right", "_RIGHT_" },
-
-     BodyBaseAKA = new List<string>() { "SACR", "SACRUM", "LOWER_LUMBAR", "LV5_S1", "S1" },
-     HipAKA = new List<string>() { "IAS", "ASIS", "ASIS", "HIP", "ICT", "Hip Front", "FWT" },
-     SpineAKA = new List<string>() 
-            {   "TV12", "TH12", "D12", "T12",
-                "TV11", "TH11", "D11", "T11", 
-                "TV13", "TH13", "D13", "T13", 
-                "TV10", "TH10", "D10", "T10", 
-                "TV14", "TV14", "D14", "T14",
-                "L1",   "LV3"       },
+        public static readonly List<string>
+         BodyBaseAKA = new List<string>() { "SACR", "SACRUM", "LOWER_LUMBAR", "LV5_S1", "S1" },
+         HipAKA = new List<string>() { "IAS", "ASIS", "ASIS", "HIP", "ICT", "Hip Front", "FWT" },
+         SpineAKA = new List<string>() 
+                {   "TV12", "TH12", "D12", "T12",
+                    "TV11", "TH11", "D11", "T11", 
+                    "TV13", "TH13", "D13", "T13", 
+                    "TV10", "TH10", "D10", "T10", 
+                    "TV14", "TV14", "D14", "T14",
+                    "L1",   "LV3"       },
 
      NeckAKA = new List<string>() { "TV2", "TV1", "C7", "C7_TOP_SPINE" },
      ChestAKA = new List<string>() { "SME", "SJN", "CLAV" },

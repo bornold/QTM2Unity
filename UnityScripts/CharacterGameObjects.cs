@@ -2,6 +2,7 @@
 using System.Collections;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace QTM2Unity {
 
@@ -94,7 +95,7 @@ namespace QTM2Unity {
         /// <summary>
         /// The spine hierarchy. Should not contain any bone deeper in the hierarchy than the arms (neck or head).
         /// </summary>
-        public Transform[] spine = new Transform[0];
+        public Transform[] spine;
         public Transform shoulderLeft;
         public Transform shoulderRight;
 
@@ -111,8 +112,8 @@ namespace QTM2Unity {
         /// </summary>
         public bool IsValid(bool useFingers)
         {
-            bool valids =
-                root  &&
+            return
+                root &&
                 pelvis &&
                 leftThigh &&
                 leftCalf &&
@@ -132,126 +133,102 @@ namespace QTM2Unity {
                 rightForearm &&
                 rightHand &&
                 neck &&
-                spine != null;
-            foreach (var s in spine) if (s == null) return false;
-            if (useFingers) valids &= IsFingersValid();
-            return valids;
+                spine != null &&
+                spine.All(s => s) &&
+                (useFingers ? IsFingersValid() : true);
         }
             /// <summary>
         /// Check for null references among fingers.
         /// </summary>
         public bool IsFingersValid()
         {
-            if (fingersLeft == null) return false;
-            foreach (Transform s in fingersLeft) if (s == null) return false;
-            if (fingersRight == null) return false;
-            foreach (Transform s in fingersRight) if (s == null) return false;
-            if (thumbLeft == null) return false;
-            if (thumbRight == null) return false;
-            return true;
-        }
-
-
-        /// <summary>
-        /// Params for automatic biped recognition. (Using a struct here because I might need to add more parameters in the future).
-        /// </summary>
-        public struct Params
-        {
-            /// <summary>
-            /// Should the immediate parent of the legs be included in the spine?.
-            /// </summary>
-            public bool legsParentInSpine;
-            public bool useFingers;
-            public Params(bool legsParentInSpine, bool useFingers)
-            {
-                this.legsParentInSpine = legsParentInSpine;
-                this.useFingers = useFingers;
-            }
+            return
+                fingersLeft != null &&
+                fingersLeft.All(f => f) &&
+                fingersRight != null &&
+                fingersRight.All(f => f) &&
+                thumbLeft &&
+                thumbRight;
         }
 
         /// <summary>
-        /// Automatically detects biped bones. Returns true if a valid biped has been referenced.
+        /// Sets the references to the joints of a character . Returns true if a valid biped has been referenced.
         /// </summary>
-        public static bool FindLimbs(ref CharacterGameObjects references, Transform root, Params autoDetectParams)
+        public bool SetLimbs(Transform root, bool useFingers)
         {
-            if (references == null) references = new CharacterGameObjects();
-            references.root = root;
+            this.root = root;
 
             // Find with the help of animator
-            AssignHumanoidReferences(ref references, root.GetComponent<Animator>(), autoDetectParams);
-            bool isValid = references.IsValid(autoDetectParams.useFingers);
-            UnityEngine.Debug.LogWarning("BY animator");
-            if (isValid)
+            AssignHumanoidReferences(root.GetComponent<Animator>(), useFingers);
+            if (this.IsValid(useFingers))
             {
                 return true;
             }
             else
             {
-                references.PrintAll();
+                this.PrintAll();
 
                 // Try to find by names
-                DetectReferencesByNaming(ref references, root, autoDetectParams);
+                DetectByNaming(root, useFingers);
 
-                UnityEngine.Debug.LogWarning("BY name");
-                isValid = references.IsValid(autoDetectParams.useFingers);
-
-                if (!isValid)
+                if (!IsValid(useFingers))
                 {
                     UnityEngine.Debug.LogWarningFormat("{0} contains one or more missing Transforms.", root);
+                    return false;
                 }
-
-                return isValid;
+                else
+                {
+                    return true;
+                }
             }
         }
 
         /// <summary>
         /// Detects the references based on naming and hierarchy.
         /// </summary>
-        public static void DetectReferencesByNaming(ref CharacterGameObjects references, Transform root, Params autoDetectParams)
+        public void DetectByNaming(Transform root, bool useFingers)
         {
-            if (references == null) references = new CharacterGameObjects();
-
-            Transform[] children = root.GetComponentsInChildren<Transform>();
+            Transform[] transforms = root.GetComponentsInChildren<Transform>();
 
             // Find limbs
-            Transform[] results = BipedNaming.GetBonesOfTypeAndSide(BipedNaming.BoneType.Arm, BipedNaming.BoneSide.Left, children);
+            Transform[] results = JointNamings.GetTypeAndSide(JointNamings.JointObject.Arm, JointNamings.Side.Left, transforms);
             if (results.Length == 4)
             {
-                if(references.leftClavicle == null) references.leftClavicle = results[0];
-                if (references.leftUpperArm == null) references.leftUpperArm = results[1];
-                if (references.leftForearm == null) references.leftForearm = results[2];
-                if (references.leftHand == null) references.leftHand = results[3];
+                if(!leftClavicle) leftClavicle = results[0];
+                if (!leftUpperArm) leftUpperArm = results[1];
+                if (!leftForearm) leftForearm = results[2];
+                if (!leftHand) leftHand = results[3];
             }
 
-            results = BipedNaming.GetBonesOfTypeAndSide(BipedNaming.BoneType.Arm, BipedNaming.BoneSide.Right, children);
+            results = JointNamings.GetTypeAndSide(JointNamings.JointObject.Arm, JointNamings.Side.Right, transforms);
             if (results.Length == 4)
             {
-                if (references.rightClavicle == null) references.rightClavicle = results[0];
-                if (references.rightUpperArm == null) references.rightUpperArm = results[1];
-                if (references.rightForearm == null) references.rightForearm = results[2];
-                if (references.rightHand == null) references.rightHand = results[3];
+                if (!rightClavicle) rightClavicle = results[0];
+                if (!rightUpperArm) rightUpperArm = results[1];
+                if (!rightForearm) rightForearm = results[2];
+                if (!rightHand) rightHand = results[3];
             }
             else
             {
                 foreach (var r in results) UnityEngine.Debug.LogWarning(r);
             }
-            results = BipedNaming.GetBonesOfTypeAndSide(BipedNaming.BoneType.Leg, BipedNaming.BoneSide.Left, children);
+            results = JointNamings.GetTypeAndSide(JointNamings.JointObject.Leg, JointNamings.Side.Left, transforms);
             if (results.Length == 3 || results.Length == 4)
             {
-                if (references.leftThigh == null) references.leftThigh = results[0];
-                if (references.leftCalf == null) references.leftCalf = results[1];
-                if (references.leftFoot == null) references.leftFoot = results[2];
+                if (leftThigh == null) leftThigh = results[0];
+                if (leftCalf == null) leftCalf = results[1];
+                if (leftFoot == null) leftFoot = results[2];
             }
             else
             {
                 foreach (var r in results) UnityEngine.Debug.LogWarning(r);
             }
-            results = BipedNaming.GetBonesOfTypeAndSide(BipedNaming.BoneType.Leg, BipedNaming.BoneSide.Right, children);
+            results = JointNamings.GetTypeAndSide(JointNamings.JointObject.Leg, JointNamings.Side.Right, transforms);
             if (results.Length == 3 || results.Length == 4)
             {
-                if (references.rightThigh == null) references.rightThigh = results[0];
-                if (references.rightCalf == null) references.rightCalf = results[1];
-                if (references.rightFoot == null) references.rightFoot = results[2];
+                if (rightThigh == null) rightThigh = results[0];
+                if (rightCalf == null) rightCalf = results[1];
+                if (rightFoot == null) rightFoot = results[2];
             }
             else
             {
@@ -259,60 +236,61 @@ namespace QTM2Unity {
             }
 
             // Find fingers
-            if (autoDetectParams.useFingers && !references.IsFingersValid())
+            if (useFingers && !IsFingersValid())
             {
-                AddFingers(children, ref references);
+                AddFingers();
             }
             // Find head bone
-            if (!references.head) references.head = BipedNaming.GetBone(children, BipedNaming.BoneType.Head);
+            if (!head) head = JointNamings.GetBone(transforms, JointNamings.JointObject.Head);
             // Find Neck
-            if (!references.neck) references.neck = BipedNaming.GetBone(children, BipedNaming.BoneType.Neck);
+            if (!neck) neck = JointNamings.GetBone(transforms, JointNamings.JointObject.Neck);
             // Find Pelvis
-            if (!references.pelvis) references.pelvis = BipedNaming.GetNamingMatch(children, BipedNaming.pelvis);
+            if (!pelvis) pelvis = JointNamings.GetMatch(transforms, JointNamings.pelvisAlias);
+            UnityEngine.Debug.LogWarning(pelvis);
             //// If pelvis is not an ancestor of a leg, it is not a valid pelvis
-            if (references.pelvis == null || !IsAncestor(references.leftThigh, references.pelvis))
+            if (!pelvis || !leftThigh.IsAncestorOf(pelvis))
             {
-                if (references.leftThigh != null) references.pelvis = references.leftThigh.parent;
+                UnityEngine.Debug.LogWarning("!!!");
+                if (leftThigh) pelvis = leftThigh.parent;
+            }
+            UnityEngine.Debug.LogWarning(pelvis);
+            // Find spine
+            Transform left, right;
+            if (leftClavicle && rightClavicle)
+            {
+                left = leftClavicle;
+                right = rightClavicle;
+            } else
+            {
+                left = leftUpperArm;
+                right = rightUpperArm;
             }
 
-            // Find spine and head bones
-            if (references.leftUpperArm && references.rightUpperArm && references.pelvis && references.leftThigh)
+            if (left && right && pelvis)
             {
-                Transform lastSpine = GetFirstCommonAncestor(references.leftUpperArm, references.rightUpperArm);
-
+                Transform lastSpine = left.CommonAncestorOf(right);
                 if (lastSpine)
                 {
-                    Transform[] inverseSpine = new Transform[1] { lastSpine };
-                    AddAncestors(inverseSpine[0], references.pelvis, ref inverseSpine);
-
-                    references.spine = new Transform[0];
-                    for (int i = inverseSpine.Length - 1; i > -1; i--)
-                    {
-                        if (AddBoneToSpine(inverseSpine[i], ref references, autoDetectParams))
-                        {
-                            Array.Resize(ref references.spine, references.spine.Length + 1);
-                            references.spine[references.spine.Length - 1] = inverseSpine[i];
-                        }
-                    }
-                    if (lastSpine == references.neck) 
-                    // Head
-                    if (!references.head)
+                    spine = GetAncestors(lastSpine, pelvis);
+                    // Head is not set
+                    if (!head)
                     {
                         for (int i = 0; i < lastSpine.childCount; i++)
                         {
                             Transform child = lastSpine.GetChild(i);
 
-                            if (!ContainsChild(child, references.leftUpperArm) && !ContainsChild(child, references.rightUpperArm))
+                            if (!child.ContainsChild(left) && !child.ContainsChild(right))
                             {
-                                references.head = child;
-                                references.neck = lastSpine;
+                                head = child;
+                                neck = lastSpine;
                             }
                         }
-                    } else if (!references.neck ){
-                        // Neck
-                        if (IsAncestor(references.head, lastSpine))
+                    }
+                    else if (!neck)
+                    {  // if Neck is not  set but head is
+                        if (head.IsAncestorOf(lastSpine))
                         {
-                            references.neck = lastSpine;
+                            neck = lastSpine;
                         }
                         else
                         {
@@ -320,214 +298,167 @@ namespace QTM2Unity {
                             {
                                 Transform child = lastSpine.GetChild(i);
 
-                                if (!ContainsChild(child, references.leftUpperArm) && !ContainsChild(child, references.rightUpperArm))
+                                if (!child.ContainsChild(left) && !child.ContainsChild(right))
                                 {
-                                    references.neck = child;
+                                    neck = child;
                                 }
                             }
                         }
                     }
                 }
-                if (lastSpine == references.neck) Array.Resize(ref references.spine, references.spine.Length - 1);
+                if (lastSpine == neck) Array.Resize(ref spine, spine.Length - 1);
             }
-
         }
 
         /// <summary>
-        /// Fills in BipedReferences using Animator.GetBoneTransform().
+        /// Add gameobjects using the Animator.
         /// </summary>
-        public static void AssignHumanoidReferences(ref CharacterGameObjects references, Animator animator, Params autoDetectParams)
+        public void AssignHumanoidReferences(Animator animator, bool useFingers)
         {
-            if (references == null) references = new CharacterGameObjects();
             if (!animator) return;
 
-            if (!references.head) references.head = animator.GetBoneTransform(HumanBodyBones.Head);
+            if (!pelvis) pelvis = animator.GetBoneTransform(HumanBodyBones.Hips);
+            if (!head) head = animator.GetBoneTransform(HumanBodyBones.Head);
 
-            if (!references.leftThigh) references.leftThigh = animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
-            if (!references.leftCalf) references.leftCalf = animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
-            if (!references.leftFoot) references.leftFoot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+            if (!neck) neck = animator.GetBoneTransform(HumanBodyBones.Neck);
 
-            if (!references.rightThigh) references.rightThigh = animator.GetBoneTransform(HumanBodyBones.RightUpperLeg);
-            if (!references.rightCalf) references.rightCalf = animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
-            if (!references.rightFoot) references.rightFoot = animator.GetBoneTransform(HumanBodyBones.RightFoot);
+            if (neck.parent) spine = GetAncestors(neck.parent, pelvis);
 
-            if (!references.leftClavicle) references.leftClavicle = animator.GetBoneTransform(HumanBodyBones.LeftShoulder);
-            if (!references.leftUpperArm) references.leftUpperArm = animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
-            if (!references.leftForearm) references.leftForearm = animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
-            if (!references.leftHand) references.leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+            if (!leftClavicle) leftClavicle = animator.GetBoneTransform(HumanBodyBones.LeftShoulder);
+            if (!rightClavicle) rightClavicle = animator.GetBoneTransform(HumanBodyBones.RightShoulder);
 
-            if (!references.rightClavicle) references.rightClavicle = animator.GetBoneTransform(HumanBodyBones.RightShoulder);
-            if (!references.rightUpperArm) references.rightUpperArm = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
-            if (!references.rightForearm) references.rightForearm = animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
-            if (!references.rightHand) references.rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            if (!leftThigh) leftThigh = animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
+            if (!leftCalf) leftCalf = animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
+            if (!leftFoot) leftFoot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
 
-            if (!references.pelvis) references.pelvis = animator.GetBoneTransform(HumanBodyBones.Hips);
-            if (!references.neck) references.neck = animator.GetBoneTransform(HumanBodyBones.Neck);
+            if (!rightThigh) rightThigh = animator.GetBoneTransform(HumanBodyBones.RightUpperLeg);
+            if (!rightCalf) rightCalf = animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+            if (!rightFoot) rightFoot = animator.GetBoneTransform(HumanBodyBones.RightFoot);
 
-            if (!references.leftClavicle) references.leftClavicle = animator.GetBoneTransform(HumanBodyBones.LeftShoulder);
-            if (!references.rightClavicle) references.rightClavicle = animator.GetBoneTransform(HumanBodyBones.RightShoulder);
+            if (!leftClavicle) leftClavicle = animator.GetBoneTransform(HumanBodyBones.LeftShoulder);
+            if (!leftUpperArm) leftUpperArm = animator.GetBoneTransform(HumanBodyBones.LeftUpperArm);
+            if (!leftForearm) leftForearm = animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+            if (!leftHand) leftHand = animator.GetBoneTransform(HumanBodyBones.LeftHand);
+
+            if (!rightClavicle) rightClavicle = animator.GetBoneTransform(HumanBodyBones.RightShoulder);
+            if (!rightUpperArm) rightUpperArm = animator.GetBoneTransform(HumanBodyBones.RightUpperArm);
+            if (!rightForearm) rightForearm = animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
+            if (!rightHand) rightHand = animator.GetBoneTransform(HumanBodyBones.RightHand);
+
 
             // Add fingers
-            if (autoDetectParams.useFingers)
+            if (useFingers)
             {
-                if (!references.thumbRight) references.thumbRight = animator.GetBoneTransform(HumanBodyBones.RightThumbProximal);
-                if (!references.thumbLeft) references.thumbLeft = animator.GetBoneTransform(HumanBodyBones.LeftThumbProximal);
+                if (!thumbRight) thumbRight = animator.GetBoneTransform(HumanBodyBones.RightThumbProximal);
+                if (!thumbLeft) thumbLeft = animator.GetBoneTransform(HumanBodyBones.LeftThumbProximal);
 
-                if (references.fingersLeft == null) references.fingersLeft = new Transform[4];
-                if (!references.fingersLeft[0]) references.fingersLeft[0] = animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal);
-                if (!references.fingersLeft[1]) references.fingersLeft[1] = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
-                if (!references.fingersLeft[2]) references.fingersLeft[2] = animator.GetBoneTransform(HumanBodyBones.LeftRingProximal);
-                if (!references.fingersLeft[3]) references.fingersLeft[3] = animator.GetBoneTransform(HumanBodyBones.LeftLittleProximal);
+                if (fingersLeft == null) fingersLeft = new Transform[4];
+                if (!fingersLeft[0]) fingersLeft[0] = animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal);
+                if (!fingersLeft[1]) fingersLeft[1] = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
+                if (!fingersLeft[2]) fingersLeft[2] = animator.GetBoneTransform(HumanBodyBones.LeftRingProximal);
+                if (!fingersLeft[3]) fingersLeft[3] = animator.GetBoneTransform(HumanBodyBones.LeftLittleProximal);
 
-                if (references.fingersRight == null) references.fingersRight = new Transform[4];
-                if (!references.fingersRight[0]) references.fingersRight[0] = animator.GetBoneTransform(HumanBodyBones.RightIndexProximal);
-                if (!references.fingersRight[1]) references.fingersRight[1] = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
-                if (!references.fingersRight[2]) references.fingersRight[2] = animator.GetBoneTransform(HumanBodyBones.RightRingProximal);
-                if (!references.fingersRight[3]) references.fingersRight[3] = animator.GetBoneTransform(HumanBodyBones.RightLittleProximal);
-            }
-            if (references.spine == null) {
-                references.spine = new Transform[0];
-                AddBoneToHierarchy(ref references.spine, animator.GetBoneTransform(HumanBodyBones.Spine));
-                AddBoneToHierarchy(ref references.spine, animator.GetBoneTransform(HumanBodyBones.Chest));
+                if (fingersRight == null) fingersRight = new Transform[4];
+                if (!fingersRight[0]) fingersRight[0] = animator.GetBoneTransform(HumanBodyBones.RightIndexProximal);
+                if (!fingersRight[1]) fingersRight[1] = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
+                if (!fingersRight[2]) fingersRight[2] = animator.GetBoneTransform(HumanBodyBones.RightRingProximal);
+                if (!fingersRight[3]) fingersRight[3] = animator.GetBoneTransform(HumanBodyBones.RightLittleProximal);
             }
         }
 
-        private static bool AddFingers(Transform[] children, ref CharacterGameObjects references) 
+        private bool AddFingers() 
         {
-            references.thumbLeft = BipedNaming.GetBone(children, BipedNaming.BoneType.Thumb, BipedNaming.BoneSide.Left);
-            references.thumbRight = BipedNaming.GetBone(children, BipedNaming.BoneType.Thumb, BipedNaming.BoneSide.Right);
-
-            Transform[] results = BipedNaming.GetBonesOfTypeAndSide(BipedNaming.BoneType.Fingers, BipedNaming.BoneSide.Left, children);
+            var children = leftHand.DirectChildren();
+            thumbLeft = JointNamings.GetBone(children, JointNamings.JointObject.Thumb, JointNamings.Side.Left);
+            Transform[] results = JointNamings.GetTypeAndSide(JointNamings.JointObject.Fingers, JointNamings.Side.Left, children);
             if (results.Length == 4)
             {
-                references.fingersLeft = new Transform[4];
-                references.fingersLeft[0] = results[0];
-                references.fingersLeft[1] = results[1];
-                references.fingersLeft[2] = results[2];
-                references.fingersLeft[3] = results[3];
-                UnityEngine.Debug.LogWarning(references.fingersLeft[3]);
+                fingersLeft = new Transform[4];
+                fingersLeft[0] = results[0];
+                fingersLeft[1] = results[1];
+                fingersLeft[2] = results[2];
+                fingersLeft[3] = results[3];
+                UnityEngine.Debug.LogWarning(fingersLeft[3]);
             }
-            else if (references.leftHand && references.leftHand.childCount >= 5)
+            else if (leftHand && leftHand.childCount >= 5)
             {
-                if (!references.thumbLeft) references.thumbLeft = references.leftHand.GetChild(0);
+                if (!thumbLeft) thumbLeft = leftHand.GetChild(0);
                     
-                references.fingersLeft = new Transform[4];
-                references.fingersLeft[0] = references.leftHand.GetChild(1);
-                references.fingersLeft[1] = references.leftHand.GetChild(2);
-                references.fingersLeft[2] = references.leftHand.GetChild(3);
-                references.fingersLeft[3] = references.leftHand.GetChild(4);
+                fingersLeft = new Transform[4];
+                fingersLeft[0] = leftHand.GetChild(1);
+                fingersLeft[1] = leftHand.GetChild(2);
+                fingersLeft[2] = leftHand.GetChild(3);
+                fingersLeft[3] = leftHand.GetChild(4);
             }
             else
             {
-                references.fingersLeft = new Transform[1];
-                references.fingersLeft[0] = results[0];
+                fingersLeft = new Transform[1];
+                fingersLeft[0] = results[0];
             }
 
-            results = BipedNaming.GetBonesOfTypeAndSide(BipedNaming.BoneType.Fingers, BipedNaming.BoneSide.Right, children);
+            children = rightHand.DirectChildren();
+            thumbRight = JointNamings.GetBone(children, JointNamings.JointObject.Thumb, JointNamings.Side.Right);
+            results = JointNamings.GetTypeAndSide(JointNamings.JointObject.Fingers, JointNamings.Side.Right, rightHand.DirectChildren());
             if (results.Length == 4)
             {
-                references.fingersRight = new Transform[4];
-                references.fingersRight[0] = results[0];
-                references.fingersRight[1] = results[1];
-                references.fingersRight[2] = results[2];
-                references.fingersRight[3] = results[3];
+                fingersRight = new Transform[4];
+                fingersRight[0] = results[0];
+                fingersRight[1] = results[1];
+                fingersRight[2] = results[2];
+                fingersRight[3] = results[3];
             }
-            else if (references.rightHand && references.rightHand.childCount >= 5)
+            else if (rightHand && rightHand.childCount >= 5)
             {
-                if (!references.thumbRight) references.thumbRight = references.leftHand.GetChild(0);
-                references.fingersRight = new Transform[4];
-                references.fingersRight[0] =references.leftHand.GetChild(1);
-                references.fingersRight[1] = references.leftHand.GetChild(2);
-                references.fingersRight[2] = references.leftHand.GetChild(3);
-                references.fingersRight[3] = references.leftHand.GetChild(4);
+                if (!thumbRight) thumbRight = leftHand.GetChild(0);
+                fingersRight = new Transform[4];
+                fingersRight[0] =leftHand.GetChild(1);
+                fingersRight[1] = leftHand.GetChild(2);
+                fingersRight[2] = leftHand.GetChild(3);
+                fingersRight[3] = leftHand.GetChild(4);
             }
             else
             {
-                references.fingersLeft = new Transform[1];
-                references.fingersLeft[0] = results[0];
+                fingersLeft = new Transform[1];
+                fingersLeft[0] = results[0];
             }
-            return references.IsFingersValid();
+            return IsFingersValid();
         }
 
         // Determines whether a bone is valid for being added into the spine
-        private static bool AddBoneToSpine(Transform bone, ref CharacterGameObjects references, Params autoDetectParams)
+        private bool AddBoneToSpine(Transform bone)
         {
-            if (bone == references.root) return false;
+            if (bone == root) return false;
 
-            bool isLegsParent = bone == references.leftThigh.parent;
-            if (isLegsParent && !autoDetectParams.legsParentInSpine) return false;
+            bool isLegsParent = bone == leftThigh.parent;
 
-            if (references.pelvis != null)
+            if (pelvis != null)
             {
-                if (bone == references.pelvis) return false;
-                if (IsAncestor(references.pelvis, bone)) return false;
+                if (bone == pelvis) return false;
+                if (pelvis.IsAncestorOf(bone)) return false;
             }
 
             return true;
         }
-
-        // Adds transform to hierarchy if not null
-        private static void AddBoneToHierarchy(ref Transform[] bones, Transform transform)
-        {
-            if (transform == null) return;
-
-            Array.Resize(ref bones, bones.Length + 1);
-            bones[bones.Length - 1] = transform;
-        }
-
-
         /// <summary>
-        /// Determines whether the second Transform is an ancestor to the first Transform.
+        /// Returns a array of all ancestors of Transform 1 until given Transform 2 or no more parents. Including Transform 1
         /// </summary>
-        public static bool IsAncestor(Transform transform, Transform ancestor)
+        /// <param name="from">The starting transform, array is inclusive this</param>
+        /// <param name="until">The transform to stop at, the array is exclusive this.</param>
+        /// <returns>An array with the transform between From and Until</returns>
+        public Transform[] GetAncestors(Transform from, Transform until)
         {
-            if (transform == null) return true;
-            if (ancestor == null) return true;
-            if (transform.parent == null) return false;
-            if (transform.parent == ancestor) return true;
-            return IsAncestor(transform.parent, ancestor);
-        }
-
-        /// <summary>
-        /// Returns true if the transforms contains the child
-        /// </summary>
-        public static bool ContainsChild(Transform transform, Transform child)
-        {
-            if (transform == child) return true;
-
-            Transform[] children = transform.GetComponentsInChildren<Transform>() as Transform[];
-            foreach (Transform c in children) if (c == child) return true;
-            return false;
-        }
-
-        /// <summary>
-        /// Adds all Transforms until the blocker to the array
-        /// </summary>
-        public static void AddAncestors(Transform transform, Transform blocker, ref Transform[] array)
-        {
-            if (transform.parent != null && transform.parent != blocker)
+            List<Transform> between = new List<Transform> ();
+            var temp = from;
+            while (temp && temp != until)
             {
-                if (transform.parent.position != transform.position && transform.parent.position != blocker.position)
+                if (temp.position != until.position && temp.parent.position != temp.position)
                 {
-                    Array.Resize(ref array, array.Length + 1);
-                    array[array.Length - 1] = transform.parent;
+                    between.Add(temp);
                 }
-                AddAncestors(transform.parent, blocker, ref array);
+                temp = temp.parent;
             }
-        }
-
-        /// <summary>
-        /// Gets the first common ancestor up the hierarchy
-        /// </summary>
-        public static Transform GetFirstCommonAncestor(Transform t1, Transform t2)
-        {
-            if (t1 == null) return null;
-            if (t2 == null) return null;
-            if (t1.parent == null) return null;
-            if (t2.parent == null) return null;
-
-            if (IsAncestor(t2, t1.parent)) return t1.parent;
-            return GetFirstCommonAncestor(t1.parent, t2);
+            between.Reverse();
+            return between.ToArray();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -537,47 +468,48 @@ namespace QTM2Unity {
 
         public IEnumerator<Transform> GetEnumerator()
         {
-             yield return root;
-             yield return pelvis;
-                if (spine != null)
+            yield return root;
+            yield return pelvis;
+            if (spine != null)
                 foreach (var s in spine)
-                     
-                        yield return s;
-             yield return neck;
-             yield return head;
-            
-             yield return leftThigh;
-             yield return leftCalf;
-             yield return leftFoot;
-            
-             yield return rightThigh;
-             yield return rightCalf;
-             yield return rightFoot;
-            
-             yield return leftClavicle;
-             yield return leftUpperArm;
-             yield return leftForearm;
-             yield return leftHand;
-             yield return thumbLeft;
-             if (fingersLeft != null) 
-                foreach (var f in fingersLeft) 
-                        yield return f;
+                    yield return s;
 
-             yield return rightClavicle;
-             yield return rightUpperArm;
-             yield return rightForearm;
-             yield return rightHand;
-             yield return thumbRight;
-             if (fingersRight != null) 
+            yield return neck;
+            yield return head;
+            
+            yield return leftThigh;
+            yield return leftCalf;
+            yield return leftFoot;
+            
+            yield return rightThigh;
+            yield return rightCalf;
+            yield return rightFoot;
+            
+            yield return leftClavicle;
+            yield return leftUpperArm;
+            yield return leftForearm;
+            yield return leftHand;
+            yield return thumbLeft;
+            if (fingersLeft != null) 
+                foreach (var f in fingersLeft) 
+                    yield return f;
+
+            yield return rightClavicle;
+            yield return rightUpperArm;
+            yield return rightForearm;
+            yield return rightHand;
+            yield return thumbRight;
+            if (fingersRight != null) 
                 foreach (var f in fingersRight) 
-                        yield return f;
+                    yield return f;
         }
         public void PrintAll()
         {
             UnityEngine.Debug.LogFormat("root {0}", root);
             UnityEngine.Debug.LogFormat("pelvis {0}", pelvis);
-            for (int s = 0; s < spine.Length; s++)
-                UnityEngine.Debug.LogFormat("spine{0} {1}", s, spine[s]);
+            if (spine != null)
+                for (int s = 0; s < spine.Length; s++)
+                    UnityEngine.Debug.LogFormat("spine{0} {1}", s, spine[s]);
             UnityEngine.Debug.LogFormat("neck {0}", neck);
             UnityEngine.Debug.LogFormat("head {0}", head);
 

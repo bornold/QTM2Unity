@@ -1,19 +1,19 @@
 using UnityEngine;
 using System.Collections;
 using System;
+using System.Linq;
 
 namespace QTM2Unity {
-
 	/// <summary>
 	/// Class for identifying biped bones based on most common naming conventions.
 	/// </summary>
-	public static class BipedNaming {
+	public class JointNamings {
 		
 		/// <summary>
 		/// Type of the bone.
 		/// </summary>
 		[System.Serializable]
-		public enum BoneType {
+		public enum JointObject {
 			Unassigned,
 			Spine,
             Neck,
@@ -23,96 +23,71 @@ namespace QTM2Unity {
             Fingers,
             Thumb
 		}
-		
-		/// <summary>
-		/// Bone side: Left and Right for limbs and Center for spine, head and tail.
-		/// </summary>
-		[System.Serializable]
-		public enum BoneSide {
-			Center,
-			Left,
-			Right
-		}
+        /// <summary>
+        /// Bone side: Left and Right for limbs and Center for spine, head and tail.
+        /// </summary>
+        [System.Serializable]
+        public enum Side
+        {
+            Center,
+            Left,
+            Right
+        }
 		
 		// Bone identifications
-		public static string[]
-        typeLeft = { " L ", "_L_", "-L-", " l ", "_l_", "-l-", "Left", "left", "CATRigL", "CATL" },
-        typeRight = { " R ", "_R_", "-R-", " r ", "_r_", "-r-", "Right", "right", "CATRigR", "CATR" },
-		
-		typeSpine = {"Spine", "spine", "Pelvis", "pelvis", "Root", "root", "Torso", "torso", "Body", "body", "Hips", "hips", "Chest", "chest"},
-        typeNeck = { "Neck", "neck" },
+        public static string[]
+            LeftSide = { " L ", "_L_", "-L-", " l ", "_l_", "-l-", "Left", "left", "CATRigL", "CATL" },
+            RightSide = { " R ", "_R_", "-R-", " r ", "_r_", "-r-", "Right", "right", "CATRigR", "CATR" },
 
-		typeHead = {"Head", "head"},
-        typeArm = { "Shoulder", "shoulder", "Collar", "collar", "Clavicle", "clavicle", "Arm", "arm", "Hand", "hand", "Wrist", "wrist", "Elbow", "elbow", "Palm", "palm" },
-		typeLeg = {"Leg", "leg", "Thigh", "thigh", "Calf", "calf", "Femur", "femur", "Knee", "knee", "Shin", "shin", "Foot", "foot", "Ankle", "ankle", "Hip", "hip"},
-        typeFinger = { "Finger", "finger", "Index", "index", "Mid", "mid", "Pinky", "pinky", "Ring", "ring" },
-        typeThumb = { "Thumb", "thumb", "Finger0", "finger0" },
+            pelvisAlias = { "Pelvis", "pelvis", "Hip", "hip" },
+            handAlias = { "Hand", "hand", "Wrist", "wrist", "Palm", "palm" },
+            footAlias = { "Foot", "foot", "Ankle", "ankle" },
 
-        typeExclude = { "Nub", "Dummy", "dummy", "Tip", "IK", "Mesh", "mesh", "Goal", "goal", "Pole", "pole", "slot" },
-		typeExcludeSpine = {"Head", "head"},
-		typeExcludeHead = {"Top", "End" },
-        typeExcludeArm = { "Finger", "finger", "Index", "index", "Point", "point", "Mid", "mid", "Pinky", "pinky", "Pink", "pink", "Ring", "Thumb", "thumb", "Adjust", "adjust", "Twist", "twist" },
-        typeExcludeFinger = { "Thumb", "thumb", "Adjust", "adjust", "Twist", "twist", "Medial", "medial", "Distal", "distal", "Finger0",
-                                "02",
-                                "11","12",
-                                "21","22",
-                                "31","32",
-                                "41","42",
-                                "51","52",
-                            },
-        typeExcludeThumb = {  "Adjust", "adjust", "Twist", "twist", "Medial", "medial", "Distal", "distal"  },
-		typeExcludeLeg = {"Toe", "toe", "Platform", "Adjust", "adjust", "Twist", "twist", "Digit", "digit"},
-        typeExcludeNeck = { },
+            spineAlias = { "Spine", "spine", "Pelvis", "pelvis", "Root", "root", "Torso", "torso", "Body", "body", "Hips", "hips", "Chest", "chest" },
+            neckAlias = { "Neck", "neck" },
+            headAlias = { "Head", "head" },
 
-		pelvis = {"Pelvis", "pelvis", "Hip", "hip"},
-		hand = {"Hand", "hand", "Wrist", "wrist", "Palm", "palm"},
-		foot = {"Foot", "foot", "Ankle", "ankle"};
-		
-		#region Public methods
-		
+            armAlias = { "Shoulder", "shoulder", "Collar", "collar", "Clavicle", "clavicle", "Arm", "arm", "Hand", "hand", "Wrist", "wrist", "Elbow", "elbow", "Palm", "palm" },
+
+            legAlias = { "Leg", "leg", "Thigh", "thigh", "Calf", "calf", "Femur", "femur", "Knee", "knee", "Shin", "shin", "Foot", "foot", "Ankle", "ankle", "Hip", "hip" },
+
+            fingerAlias = { "Finger", "finger", "Index", "index", "Mid", "mid", "Pinky", "pinky", "Ring", "ring" },
+            thumbAlias = { "Thumb", "thumb", "Finger0", "finger0" },
+
+            exludeName = { "Nub", "Dummy", "dummy", "Tip", "IK", "Mesh", "mesh", "Goal", "goal", "Pole", "pole", "slot" },
+            spineExclude = { "Head", "head" },
+            headExclude = { "Top", "End" },
+            armExclude = { "Finger", "finger", "Index", "index", "Point", "point", "Mid", "mid", "Pinky", "pinky", "Pink", "pink", "Ring", "Thumb", "thumb", "Adjust", "adjust", "Twist", "twist" },
+            fingerExclude = { "Thumb", "thumb", "Adjust", "adjust", "Twist", "twist", "Medial", "medial", "Distal", "distal", "Finger0",
+                                    "02",
+                                    "11","12",
+                                    "21","22",
+                                    "31","32",
+                                    "41","42",
+                                    "51","52",
+                                },
+            thumbExclude = { "Adjust", "adjust", "Twist", "twist", "Medial", "medial", "Distal", "distal" },
+            legExclude = { "Toe", "toe", "Platform", "Adjust", "adjust", "Twist", "twist", "Digit", "digit" },
+            neckExclude = { };		
 		/// <summary>
-		/// Returns only the bones with the specified BoneType.
+        /// Returns only the bones with the specified JointObject.
 		/// </summary>
-		public static Transform[] GetBonesOfType(BoneType boneType, Transform[] bones) {
-			Transform[] r = new Transform[0];
-			foreach (Transform bone in bones) {
-				if (bone != null && GetBoneType(bone.name) == boneType) {
-					Array.Resize(ref r, r.Length + 1);
-					r[r.Length - 1] = bone;
-				}
-			}
-			return r;
+		public static Transform[] GetBonesOfType(JointObject type, Transform[] bones) {
+            return bones.Where(b => (b != null && GetType(b.name) == type)).ToArray();
 		}
 		
 		/// <summary>
-		/// Returns only the bones with the specified BoneSide.
+		/// Returns only the bones with the specified Side.
 		/// </summary>
-		public static Transform[] GetBonesOfSide(BoneSide boneSide, Transform[] bones) {
-			Transform[] r = new Transform[0];
-			foreach (Transform bone in bones) {
-				if (bone != null && GetBoneSide(bone.name) == boneSide) {
-					Array.Resize(ref r, r.Length + 1);
-					r[r.Length - 1] = bone;
-				}
-			}
-			return r;
+		public static Transform[] GetBonesOfSide(Side boneSide, Transform[] bones) {
+            return bones.Where(b => (b != null && GetSide(b.name) == boneSide)).ToArray();
 		}
 		
 		/// <summary>
 		/// Gets the bones of type and side.
 		/// </summary>
-		public static Transform[] GetBonesOfTypeAndSide(BoneType boneType, BoneSide boneSide, Transform[] bones) {
-			Transform[] bonesOfType = GetBonesOfType(boneType, bones);
-			return GetBonesOfSide(boneSide, bonesOfType);
-		}
-		
-		/// <summary>
-		/// Gets the bone of type and side. If more than one is found, will return the first in the array.
-		/// </summary>
-		public static Transform GetFirstBoneOfTypeAndSide(BoneType boneType, BoneSide boneSide, Transform[] bones) {
-			Transform[] b = GetBonesOfTypeAndSide(boneType, boneSide, bones);
-			if (b.Length == 0) return null;
-			return b[0];
+		public static Transform[] GetTypeAndSide(JointObject boneType, Side boneSide, Transform[] bones) {
+			return GetBonesOfSide(boneSide, GetBonesOfType(boneType, bones));
 		}
 		
 		/// <summary>
@@ -127,114 +102,67 @@ namespace QTM2Unity {
 		/// <param name='namings'>
 		/// Namings.
 		/// </param>
-		public static Transform GetNamingMatch(Transform[] transforms, params string[][] namings) {
-			foreach (Transform t in transforms) {
-				bool match = true;
-				foreach (string[] naming in namings) {
-					if (!matchesNaming(t.name, naming)) {
-						match = false;
-						break;
-					}
-				}
-				if (match) return t;
-			}
-			return null;
+		public static Transform GetMatch(Transform[] transforms, params string[][] namings) {
+           return transforms.FirstOrDefault(t => namings.All(n => Matches(t.name, n)));
 		}
 		
 		/// <summary>
 		/// Gets the type of the bone.
 		/// </summary>
-		public static BoneType GetBoneType(string boneName) {	
-            if (isNeck(boneName)) return BoneType.Neck;
-			if (isSpine(boneName)) return BoneType.Spine;
-			if (isHead(boneName)) return BoneType.Head;
-			if (isArm (boneName)) return BoneType.Arm;
-			if (isLeg(boneName)) return BoneType.Leg;
-            if (isFingers(boneName)) return BoneType.Fingers;
-            if (isThumb(boneName)) return BoneType.Thumb;
-
-            //if (isFingers(boneName)) return BoneType.Neck;
-			return BoneType.Unassigned;
+		public static JointObject GetType(string boneName) {
+            // Type Neck
+            if (IsOfType(boneName, neckAlias, neckExclude)) return JointObject.Neck;
+            // Type Spine
+            if (IsOfType(boneName, spineAlias, spineExclude)) return JointObject.Spine;
+            // Type Head
+            if (IsOfType(boneName, headAlias, headExclude)) return JointObject.Head;
+            // Type Arm
+            if (IsOfType(boneName, armAlias, armExclude)) return JointObject.Arm;
+            // Type Leg
+            if (IsOfType(boneName, legAlias, legExclude)) return JointObject.Leg;
+            // Type Finger
+            if (IsOfType(boneName, fingerAlias, fingerExclude)) return JointObject.Fingers;
+            // Type Thumb
+            if (IsOfType(boneName, thumbAlias, thumbExclude)) return JointObject.Thumb;
+			return JointObject.Unassigned;
 		}
 		
 		/// <summary>
 		/// Gets the bone side.
 		/// </summary>
-		public static BoneSide GetBoneSide(string boneName) {
-			if (isLeft(boneName)) return BoneSide.Left;
-			if (isRight(boneName)) return BoneSide.Right;
-			return BoneSide.Center;
+		public static Side GetSide(string boneName) {
+            if (Matches(boneName, LeftSide) || LastLetter(boneName) == "L" || FirstLetter(boneName) == "L")  return Side.Left;
+            else if (Matches(boneName, RightSide) || LastLetter(boneName) == "R" || FirstLetter(boneName) == "R") return Side.Right;
+			else return Side.Center;
 		}
-		
+
 		/// <summary>
 		/// Returns the bone of type and side with additional naming parameters.
 		/// </summary>
-		public static Transform GetBone(Transform[] transforms, BoneType boneType, BoneSide boneSide = BoneSide.Center, params string[][] namings) {
-			Transform[] bones = GetBonesOfTypeAndSide(boneType, boneSide, transforms);
-			return GetNamingMatch(bones, namings);
+		public static Transform GetBone(Transform[] transforms, JointObject boneType, Side boneSide = Side.Center, params string[][] namings) {
+            return GetMatch(GetTypeAndSide(boneType, boneSide, transforms), namings);
 		}
 		
-		#endregion Public methods
-		
-		private static bool isLeft(string boneName) {
-			return matchesNaming(boneName, typeLeft) || lastLetter(boneName) == "L" || firstLetter(boneName) == "L";
-		}
-		
-		private static bool isRight(string boneName) {
-			return matchesNaming(boneName, typeRight) || lastLetter(boneName) == "R" || firstLetter(boneName) == "R";
-		}
-		
-		private static bool isSpine(string boneName) {
-			return matchesNaming(boneName, typeSpine) && !excludesNaming(boneName, typeExcludeSpine);
-		}
-		
-		private static bool isHead(string boneName) {
-			return matchesNaming(boneName, typeHead) && !excludesNaming(boneName, typeExcludeHead);
-		}
-		
-		private static bool isArm(string boneName) {
-			return matchesNaming(boneName, typeArm) && !excludesNaming(boneName, typeExcludeArm);
-		}
-		
-		private static bool isLeg(string boneName) {
-			return matchesNaming(boneName, typeLeg) && !excludesNaming(boneName, typeExcludeLeg);
-		}
-        private static bool isNeck(string boneName)
+        private static bool IsOfType(string boneName, string[] aliases, string[] excusions)
         {
-            return matchesNaming(boneName, typeNeck) && !excludesNaming(boneName, typeExcludeNeck);
+            return Matches(boneName, aliases) && !Exclude(boneName, excusions);
         }
-        private static bool isFingers(string boneName)
-        {
-            return matchesNaming(boneName, typeFinger) && !excludesNaming(boneName, typeExcludeFinger);
-        }
-        private static bool isThumb(string boneName)
-        {
-            return matchesNaming(boneName, typeThumb) && !excludesNaming(boneName, typeExcludeThumb);
-        }
-		private static bool matchesNaming(string boneName, string[] namingConvention) {
-			if (excludesNaming(boneName, typeExclude)) return false;
-			
-			foreach(string n in namingConvention) {
-				if (boneName.Contains(n)) return true;
-			}
-			return false;
+		private static bool Matches(string boneName, string[] namingConvention) {
+            //if (ExcludesNaming(boneName, exludeName)) return false;
+            return !Exclude(boneName, exludeName) 
+                && namingConvention.Any(nc => boneName.Contains(nc));
 		}
 		
-		private static bool excludesNaming(string boneName, string[] namingConvention) {
-			foreach(string n in namingConvention) {
-				if (boneName.Contains(n)) return true;
-			}
-			return false;
+		private static bool Exclude(string boneName, string[] namingConvention) {
+            return namingConvention.Any(nc => boneName.Contains(nc));
 		}
 		
-		private static string firstLetter(string boneName) {
-			if (boneName.Length > 0) return boneName.Substring(0, 1);
-			return "";
+		private static string FirstLetter(string boneName) {
+			return (boneName.Length > 0) ? boneName.Substring(0, 1) : "";
 		}
 		
-		private static string lastLetter(string boneName) {
-			if (boneName.Length > 0) return boneName.Substring(boneName.Length - 1, 1);
-			return "";
+		private static string LastLetter(string boneName) {
+		    return (boneName.Length > 0) ? boneName.Substring(boneName.Length - 1, 1) : "";
 		}
 	}
 }
