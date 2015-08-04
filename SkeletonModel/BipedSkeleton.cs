@@ -6,6 +6,9 @@ using OpenTK;
 
 namespace QTM2Unity
 {
+    /// <summary>
+    /// Joint identifiers
+    /// </summary>
     public enum Joint
     {
         PELVIS,
@@ -53,7 +56,10 @@ namespace QTM2Unity
         protected TreeNode<Bone> root;
         public TreeNode<Bone> Root { get { return root; } }
         private ConstraintsExamples constraints = new ConstraintsExamples();
-
+        /// <summary>
+        /// Constructur returns a skeleton in standrad ISO/IEC FCD 19774 specification
+        /// http://h-anim.org/Specifications/H-Anim200x/ISO_IEC_FCD_19774/
+        /// </summary>
         public BipedSkeleton()
         {
 
@@ -116,36 +122,36 @@ namespace QTM2Unity
             Vector3 pelvisPos = Vector3Helper.MidPoint(hipLeftPos, hipRightPos); //new Vector3(0f, 0.8240f, 0.0277f);
             #endregion JointPos
             #region JointRot
-            Quaternion spine0Rot = QuaternionHelper.LookAtRight(spine0Pos, spine1Pos, -Vector3.UnitX);
-            Quaternion spine3Rot = QuaternionHelper.LookAtRight(spine1Pos, spine3Pos, -Vector3.UnitX);
-            Quaternion spine1Rot = QuaternionHelper.LookAtRight(spine3Pos, neckPos, -Vector3.UnitX);
-            Quaternion neckRot = QuaternionHelper.LookAtRight(neckPos, headPos, -Vector3.UnitX);
-            Quaternion headRot = QuaternionHelper.LookAtRight(headPos, headTopPos, -Vector3.UnitX);
+            Quaternion spine0Rot = QuaternionHelper2.LookAtRight(spine0Pos, spine1Pos, -Vector3.UnitX);
+            Quaternion spine3Rot = QuaternionHelper2.LookAtRight(spine1Pos, spine3Pos, -Vector3.UnitX);
+            Quaternion spine1Rot = QuaternionHelper2.LookAtRight(spine3Pos, neckPos, -Vector3.UnitX);
+            Quaternion neckRot = QuaternionHelper2.LookAtRight(neckPos, headPos, -Vector3.UnitX);
+            Quaternion headRot = QuaternionHelper2.LookAtRight(headPos, headTopPos, -Vector3.UnitX);
 
-            Quaternion clavicleLeftRot = QuaternionHelper.LookAtUp(spine3Pos, shoulderLeftPos, Vector3.UnitZ);
-            Quaternion shoulderLeftRot = QuaternionHelper.LookAtRight(shoulderLeftPos, elbowLeftPos, Vector3.UnitX);
-            Quaternion elbowLeftRot = QuaternionHelper.LookAtRight(elbowLeftPos, wristLeftPos, Vector3.UnitX); ;
-            Quaternion wristLeftRot = QuaternionHelper.LookAtRight(wristLeftPos, handLeftPos, Vector3.UnitX);
-            Quaternion trapezoidLeftRot = QuaternionHelper.LookAtRight(wristLeftPos, thumbLeftPos, Vector3.UnitX);
-            Quaternion handLeftRot = QuaternionHelper.LookAtRight(handLeftPos, indexLeftPos, Vector3.UnitX);
+            Quaternion clavicleLeftRot = QuaternionHelper2.LookAtUp(spine3Pos, shoulderLeftPos, Vector3.UnitZ);
+            Quaternion shoulderLeftRot = QuaternionHelper2.LookAtRight(shoulderLeftPos, elbowLeftPos, Vector3.UnitX);
+            Quaternion elbowLeftRot = QuaternionHelper2.LookAtRight(elbowLeftPos, wristLeftPos, Vector3.UnitX); ;
+            Quaternion wristLeftRot = QuaternionHelper2.LookAtRight(wristLeftPos, handLeftPos, Vector3.UnitX);
+            Quaternion trapezoidLeftRot = QuaternionHelper2.LookAtRight(wristLeftPos, thumbLeftPos, Vector3.UnitX);
+            Quaternion handLeftRot = QuaternionHelper2.LookAtRight(handLeftPos, indexLeftPos, Vector3.UnitX);
 
 
-            Quaternion clavicleRightRot = QuaternionHelper.LookAtUp(spine3Pos, shoulderRightPos, Vector3.UnitZ);
-            Quaternion shoulderRightRot = QuaternionHelper.LookAtRight(shoulderRightPos, elbowRightPos, Vector3.UnitX);
-            Quaternion elbowRightRot = QuaternionHelper.LookAtRight(elbowRightPos, wristRightPos, Vector3.UnitX);
-            Quaternion wristRightRot = QuaternionHelper.LookAtRight(wristRightPos, handRightPos, Vector3.UnitX);
-            Quaternion trapezoidRightRot = QuaternionHelper.LookAtRight(wristRightPos, thumbRightPos, Vector3.UnitX);
-            Quaternion handRightRot = QuaternionHelper.LookAtRight(handRightPos, indexRightPos, Vector3.UnitX);
+            Quaternion clavicleRightRot = QuaternionHelper2.LookAtUp(spine3Pos, shoulderRightPos, Vector3.UnitZ);
+            Quaternion shoulderRightRot = QuaternionHelper2.LookAtRight(shoulderRightPos, elbowRightPos, Vector3.UnitX);
+            Quaternion elbowRightRot = QuaternionHelper2.LookAtRight(elbowRightPos, wristRightPos, Vector3.UnitX);
+            Quaternion wristRightRot = QuaternionHelper2.LookAtRight(wristRightPos, handRightPos, Vector3.UnitX);
+            Quaternion trapezoidRightRot = QuaternionHelper2.LookAtRight(wristRightPos, thumbRightPos, Vector3.UnitX);
+            Quaternion handRightRot = QuaternionHelper2.LookAtRight(handRightPos, indexRightPos, Vector3.UnitX);
 
-            Quaternion hipLeftRot = QuaternionHelper.LookAtRight(hipLeftPos, kneeLeftPos, Vector3.UnitX);
-            Quaternion kneeLeftRot = QuaternionHelper.LookAtRight(kneeLeftPos, ankleLeftPos, Vector3.UnitX);
-            Quaternion ankleLeftRot = QuaternionHelper.LookAtUp(ankleLeftPos, toeLeftPos, (kneeLeftPos - ankleLeftPos));
-            Quaternion footBaseLeftRot = QuaternionHelper.LookAtUp(footBaseLeftPos, toeLeftPos, (ankleLeftPos - footBaseLeftPos));
+            Quaternion hipLeftRot = QuaternionHelper2.LookAtRight(hipLeftPos, kneeLeftPos, Vector3.UnitX);
+            Quaternion kneeLeftRot = QuaternionHelper2.LookAtRight(kneeLeftPos, ankleLeftPos, Vector3.UnitX);
+            Quaternion ankleLeftRot = QuaternionHelper2.LookAtUp(ankleLeftPos, toeLeftPos, (kneeLeftPos - ankleLeftPos));
+            Quaternion footBaseLeftRot = QuaternionHelper2.LookAtUp(footBaseLeftPos, toeLeftPos, (ankleLeftPos - footBaseLeftPos));
 
-            Quaternion hipRightRot = QuaternionHelper.LookAtRight(hipRightPos, kneeRightPos, Vector3.UnitX);
-            Quaternion kneeRightRot = QuaternionHelper.LookAtRight(kneeRightPos, ankleRightPos, Vector3.UnitX);
-            Quaternion ankleRightRot = QuaternionHelper.LookAtUp(ankleRightPos, toeRightPos, (kneeRightPos - ankleRightPos));
-            Quaternion footBaseRightRot = QuaternionHelper.LookAtUp(footBaseRightPos, toeRightPos, (ankleRightPos - footBaseRightPos));
+            Quaternion hipRightRot = QuaternionHelper2.LookAtRight(hipRightPos, kneeRightPos, Vector3.UnitX);
+            Quaternion kneeRightRot = QuaternionHelper2.LookAtRight(kneeRightPos, ankleRightPos, Vector3.UnitX);
+            Quaternion ankleRightRot = QuaternionHelper2.LookAtUp(ankleRightPos, toeRightPos, (kneeRightPos - ankleRightPos));
+            Quaternion footBaseRightRot = QuaternionHelper2.LookAtUp(footBaseRightPos, toeRightPos, (ankleRightPos - footBaseRightPos));
 
             #endregion
 
@@ -175,7 +181,7 @@ namespace QTM2Unity
                                 headPos, 
                                 headRot));
                             {
-                                head.AddChild(new Bone(Joint.HEADTOP, headTopPos, QuaternionHelper.Zero));
+                                head.AddChild(new Bone(Joint.HEADTOP, headTopPos, QuaternionHelper2.Zero));
                             }
                         }
                 #endregion
@@ -202,7 +208,7 @@ namespace QTM2Unity
                                         {
                                             handLeft.AddChild(new Bone(Joint.INDEX_L,
                                            indexLeftPos,
-                                           QuaternionHelper.Zero));
+                                           QuaternionHelper2.Zero));
                                         }
                                         TreeNode<Bone> trapezoidLeft = wristLeft.AddChild(new Bone(Joint.TRAP_L,
                                                 wristLeftPos,
@@ -210,7 +216,7 @@ namespace QTM2Unity
                                         {
                                             trapezoidLeft.AddChild(new Bone(Joint.THUMB_L,
                                             thumbLeftPos,
-                                            QuaternionHelper.Zero));
+                                            QuaternionHelper2.Zero));
                                         }
                                     }
                                 }
@@ -240,14 +246,14 @@ namespace QTM2Unity
                                         {
                                             handRight.AddChild(new Bone(Joint.INDEX_R,
                                             indexRightPos,
-                                            QuaternionHelper.Zero));
+                                            QuaternionHelper2.Zero));
                                         TreeNode<Bone> trapezoidRight = wristRight.AddChild(new Bone(Joint.TRAP_R,
                                             wristRightPos,
                                             trapezoidRightRot));
                                         {
                                             trapezoidRight.AddChild(new Bone(Joint.THUMB_R,
                                             thumbRightPos,
-                                            QuaternionHelper.Zero));
+                                            QuaternionHelper2.Zero));
                                         }
                                         }
                                     }
@@ -275,7 +281,7 @@ namespace QTM2Unity
                         {
                             TreeNode<Bone> footBaseLeft = ankleLeft.AddChild(new Bone(Joint.FOOTBASE_L, footBaseLeftPos, footBaseLeftRot));
                             {
-                                footBaseLeft.AddChild(new Bone(Joint.TOE_L, toeLeftPos, QuaternionHelper.Zero));
+                                footBaseLeft.AddChild(new Bone(Joint.TOE_L, toeLeftPos, QuaternionHelper2.Zero));
                             }
                         }
                     }
@@ -296,7 +302,7 @@ namespace QTM2Unity
                         {
                             TreeNode<Bone> footBaseRight = ankleRight.AddChild(new Bone(Joint.FOOTBASE_R, footBaseRightPos, footBaseRightRot));
                             {
-                                footBaseRight.AddChild(new Bone(Joint.TOE_R, toeRightPos, QuaternionHelper.Zero));
+                                footBaseRight.AddChild(new Bone(Joint.TOE_R, toeRightPos, QuaternionHelper2.Zero));
                             }
                         }
                     }

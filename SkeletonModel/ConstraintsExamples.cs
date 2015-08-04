@@ -33,7 +33,7 @@ namespace QTM2Unity
         public Vector2 WristTwist = new Vector2(345, 15);
 
 
-        private float stiff = 0.7f;
+        //private float stiff = 0.7f;
         private float verystiff = 0.5f;
         private float barelymoving = 0.3f;
         
@@ -70,16 +70,16 @@ namespace QTM2Unity
             #endregion
 
             #region ParentPointers
-            skeleton[Joint.CLAVICLE_R].ParentPointer = QuaternionHelper.RotationZ(-MathHelper.PiOver2);
-            skeleton[Joint.CLAVICLE_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.PiOver2);
-            skeleton[Joint.HIP_R].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
-            skeleton[Joint.HIP_L].ParentPointer = QuaternionHelper.RotationZ(MathHelper.Pi);
-            skeleton[Joint.ANKLE_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) * QuaternionHelper.RotationZ(-MathHelper.PiOver4);
-            skeleton[Joint.ANKLE_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) * QuaternionHelper.RotationZ(MathHelper.PiOver4);
-            skeleton[Joint.FOOTBASE_L].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) *
-                QuaternionHelper.RotationZ(-MathHelper.PiOver4);// QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
-                skeleton[Joint.FOOTBASE_R].ParentPointer = QuaternionHelper.RotationX(MathHelper.PiOver4) *
-                QuaternionHelper.RotationZ(MathHelper.PiOver4);//QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
+            skeleton[Joint.CLAVICLE_R].ParentPointer = QuaternionHelper2.RotationZ(-MathHelper.PiOver2);
+            skeleton[Joint.CLAVICLE_L].ParentPointer = QuaternionHelper2.RotationZ(MathHelper.PiOver2);
+            skeleton[Joint.HIP_R].ParentPointer = QuaternionHelper2.RotationZ(MathHelper.Pi);
+            skeleton[Joint.HIP_L].ParentPointer = QuaternionHelper2.RotationZ(MathHelper.Pi);
+            skeleton[Joint.ANKLE_R].ParentPointer = QuaternionHelper2.RotationX(MathHelper.PiOver4) * QuaternionHelper2.RotationZ(-MathHelper.PiOver4);
+            skeleton[Joint.ANKLE_L].ParentPointer = QuaternionHelper2.RotationX(MathHelper.PiOver4) * QuaternionHelper2.RotationZ(MathHelper.PiOver4);
+            skeleton[Joint.FOOTBASE_L].ParentPointer = QuaternionHelper2.RotationX(MathHelper.PiOver4) *
+                QuaternionHelper2.RotationZ(-MathHelper.PiOver4);// QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
+                skeleton[Joint.FOOTBASE_R].ParentPointer = QuaternionHelper2.RotationX(MathHelper.PiOver4) *
+                QuaternionHelper2.RotationZ(MathHelper.PiOver4);//QuaternionHelper.RotationX(MathHelper.Pi + MathHelper.PiOver6);
             #endregion
 
             #region TwistConstraints

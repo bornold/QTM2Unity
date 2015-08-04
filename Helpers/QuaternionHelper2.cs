@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using OpenTK;
+﻿using OpenTK;
+using QualisysRealTime.Unity;
 
 namespace QTM2Unity
-{  
-    public static class QuaternionHelper
+{
+    public static class QuaternionHelper2
     {
         public static float precision = 0.9999f;
         /// <summary>

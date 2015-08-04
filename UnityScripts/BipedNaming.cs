@@ -147,14 +147,13 @@ namespace QTM2Unity {
         {
             return Matches(boneName, aliases) && !Exclude(boneName, excusions);
         }
-		private static bool Matches(string boneName, string[] namingConvention) {
-            //if (ExcludesNaming(boneName, exludeName)) return false;
+		private static bool Matches(string boneName, string[] possibleNames) {
             return !Exclude(boneName, exludeName) 
-                && namingConvention.Any(nc => boneName.Contains(nc));
+                && possibleNames.Any(nc => boneName.Contains(nc));
 		}
 		
-		private static bool Exclude(string boneName, string[] namingConvention) {
-            return namingConvention.Any(nc => boneName.Contains(nc));
+		private static bool Exclude(string boneName, string[] possibleNames) {
+            return possibleNames.Any(nc => boneName.Contains(nc));
 		}
 		
 		private static string FirstLetter(string boneName) {

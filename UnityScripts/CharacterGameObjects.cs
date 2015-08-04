@@ -423,9 +423,6 @@ namespace QTM2Unity {
         private bool AddBoneToSpine(Transform bone)
         {
             if (bone == root) return false;
-
-            bool isLegsParent = bone == leftThigh.parent;
-
             if (pelvis != null)
             {
                 if (bone == pelvis) return false;

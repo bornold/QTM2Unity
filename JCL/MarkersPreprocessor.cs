@@ -23,7 +23,6 @@ namespace QTM2Unity
         private Vector3 lastSACRUMknown = Vector3Helper.MidPoint(new Vector3(0.0774f, 1.0190f, -0.1151f), new Vector3(-0.0716f, 1.0190f, -0.1138f));
         private Vector3 lastRIASknown = new Vector3(0.0925f, 0.9983f, 0.1052f);
         private Vector3 lastLIASknown = new Vector3(-0.0887f, 1.0021f, 0.1112f);
-        private Vector3 offset = Vector3.Zero;
         private MarkersNames m;
 
         public MarkersPreprocessor(List<LabeledMarker> labelMarkers, out MarkersNames markerNames, string bodyPrefix = "")
@@ -120,7 +119,7 @@ namespace QTM2Unity
                     dirVec1 = liasLastFrame - sacrumLastFrame; // vector from sacrum too lias in last frame
                     dirVec2 = liasLastFrame - riasLastFrame;
                     Quaternion between = Quaternion.Invert(
-                                QuaternionHelper.GetRotationBetween(
+                                QuaternionHelper2.GetRotationBetween(
                                 (RIAS - Sacrum), (riasLastFrame - sacrumLastFrame))
                                 );
                     Vector3 transVec1 = Vector3.Transform(dirVec1, (between));
@@ -135,7 +134,7 @@ namespace QTM2Unity
                     dirVec1 = riasLastFrame - sacrumLastFrame;
                     dirVec2 = riasLastFrame - liasLastFrame;
                     Quaternion between = Quaternion.Invert(
-                                            QuaternionHelper.GetRotationBetween(
+                                            QuaternionHelper2.GetRotationBetween(
                                             (LIAS - Sacrum), (liasLastFrame - sacrumLastFrame))
                                             );
                     Vector3 transVec1 = Vector3.Transform(dirVec1, (between));
@@ -158,7 +157,7 @@ namespace QTM2Unity
                     dirVec2 = sacrumLastFrame - liasLastFrame;
 
                     Quaternion between = Quaternion.Invert(
-                        QuaternionHelper.GetRotationBetween(
+                        QuaternionHelper2.GetRotationBetween(
                         (LIAS - RIAS), (liasLastFrame - riasLastFrame))
                         );
                     Vector3 transVec1 = Vector3.Transform(dirVec1, (between));

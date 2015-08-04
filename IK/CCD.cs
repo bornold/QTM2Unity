@@ -3,7 +3,7 @@ namespace QTM2Unity
 {
     class CCD : IKSolver
     {
-        int degreeStep = 10;
+        private int degreeStep = 10;
         override public bool SolveBoneChain(Bone[] bones, Bone target, Bone grandparent)
         {
 
@@ -20,11 +20,16 @@ namespace QTM2Unity
             bool toggle = false;
             bool doneOneLapAroundYAxis = false;
             int maxdegrees = 120;
-            float lastDistToTarget = float.MaxValue;
-            float distToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
-            while (distToTarget > threshold && ++iter < MaxIterations && (!doneOneLapAroundYAxis || degrees < maxdegrees))
+            float lastDistanceToTarget = float.MaxValue;
+            float distanceToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
+
+            // main loop
+            while (threshold < distanceToTarget
+                && MaxIterations < ++iter  
+                && (!doneOneLapAroundYAxis || degrees < maxdegrees))
             {
-                if ((distToTarget >= lastDistToTarget))
+                // if CCD is stuck becouse of constraints, we twist the chain
+                if ((distanceToTarget >= lastDistanceToTarget))
                 {
                     if (!doneOneLapAroundYAxis && degrees > maxdegrees)
                     {
@@ -36,9 +41,9 @@ namespace QTM2Unity
                         break;
                     }
                     Quaternion q = doneOneLapAroundYAxis ?
-                        QuaternionHelper.RotationX(MathHelper.DegreesToRadians(toggle ? degrees : -degrees))
+                        QuaternionHelper2.RotationX(MathHelper.DegreesToRadians(toggle ? degrees : -degrees))
                       :
-                       QuaternionHelper.RotationY(MathHelper.DegreesToRadians(toggle ? degrees : -degrees));
+                       QuaternionHelper2.RotationY(MathHelper.DegreesToRadians(toggle ? degrees : -degrees));
                     ForwardKinematics(ref bones, q);
                     if (toggle)
                     {
@@ -46,14 +51,6 @@ namespace QTM2Unity
                     }
                     toggle = !toggle;
                 }
-
-                //// Check if target is on the chain
-                //if (IsTargetOnChain(ref bones, ref target))
-                //{
-                //    // Bend chain a small degree
-                //    Quaternion rot = Quaternion.FromAxisAngle(bones[0].GetXAxis(), MathHelper.DegreesToRadians(1));
-                //    ForwardKinematics(ref bones, rot, 0);
-                //}
 
                 // for each bone, starting with the one closest to the end effector 
                 // (but not the end effector itself)
@@ -68,14 +65,14 @@ namespace QTM2Unity
                     // - first the endEffector
                     // - then the rest of the affected joints
                     rotation = (a.LengthFast == 0 || b.LengthFast == 0) ? Quaternion.Identity
-                        : QuaternionHelper.GetRotationBetween(a, b, bones[i].Stiffness);
+                        : QuaternionHelper2.GetRotationBetween(a, b, bones[i].Stiffness);
 
                     if (bones[i].HasConstraints)
                     {
                         //Vector3 trg = bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation);
                         Vector3 res;
                         Quaternion rot;
-                        if (CheckRotationalConstraints(
+                        if (constraints.CheckRotationalConstraints(
                             bones[i],
                             ((i > 0) ? bones[i - 1] : grandparent).Orientation, //Reference
                             bones[i].Pos + Vector3.Transform(bones[i + 1].Pos - bones[i].Pos, rotation), // Target
@@ -90,18 +87,18 @@ namespace QTM2Unity
                     if (bones[i].HasTwistConstraints)
                     {
                         Quaternion rotation2;
-                        if (CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : grandparent, out rotation2))
+                        if (constraints.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : grandparent, out rotation2))
                         {
                             //ForwardRotation(ref bones, rotation2, i);
                             ForwardKinematics(ref bones, rotation2, i);
                         }
                     }
                 }
-                lastDistToTarget = distToTarget;
-                distToTarget = (bones[bones.Length - 1].Pos - target.Pos).LengthFast;
+                lastDistanceToTarget = distanceToTarget;
+                distanceToTarget = (bones[bones.Length - 1].Pos - target.Pos).LengthFast;
             }
             bones[bones.Length - 1].Orientation = new Quaternion (target.Orientation.Xyz,target.Orientation.W);
-            return (distToTarget <= threshold);
+            return (distanceToTarget <= threshold);
         }
     }
 }

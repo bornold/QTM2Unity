@@ -6,10 +6,6 @@ namespace QTM2Unity {
    [System.Serializable]
     public class Debugging
     {
-        private bool test = true;
-        bool test2 = true;
-        protected bool test3 = true;
-
         public string bodyPrefix = "";
         public bool debugFlag = false;
         public bool resetSkeleton = false;

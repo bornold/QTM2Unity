@@ -49,7 +49,6 @@ namespace QTM2Unity
                 {
                     case Joint.PELVIS:
                         setGO(charactersJoints.pelvis, b.Data, debug.jointsRot.rots.hip, setPos: true);
-                        //charactersJoints.root.position = b.Data.Pos.Convert();
                         break;
                     case Joint.SPINE0:
                         if (charactersJoints.spine.Length > 0)
@@ -88,7 +87,6 @@ namespace QTM2Unity
                         setGO(charactersJoints.rightFoot, b.Data, debug.jointsRot.rots.footRight);
                         break;
                     case Joint.CLAVICLE_L:
-                        //UnityEngine.Debug.Log(b.Data);
                         setGO(charactersJoints.leftClavicle, b.Data, debug.jointsRot.rots.clavicleLeft);
                         break;
                     case Joint.CLAVICLE_R:

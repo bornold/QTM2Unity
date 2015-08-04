@@ -6,18 +6,6 @@
     using UnityEngine;
     public static class Extensions
     {
-        //public static Transform Search(this UnityEngine.Transform target, string name)
-        //{
-        //    if (target.name == name) return target;
-
-        //    for (int i = 0; i < target.childCount; ++i)
-        //    {
-        //        var result = Search(target.GetChild(i), name);
-
-        //        if (result != null) return result;
-        //    }
-        //    return null;
-        //}
         /// <summary>
         /// Returns every direct child of a GameObject
         /// </summary>

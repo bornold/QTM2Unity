@@ -12,7 +12,6 @@ namespace QTM2Unity
         protected Vector3 pos;
         protected bool streaming = false;
         protected List<LabeledMarker> markerData;
-        protected List<string> markersLabels;
         public virtual void StartNext() { }
         public virtual void UpdateNext() { }
 

@@ -3,23 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 namespace QTM2Unity
 {
-    [System.Serializable]
-    public enum JointMarker
-    {
-        Hip,
-        Knee,
-        Ankle,
-        Foot,
-        Spine,
-        ClavicleSternum,
-        Shoulder,
-        Elbow,
-        Wrist,
-        Hand,
-        Thumb,
-        Finger,
-        Head
-    }
     class MarkersNames : IEnumerable<string>
     {
         public string

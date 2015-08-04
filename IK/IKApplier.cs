@@ -39,7 +39,7 @@ namespace QTM2Unity
                     || bone.Data.Name.Equals(Joint.TRAP_R))
                 {
                     bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
-                    bone.Data.Orientation = QuaternionHelper.LookAtUp(
+                    bone.Data.Orientation = QuaternionHelper2.LookAtUp(
                         bone.Data.Pos,
                         bone.Children.First().Data.Pos,
                         bone.Parent.Data.GetZAxis());
@@ -142,7 +142,7 @@ namespace QTM2Unity
                 if (!tnb.Data.HasNaN && tnb.Data.HasConstraints)
                 {
                     Quaternion rot;
-                    if (IKSolver.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
+                    if (IKSolver.constraints.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                     {
                         tnb.Data.Rotate(rot);
                         anychange = true;
@@ -150,14 +150,14 @@ namespace QTM2Unity
                     Vector3 res;
                     Vector3 child = tnb.Children.First().Data.Pos;
                     if (!child.IsNaN() &&
-                        IKSolver.CheckRotationalConstraints(
+                        IKSolver.constraints.CheckRotationalConstraints(
                                         tnb.Data, tnb.Parent.Data.Orientation,
                                         child, out res, out rot))
                     {
                         FK(tnb, rot);
                         anychange = true;
                     }
-                    if (IKSolver.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
+                    if (IKSolver.constraints.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                     {
                         tnb.Data.Rotate(rot);
                         anychange = true;
@@ -185,7 +185,7 @@ namespace QTM2Unity
                     //Vector3 newFinalPos = (posInitial + diffInitToFinalVec);
                     //Vector3 parentPos = bone.Parent.Data.Pos;
                     Quaternion rotToNewPos = 
-                        QuaternionHelper.RotationBetween(
+                        QuaternionHelper2.RotationBetween(
                                 bone.Parent.Data.GetYAxis(),
                                 ((posInitial + diffInitToFinalVec) - bone.Parent.Data.Pos));
                     /////////////////////////////
@@ -212,7 +212,7 @@ namespace QTM2Unity
                 Quaternion oriInitial = lastFrameBone.Orientation;
                 if (!bone.IsLeaf)
                 {
-                    float quatDiff = QuaternionHelper.DiffrenceBetween(oriFinal, oriInitial);
+                    float quatDiff = QuaternionHelper2.DiffrenceBetween(oriFinal, oriInitial);
                     if (quatDiff > 0.03f)
                     {
                         //UnityEngine.Debug.Log(currBone.Name + " jerked with " + quatDiff + " amount\n" + "Twisting back " + calc * 100 + "%");

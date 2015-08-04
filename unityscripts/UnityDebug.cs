@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace QTM2Unity
@@ -63,7 +62,7 @@ namespace QTM2Unity
             OpenTK.Vector3 parentY = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, referenceRotation);
             OpenTK.Vector3 parentZ = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, referenceRotation);
 
-            OpenTK.Quaternion rot = QuaternionHelper.GetRotationBetween(parentY, thisY);
+            OpenTK.Quaternion rot = QuaternionHelper2.GetRotationBetween(parentY, thisY);
             OpenTK.Vector3 reference = OpenTK.Vector3.Transform(parentZ, rot);
             reference.Normalize();
             Debug.DrawRay(poss.Convert(), (b.GetZAxis() * scale*2).Convert(), Color.cyan);

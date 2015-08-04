@@ -3,6 +3,7 @@ using OpenTK;
 
 namespace QTM2Unity
 {
+    [System.Serializable]
     public class Bone : IEquatable<Bone>
     {
         #region Name, pos, rot and constraints getters and setters
@@ -33,7 +34,7 @@ namespace QTM2Unity
         public Quaternion Orientation
         {
             get { return orientation; }
-            set { orientation = value != QuaternionHelper.Zero ?  Quaternion.Normalize(value) : value; }
+            set { orientation = value != QuaternionHelper2.Zero ?  Quaternion.Normalize(value) : value; }
         }
         #region constraints getters and setters
 
@@ -115,17 +116,17 @@ namespace QTM2Unity
         #region Direction getters
         public Vector3 GetYAxis()
         {
-            return Vector3.Normalize(Vector3.Transform(Vector3.UnitY, orientation));
+            return Vector3.NormalizeFast(Vector3.Transform(Vector3.UnitY, orientation));
         }
 
         public Vector3 GetZAxis()
         {
-            return Vector3.Normalize(Vector3.Transform(Vector3.UnitZ, orientation));
+            return Vector3.NormalizeFast(Vector3.Transform(Vector3.UnitZ, orientation));
         }
 
         public Vector3 GetXAxis()
         {
-            return Vector3.Normalize(Vector3.Transform(Vector3.UnitX, orientation));
+            return Vector3.NormalizeFast(Vector3.Transform(Vector3.UnitX, orientation));
         }
         #endregion
         #region rotation methods
@@ -141,7 +142,7 @@ namespace QTM2Unity
 
         public void RotateTowards(Vector3 v, float stiffness = 1f)
         {
-            Rotate(QuaternionHelper.GetRotationBetween(GetYAxis(), v, stiffness = this.stiffness));
+            Rotate(QuaternionHelper2.GetRotationBetween(GetYAxis(), v, stiffness = this.stiffness));
         }
         #endregion
         public bool Equals(Bone other)
