@@ -96,8 +96,6 @@ namespace QTM2Unity {
         /// The spine hierarchy. Should not contain any bone deeper in the hierarchy than the arms (neck or head).
         /// </summary>
         public Transform[] spine;
-        public Transform shoulderLeft;
-        public Transform shoulderRight;
 
         public Transform thumbLeft;
 

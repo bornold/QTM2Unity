@@ -52,18 +52,18 @@ namespace QTM2Unity
             }
             pos = this.transform.position + debug.offset;
             
-            if ((debug != null && debug.bodyRig.resetSkeleton) 
+            if ((debug != null && debug.resetSkeleton) 
                 || skeleton == null 
                 || skeletonBuffer == null 
-                || debug.bodyRig.bodyPrefix != prefix)
+                || debug.bodyPrefix != prefix)
             {
                 UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
                 skeletonBuffer = new BipedSkeleton();
                 mp = null;
                 joints = null;
-                debug.bodyRig.resetSkeleton = false;
-                prefix = debug.bodyRig.bodyPrefix;
+                debug.resetSkeleton = false;
+                prefix = debug.bodyPrefix;
                 return;
             }
             if (debug.debugFlag)
@@ -74,12 +74,12 @@ namespace QTM2Unity
             if (mp == null || joints == null)
             {
                 MarkersNames markersMap;
-                mp = new MarkersPreprocessor(markerData, out markersMap, bodyPrefix: debug.bodyRig.bodyPrefix);
+                mp = new MarkersPreprocessor(markerData, out markersMap, bodyPrefix: debug.bodyPrefix);
                 joints = new JointLocalization(markersMap);
             }
             Dictionary<string, OpenTK.Vector3> markers;
 
-            if (!mp.ProcessMarkers(markerData, out markers, debug.bodyRig.bodyPrefix))
+            if (!mp.ProcessMarkers(markerData, out markers, debug.bodyPrefix))
             {
                 UnityEngine.Debug.LogError("Markers (TODO FIX ERROR MESSAGE");
                 return;
@@ -153,9 +153,9 @@ namespace QTM2Unity
                     }
                 }
             }
-            if (debug.jointsConstrains != null &&
-                (debug.jointsConstrains.showConstraints ||
-                debug.jointsConstrains.showTwistConstraints))
+            if (debug.bodyRig.jointsConstrains != null &&
+                (debug.bodyRig.jointsConstrains.showConstraints ||
+                debug.bodyRig.jointsConstrains.showTwistConstraints))
             {
                 foreach (TreeNode<Bone> b in skeleton.Root)
                 {
@@ -164,17 +164,17 @@ namespace QTM2Unity
                         OpenTK.Quaternion parentRotation =
                             b.Parent.Data.Orientation * b.Data.ParentPointer;
                         OpenTK.Vector3 poss = b.Data.Pos + pos.Convert();
-                        if (debug.jointsConstrains.showConstraints)
+                        if (debug.bodyRig.jointsConstrains.showConstraints)
                         {
                             UnityDebug.CreateIrregularCone(
                                 b.Data.Constraints, poss,
                                 OpenTK.Vector3.NormalizeFast(
                                     OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, parentRotation)),
                                 parentRotation,
-                                debug.jointsConstrains.coneResolution,
-                                debug.jointsConstrains.coneSize);
+                                debug.bodyRig.jointsConstrains.coneResolution,
+                                debug.bodyRig.jointsConstrains.coneSize);
                         }
-                        if (debug.jointsConstrains.showTwistConstraints)
+                        if (debug.bodyRig.jointsConstrains.showTwistConstraints)
                         {
                             UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, debug.bodyRig.traceLength);
                         }
