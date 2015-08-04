@@ -33,6 +33,12 @@ namespace QTM2Unity
                     case CharactersFixs.Model3:
                         debug.jointsRot.rots = new Model3();
                         break;
+                    case CharactersFixs.Model4:
+                        debug.jointsRot.rots = new Model4();
+                        break;
+                    case CharactersFixs.Model5:
+                        debug.jointsRot.rots = new Model5();
+                        break;
                     default:
                         break;
                 }
