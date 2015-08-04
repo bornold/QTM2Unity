@@ -11,8 +11,6 @@ namespace QTM2Unity
         protected RTClient rtClient;
         protected Vector3 pos;
         protected bool streaming = false;
-        //protected bool fileStreaming = false;
-        //protected bool reset = false;
         protected List<LabeledMarker> markerData;
         protected List<string> markersLabels;
         public virtual void StartNext() { }

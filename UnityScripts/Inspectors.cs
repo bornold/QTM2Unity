@@ -55,14 +55,28 @@ namespace QTM2Unity {
         public bool UseFingers = false;
         public Vector3
             root = new Vector3(0f, 0f, 0f),
-            leg = new Vector3(0f, 0f, 180f),
-            feet = new Vector3(270f, 0f, 180f),
-            armLeft = new Vector3(0f, 0f, 270f),
-            armRight = new Vector3(0f, 0f, 90f),
+            hip = new Vector3(0f, 0f, 0f),
+            spine = new Vector3(0f, 0f, 0f),
+            neck = new Vector3(0f, 0f, 0f),
+            head = new Vector3(0f, 0f, 0f),
+            legUpperLeft = new Vector3(0f, 0f, 180f),
+            legLowerLeft = new Vector3(0f, 0f, 180f),
+            footLeft = new Vector3(270f, 0f, 180f),
+            legUpperRight = new Vector3(0f, 0f, 180f),
+            legLowerRight = new Vector3(0f, 0f, 180f),
+            footRight = new Vector3(270f, 0f, 180f),
+            clavicleLeft = new Vector3(0f, 0f, 270f),
+            armUpperLeft = new Vector3(0f, 0f, 270f),
+            armLowerLeft = new Vector3(0f, 0f, 270f),
             handLeft = new Vector3(0f, 0f, 270f),
-            handRight = new Vector3(0f, 0f, 90f),
             thumbLeft = new Vector3(330f, 0f, 270f),
-            thumbRight = new Vector3(330f, 0f, 90f);
+            fingersLeft = new Vector3(330f, 0f, 270f),
+            clavicleRight = new Vector3(0f, 0f, 270f),
+            armUpperRight = new Vector3(0f, 0f, 90f),
+            armLowerRight = new Vector3(0f, 0f, 90f),
+            handRight = new Vector3(0f, 0f, 90f),
+            thumbRight = new Vector3(330f, 0f, 90f),
+            fingersRight = new Vector3(330f, 0f, 270f);
 
     }
 }

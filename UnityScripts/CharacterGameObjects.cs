@@ -166,7 +166,7 @@ namespace QTM2Unity {
             }
             else
             {
-                this.PrintAll();
+                //this.PrintAll();
 
                 // Try to find by names
                 DetectByNaming(root, useFingers);
@@ -246,14 +246,11 @@ namespace QTM2Unity {
             if (!neck) neck = JointNamings.GetBone(transforms, JointNamings.JointObject.Neck);
             // Find Pelvis
             if (!pelvis) pelvis = JointNamings.GetMatch(transforms, JointNamings.pelvisAlias);
-            UnityEngine.Debug.LogWarning(pelvis);
             //// If pelvis is not an ancestor of a leg, it is not a valid pelvis
             if (!pelvis || !leftThigh.IsAncestorOf(pelvis))
             {
-                UnityEngine.Debug.LogWarning("!!!");
                 if (leftThigh) pelvis = leftThigh.parent;
             }
-            UnityEngine.Debug.LogWarning(pelvis);
             // Find spine
             Transform left, right;
             if (leftClavicle && rightClavicle)
@@ -322,7 +319,7 @@ namespace QTM2Unity {
 
             if (!neck) neck = animator.GetBoneTransform(HumanBodyBones.Neck);
 
-            if (neck.parent) spine = GetAncestors(neck.parent, pelvis);
+            if (neck && neck.parent) spine = GetAncestors(neck.parent, pelvis);
 
             if (!leftClavicle) leftClavicle = animator.GetBoneTransform(HumanBodyBones.LeftShoulder);
             if (!rightClavicle) rightClavicle = animator.GetBoneTransform(HumanBodyBones.RightShoulder);
