@@ -1,9 +1,29 @@
-﻿using OpenTK;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+using OpenTK;
 namespace QTM2Unity
 {
     class CCD : IKSolver
     {
         private int degreeStep = 10;
+        /// <summary>
+        /// Given a array of bones, and a target bone, solves the chain so that the last bone in the chain is at at the same position as the target
+        /// </summary>
+        /// <param name="bones">An array of bones, the chain to be solved by IK</param>
+        /// <param name="target">The target for the chain</param>
+        /// <param name="grandparent">the parent of the first bone in the bones chain, is used to ensure constraints</param>
+        /// <returns>True if target was reached, false if maximum iteration was reached first   </returns>
         override public bool SolveBoneChain(Bone[] bones, Bone target, Bone grandparent)
         {
 
@@ -24,9 +44,7 @@ namespace QTM2Unity
             float distanceToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
 
             // main loop
-            while (threshold < distanceToTarget
-                && MaxIterations < ++iter  
-                && (!doneOneLapAroundYAxis || degrees < maxdegrees))
+            while (threshold < distanceToTarget && MaxIterations < ++iter)
             {
                 // if CCD is stuck becouse of constraints, we twist the chain
                 if ((distanceToTarget >= lastDistanceToTarget))
@@ -36,7 +54,7 @@ namespace QTM2Unity
                         doneOneLapAroundYAxis = true;
                         degrees = degreeStep;
                     }
-                    else if (degrees > maxdegrees)
+                    else if (doneOneLapAroundYAxis && degrees > maxdegrees)
                     {
                         break;
                     }
@@ -45,10 +63,7 @@ namespace QTM2Unity
                       :
                        QuaternionHelper2.RotationY(MathHelper.DegreesToRadians(toggle ? degrees : -degrees));
                     ForwardKinematics(ref bones, q);
-                    if (toggle)
-                    {
-                        degrees += degreeStep;
-                    }
+                    if (toggle) degrees += degreeStep;
                     toggle = !toggle;
                 }
 
@@ -81,15 +96,14 @@ namespace QTM2Unity
                             rotation = rot * rotation;
                         }
                     }
-
+                    // Move the chain
                     ForwardKinematics(ref bones, rotation, i);
-
+                    // Check for twist constraints
                     if (bones[i].HasTwistConstraints)
                     {
                         Quaternion rotation2;
                         if (constraints.CheckOrientationalConstraint(bones[i], (i > 0) ? bones[i - 1] : grandparent, out rotation2))
                         {
-                            //ForwardRotation(ref bones, rotation2, i);
                             ForwardKinematics(ref bones, rotation2, i);
                         }
                     }
@@ -97,6 +111,7 @@ namespace QTM2Unity
                 lastDistanceToTarget = distanceToTarget;
                 distanceToTarget = (bones[bones.Length - 1].Pos - target.Pos).LengthFast;
             }
+            // Copy the targets rotation so that rotation is consistant
             bones[bones.Length - 1].Orientation = new Quaternion (target.Orientation.Xyz,target.Orientation.W);
             return (distanceToTarget <= threshold);
         }

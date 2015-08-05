@@ -1,16 +1,26 @@
-﻿using OpenTK;
-using System;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+
+using OpenTK;
+using QualisysRealTime.Unity;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using QualisysRealTime.Unity;
 
 namespace QTM2Unity
 {
     class MarkersPreprocessor
     {
-        //private List<string> markersList;
         private Dictionary<string, Vector3> markers = new Dictionary<string, Vector3>();
         private Dictionary<string, Vector3> markersLastFrame = new Dictionary<string, Vector3>();
         private string prefix;
@@ -19,15 +29,21 @@ namespace QTM2Unity
 
         private string[] sacrumBetweenMarkers;
         private string[] frontHeadBetweenMarkers;
-
+        /// <summary>
+        /// The ma
+        /// </summary>
         private Vector3 lastSACRUMknown = Vector3Helper.MidPoint(new Vector3(0.0774f, 1.0190f, -0.1151f), new Vector3(-0.0716f, 1.0190f, -0.1138f));
         private Vector3 lastRIASknown = new Vector3(0.0925f, 0.9983f, 0.1052f);
         private Vector3 lastLIASknown = new Vector3(-0.0887f, 1.0021f, 0.1112f);
         private MarkersNames m;
-
+        /// <summary>
+        /// Constructor sets the markers name in the MarkesName class used for joint localization
+        /// </summary>
+        /// <param name="labelMarkers">The list of labelmarkets</param>
+        /// <param name="markerNames">A reference to the markers names</param>
+        /// <param name="bodyPrefix">Any possible prefix of the markersname</param>
         public MarkersPreprocessor(List<LabeledMarker> labelMarkers, out MarkersNames markerNames, string bodyPrefix = "")
         {
-
             this.prefix = bodyPrefix;
             markers = new Dictionary<string, Vector3>();
             for (int i = 0; i < labelMarkers.Count; i++)
@@ -46,7 +62,13 @@ namespace QTM2Unity
             markersLastFrame[m.leftHip] = lastLIASknown;
             markersLastFrame[m.rightHip] = lastRIASknown;
         }
-        public bool ProcessMarkers(List<LabeledMarker> labelMarkers, out Dictionary<string,Vector3> newMarkers, string prefix)
+        /// <summary>
+        /// Prepare the markerset for Joint localization, predicts the 
+        /// </summary>
+        /// <param name="labelMarkers">The list of labelmarkets</param>
+        /// <param name="newMarkers">a reference to the dictionary to be </param>
+        /// <param name="prefix">The possible prefix of all markers</param>
+        public void ProcessMarkers(List<LabeledMarker> labelMarkers, out Dictionary<string,Vector3> newMarkers, string prefix)
         {
             var temp = markers;
             markers = markersLastFrame;
@@ -64,14 +86,14 @@ namespace QTM2Unity
                     markers.Add(markername, Vector3Helper.NaN);
                 }
             }
-
+            // sacrum can be defined by two markers
             if (sacrumBetween)
             {
                 markers[m.bodyBase] = 
                     Vector3Helper.MidPoint(markers[sacrumBetweenMarkers[0]],
                                             markers[sacrumBetweenMarkers[1]]);
             }
-
+            // 
             if (frontHeadBetween)
             {
                 markers[m.head] = 
@@ -96,8 +118,11 @@ namespace QTM2Unity
             newMarkers = markers;
             //MoveLegMarkers(ref markers, true);
             //MoveLegMarkers(ref markers, false);
-            return true;
         }
+        /// <summary>
+        /// If any of the hip markers are missing, we predict them using the last position
+        /// </summary>
+        /// <param name="markers">The dictionary of markers</param>
         private void MissingEssientialMarkers(Dictionary<string,Vector3> markers)
         {
             Vector3 dirVec1, dirVec2, possiblePos1, possiblePos2,
@@ -204,6 +229,11 @@ namespace QTM2Unity
                 }
             }
         }
+        /// <summary>
+        /// Moving the legmarkets towards the skin, can be usefull
+        /// </summary>
+        /// <param name="markers">The markers</param>
+        /// <param name="isRightKnee">Bool of right knee or not</param>
         private void MoveLegMarkers(ref Dictionary<string,Vector3> markers, bool isRightKnee)
         {
             // Stolen from Visual3D
@@ -237,8 +267,6 @@ namespace QTM2Unity
             x = Vector3Helper.MidPoint(M1, M2) - M3;
             z = M2 - M1;
             R = Matrix4Helper.GetOrientationMatrix(x, z);
-            //if (isRightKnee) trans = Vector3.Multiply(trans, negateY);
-            //Vector3 newM2 = Vector3.TransformVector(trans, R) + M2;
 
             if (isRightKnee)
             {
@@ -255,7 +283,7 @@ namespace QTM2Unity
         /// Finds aliases of different markers and replaces the names
         /// </summary>
         /// <param name="markersNames">A collection of the names of the markers</param>
-        /// <returns></returns>
+        /// <returns>The set marker names</returns>
         private MarkersNames NameSet(ICollection<string> markersNames)
         {
             MarkersNames m = new MarkersNames();
@@ -424,6 +452,7 @@ namespace QTM2Unity
             #endregion
             return m;
         }
+
         private void SetName(ICollection<string> markerNames, ref List<string> alias, ref string name, string prefix = "")
         {
             var quary = alias.FirstOrDefault(n => markerNames.Contains(prefix + n));

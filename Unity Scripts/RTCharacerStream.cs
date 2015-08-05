@@ -1,4 +1,17 @@
-﻿using UnityEngine;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+using UnityEngine;
 namespace QTM2Unity
 {
 
@@ -69,7 +82,7 @@ namespace QTM2Unity
                             setGO(charactersJoints.spine[2], b.Data, debug.jointsRot.rots.spine);
                         break;
                     case Joint.NECK:
-                        setGO(charactersJoints.neck, b.Data, debug.jointsRot.rots.spine);
+                        setGO(charactersJoints.neck, b.Data, debug.jointsRot.rots.neck);
                         break;
                     case Joint.HEAD:
                         setGO(charactersJoints.head, b.Data, debug.jointsRot.rots.head);
@@ -117,12 +130,12 @@ namespace QTM2Unity
                         setGO(charactersJoints.rightHand, b.Data, debug.jointsRot.rots.handRight);
                         break;
                     case Joint.HAND_L:
-                        if (debug.jointsRot.UseFingers) 
+                        if (debug.jointsRot.UseFingers && charactersJoints.fingersLeft != null) 
                             foreach (var fing in charactersJoints.fingersLeft) 
                                 setGO(fing, b.Data, debug.jointsRot.rots.fingersLeft);
                         break;
                     case Joint.HAND_R:
-                        if (debug.jointsRot.UseFingers) 
+                        if (debug.jointsRot.UseFingers && charactersJoints.fingersRight != null) 
                             foreach (var fing in charactersJoints.fingersRight) 
                                 setGO(fing, b.Data, debug.jointsRot.rots.fingersRight);
                         break;

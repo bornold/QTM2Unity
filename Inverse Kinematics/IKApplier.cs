@@ -1,13 +1,30 @@
-﻿using System.Collections;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+
+using OpenTK;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using OpenTK;
-using System.Diagnostics;
 namespace QTM2Unity
 {
+    /// <summary>
+    /// Class for predicting missing joints position from a skeleton
+    /// </summary>
     class IKApplier
     {
         private BipedSkeleton lastSkel;
+       
         public IKSolver IKSolver { private get; set; }
         public IKSolver FABRIK { private get; set; } 
 
@@ -20,13 +37,21 @@ namespace QTM2Unity
                 FABRIK.MaxIterations = 20;
         }
 
+        /// <summary>
+        /// Checks for empty position in the skeleton, fills the from the last skeleton.
+        /// Root and all of roots children MUST have set possition!
+        /// </summary>
+        /// <param name="skeleton">The skeleton to be checked </param>
         public void ApplyIK(ref BipedSkeleton skeleton)
         {
             //Root and all of roots children MUST have set possition
             skeleton.Root.Traverse(t => TraversFunc(t));
             lastSkel = skeleton;
         }
-
+        /// <summary>
+        /// The function applied to each bone in the skeleton
+        /// </summary>
+        /// <param name="bone">The skeleton, a tree of bones</param>
         private void TraversFunc(TreeNode<Bone> bone)
         {
             if (!bone.Data.Exists)
@@ -36,9 +61,9 @@ namespace QTM2Unity
                        bone.Data.Name.Equals(Joint.CLAVICLE_L)
                     || bone.Data.Name.Equals(Joint.CLAVICLE_R)
                     || bone.Data.Name.Equals(Joint.TRAP_L)
-                    || bone.Data.Name.Equals(Joint.TRAP_R))
+                    || bone.Data.Name.Equals(Joint.TRAP_R)) 
                 {
-                    bone.Data.Pos = new Vector3(bone.Parent.Data.Pos);
+                    bone.Data.Pos = new Vector3(bone.Parent.Data.Pos); 
                     bone.Data.Orientation = QuaternionHelper2.LookAtUp(
                         bone.Data.Pos,
                         bone.Children.First().Data.Pos,
@@ -108,11 +133,22 @@ namespace QTM2Unity
                 ConstraintsBeforeReturn(missingJoint.Parent);
             }
         }
+        /// <summary>
+        /// Copy the position and orientation from one bone to another
+        /// </summary>
+        /// <param name="curr">The bone to be copied to</param>
+        /// <param name="last">The bone to be copied from</param>
         private void CopyFromLast(Bone curr, Bone last)
         {
             curr.Pos = new Vector3(last.Pos);
             curr.Orientation = new Quaternion(new Vector3(last.Orientation.Xyz), last.Orientation.W);
         }
+        /// <summary>
+        /// Fixes the rotation to always pointh the y-axis towards the next joint 
+        /// </summary>
+        /// <param name="boneTree">The tree of bones</param>
+        /// <param name="endWithEndEffector">If or we should stop fixing when an endeffector is reached</param>
+        /// <returns></returns>
         private bool FixRotation(TreeNode<Bone> boneTree, bool endWithEndEffector = false)
         {
             bool hasChanged = false;
@@ -132,7 +168,11 @@ namespace QTM2Unity
             }
             return hasChanged;
         }
-
+        /// <summary>
+        /// Checks wheter all bones is in a legal rotation and position and fixing there rotaion is that is the case
+        /// </summary>
+        /// <param name="bone">The skeleton, a tree of bones</param>
+        /// <returns>true if any changes has been applied to the skeleton</returns>
         private bool ConstraintsBeforeReturn(TreeNode<Bone> bone)
         {
             bool anychange = false;
@@ -166,6 +206,11 @@ namespace QTM2Unity
             }
             return anychange;
         }
+        /// <summary>
+        /// Test wheter a bone has moved unatural much since last frame
+        /// </summary>
+        /// <param name="bones">The skeleton, a tree of bones</param>
+        /// <returns>True if any changes has been applied to the skeleton</returns>
         private bool JerkingTest(TreeNode<Bone> bones)
         {
             bool hasChanges = false;

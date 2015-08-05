@@ -1,10 +1,26 @@
-﻿using System.Collections.Generic;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+
 using OpenTK;
-using System.Linq;
-using System.Collections;
 using System;
+using System.Collections.Generic;
+
 namespace QTM2Unity
 {
+    /// <summary>
+    /// The class transforming the markers to a skeleton using the 
+    /// </summary>
     class Values
     {
         public Quaternion hipOrientation;
@@ -56,6 +72,10 @@ namespace QTM2Unity
         private Vector3 UnitY = Vector3.UnitY;
         private Vector3 UnitZ = Vector3.UnitZ;
         #endregion
+        /// <summary>
+        /// Setting up for joint localization
+        /// </summary>
+        /// <param name="markers">The aliases of the marker names</param>
         public JointLocalization(MarkersNames markers)
         {
             this.m = markers;
@@ -96,6 +116,11 @@ namespace QTM2Unity
                     (b) => GetFootRight(b),
                 };
         }
+        /// <summary>
+        /// Fills in the skeleton with the joint positions given the set of markers
+        /// </summary>
+        /// <param name="markerData">The dictionary contaiing the markers and their position</param>
+        /// <param name="skeleton">The skeleton to be filled in</param>
         public void GetJointLocation(Dictionary<string, Vector3> markerData, ref BipedSkeleton skeleton)
         {
             o = new Values(); // reset joint pos and orientations
@@ -104,16 +129,25 @@ namespace QTM2Unity
             // this is necessary for shoulder joint localization 
             // Locate hiporientation, hip orientation is important for IK solver,
             bd.CalculateBodyData(markers, ChestOrientation);
-            //GC452 (+64B)
             // get all joints
             int i = 0;
-            SetJointsRecursive(skeleton.Root, ref i); // 3.3kb gc
+            SetJointsRecursive(skeleton.Root, ref i);
         }
+        /// <summary>
+        /// Rcursive function to set the new bone position and rotation
+        /// </summary>
+        /// <param name="currBone">The current bone</param>
+        /// <param name="index">The index of where we are in the tree</param>
         private void SetJointsRecursive(TreeNode<Bone> currBone, ref int index) 
         {
             jcFuncs[index++](currBone.Data);
             if (!currBone.IsLeaf) SetJointsRecursive(currBone.Children, ref index);
         }
+        /// <summary>
+        /// Helper function
+        /// </summary>
+        /// <param name="boneList"></param>
+        /// <param name="index"></param>
         private void SetJointsRecursive(ICollection<TreeNode<Bone>> boneList, ref int index)
         {
             foreach (var b in boneList)
@@ -122,6 +156,9 @@ namespace QTM2Unity
             }
         }
         #region Getters and Setters used for joint localization
+        /// <summary>
+        /// The orientation of the hip
+        /// </summary>
         private Quaternion HipOrientation
         {
             get
@@ -137,6 +174,9 @@ namespace QTM2Unity
                 return o.hipOrientation;
             }
         }
+        /// <summary>
+        /// The orientation of the chest / upper body
+        /// </summary>
         private Quaternion ChestOrientation
         {
             get
@@ -210,6 +250,9 @@ namespace QTM2Unity
                 return o.chestOrientation;
             }
         }
+        /// <summary>
+        /// The orientation of the head
+        /// </summary>
         private Quaternion HeadOrientation
         {
             get
@@ -221,6 +264,9 @@ namespace QTM2Unity
                 return o.headOrientation;
             }
         }
+        /// <summary>
+        /// The vector defining forward of the hip
+        /// </summary>
         private Vector3 HipForward
         {
             get
@@ -230,6 +276,9 @@ namespace QTM2Unity
                 return o.hipForward;
             }
         }
+        /// <summary>
+        ///  The vector defining forward of the chest / upper body
+        /// </summary>
         private Vector3 ChestForward
         {
             get
@@ -241,6 +290,9 @@ namespace QTM2Unity
                 return o.chestForward;
             }
         }
+        /// <summary>
+        /// The position of the left Upper Arm, commonly known as shoulder
+        /// </summary>
         private Vector3 UpperArmForwardLeft
         {
             get
@@ -254,6 +306,9 @@ namespace QTM2Unity
                 return o.upperArmForwardLeft;
             }
         }
+        /// <summary>
+        /// The position of the left Upper Arm, commonly known as shoulder
+        /// </summary>
         private Vector3 UpperArmForwardRight
         {
             get
@@ -266,6 +321,9 @@ namespace QTM2Unity
                 return o.upperArmForwardRight;
             }
         }
+        /// <summary>
+        /// The position of the left lower Arm, commonly known as elbow
+        /// </summary>
         private Vector3 LowerArmForwardLeft
         {
             get
@@ -277,6 +335,9 @@ namespace QTM2Unity
                 return o.lowerArmForwardLeft;
             }
         }
+        /// <summary>
+        /// The position of the right lower Arm, commonly known as elbow
+        /// </summary>
         private Vector3 LowerArmForwardRight
         {
             get
@@ -288,6 +349,9 @@ namespace QTM2Unity
                 return o.lowerArmForwardRight;
             }
         }
+        /// <summary>
+        /// The vector defining the forward of the left knee
+        /// </summary>
         private Vector3 KneeForwardLeft
         {
             get
@@ -299,6 +363,9 @@ namespace QTM2Unity
                 return o.kneeForwardLeft;
             }
         }
+        /// <summary>
+        /// The vector defining the forward of the right knee
+        /// </summary>
         private Vector3 KneeForwardRight
         {
             get
@@ -310,6 +377,9 @@ namespace QTM2Unity
                 return o.kneeForwardRight;
             }
         }
+        /// <summary>
+        /// The vector defing whats up with the lower left leg
+        /// </summary>
         private Vector3 LowerLegUpLeft
         {
             get
@@ -336,6 +406,10 @@ namespace QTM2Unity
                 return o.lowerLegUpLeft;
             }
         }
+        /// <summary>
+        /// The vector defing whats up with the lower right leg.
+        /// wazzup leg?
+        /// </summary>
         private Vector3 LowerLegUpRight
         {
             get
@@ -739,8 +813,7 @@ namespace QTM2Unity
         private void Neck(Bone b)
         {
             Vector3 up = Vector3.Transform(UnitY, ChestOrientation);
-            Vector3 neckPos = SternumClavicle;
-            Vector3 pos = neckPos + up * BodyData.SpineLength * 2;
+            Vector3 pos = SternumClavicle + up * BodyData.SpineLength * 2;
             b.Pos = pos;
             b.Orientation = QuaternionHelper2.LookAtUp(pos, Head, ChestForward);
         }

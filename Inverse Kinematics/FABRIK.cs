@@ -1,16 +1,32 @@
-﻿using System;
-using System.Linq;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+
 using OpenTK;
+using System;
+using System.Linq;
 
 namespace QTM2Unity
 {
+    /// <summary>
+    /// From Aristidou, Andreas, and Joan Lasenby. "FABRIK: a fast, iterative solver for the inverse kinematics problem." Graphical Models 73, no. 5 (2011): 243-260.
+    /// </summary>
     class FABRIK : IKSolver
     {
         override public bool SolveBoneChain(Bone[] bones, Bone target, Bone parent)
         {
             // Calculate distances 
-            float[] distances;
-            GetDistances(out distances, ref bones);
+            float[] distances = GetDistances(ref bones);
 
             double dist = Math.Abs((bones[0].Pos - target.Pos).Length);
             if (dist > distances.Sum()) // the target is unreachable
@@ -43,7 +59,12 @@ namespace QTM2Unity
         }
 
 
-
+        /// <summary>
+        /// The forward reaching phase
+        /// </summary>
+        /// <param name="bones"></param>
+        /// <param name="distances"></param>
+        /// <param name="target"></param>
         private void ForwardReaching(ref Bone[] bones, ref float[] distances, Bone target)
         {
             
@@ -66,7 +87,13 @@ namespace QTM2Unity
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos);
             }
         }
-
+        /// <summary>
+        /// The backwards reaching phase
+        /// </summary>
+        /// <param name="bones"></param>
+        /// <param name="distances"></param>
+        /// <param name="root"></param>
+        /// <param name="parent"></param>
         private void BackwardReaching(ref Bone[] bones, ref float[] distances, Vector3 root, Bone parent)
         {
 
@@ -105,6 +132,11 @@ namespace QTM2Unity
                 //}
             }
         }
+        /// <summary>
+        /// Checks whether two bones has the same position or not, then moves the bone a small amount
+        /// </summary>
+        /// <param name="bones">The bones to be checked</param>
+        /// <param name="i">A inded of where in the array of bones we should start looking</param>
         private void SamePosCheck(ref Bone[] bones, int i) {
             if (bones[i+1].Pos == bones[i].Pos)
             {

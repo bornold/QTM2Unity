@@ -1,10 +1,27 @@
-﻿using System.Collections.Generic;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+
+using System.Collections.Generic;
 using QualisysRealTime.Unity;
 using UnityEngine;
 
 namespace QTM2Unity
 {
- 
+ /// <summary>
+ /// Calculates a skeleton and contains debug for viewing the skeleton
+ /// NOTICE: This does not include mapping to a Unity Character
+ /// </summary>
     class RTSkeleton : MonoBehaviour
     {
         public Debugging debug;
@@ -20,7 +37,6 @@ namespace QTM2Unity
         private MarkersPreprocessor mp;
         private JointLocalization joints;
         private IKApplier ikApplier;
-
         private string prefix;
         void Start()
         {
@@ -30,19 +46,14 @@ namespace QTM2Unity
             ikApplier = new IKApplier();
             StartNext();
         }
-
-        // Update is called once per frame
+        /// <summary>
+        /// Updates ones per frame, sets the joints position of the character
+        /// </summary>
         void Update()
         {
             if (rtClient == null) rtClient = RTClient.GetInstance();
             streaming = rtClient.GetStreamingStatus();
-            if (!streaming && !debug.debugFlag)
-            {
-                UnityEngine.Debug.LogWarning("Could'nt connect to real time stream.");
-                debug.debugFlag = true;
-                return;
-            }
-
+            if (!streaming && !debug.debugFlag) return;
             markerData = rtClient.Markers;
             if ((markerData == null || markerData.Count == 0) && !debug.debugFlag) 
             {
@@ -78,11 +89,8 @@ namespace QTM2Unity
             }
             Dictionary<string, OpenTK.Vector3> markers;
 
-            if (!mp.ProcessMarkers(markerData, out markers, debug.bodyPrefix))
-            {
-                UnityEngine.Debug.LogError("Markers (TODO FIX ERROR MESSAGE");
-                return;
-            }
+            mp.ProcessMarkers(markerData, out markers, debug.bodyPrefix);
+
             var temp = skeleton;
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
@@ -99,11 +107,7 @@ namespace QTM2Unity
         }
         void OnDrawGizmos()
         {
-            ShouldWeDraw();
-        }
-        protected void ShouldWeDraw()
-        {
-            if (Application.isPlaying && (streaming && markerData != null && markerData.Count > 0) || debug.debugFlag)
+            if (Application.isPlaying && (streaming && markerData != null && markerData.Count > 0) || (debug != null && debug.debugFlag))
             {
                 Draw();
             }

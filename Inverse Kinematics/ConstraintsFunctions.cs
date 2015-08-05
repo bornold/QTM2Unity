@@ -1,15 +1,40 @@
-﻿using System;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+
+using System;
 using OpenTK;
 
 namespace QTM2Unity
 {
-    class Constraints
+    /// <summary>
+    /// This class contains the functions for ensuring constraints of a bone
+    /// </summary>
+    class ConstraintsFunctions
     {
         // An orientational constraint is the twist of the bone around its own direction vector
         // with respect to its parent
         // It is defined as an allowed range betwen angles [start,end]
         // where start != end && 0 < start, end <= 360
         // If both start and end is 0 no twist constraint exist
+        /// <summary>
+        /// Checks if the bone has a legal rotation in regards to its parent, returns true if legal, false otherwise.
+        /// The out rotation gives the rotation the bone should be applied to to be inside the twist constraints
+        /// </summary>
+        /// <param name="b">The bone under consideration</param>
+        /// <param name="refBone">The parent of the bone, to check whether the child has legal rotation</param>
+        /// <param name="rotation">The rotation bone b should applie to be inside the constraints</param>
+        /// <returns></returns>
         public bool CheckOrientationalConstraint(Bone b, Bone refBone, out Quaternion rotation)
         {
             if (b.Orientation.Xyz.IsNaN() || refBone.Orientation.Xyz.IsNaN())
@@ -59,8 +84,21 @@ namespace QTM2Unity
             rotation = Quaternion.Identity;
             return false;
         }
+        /// <summary>
+        /// What quadrant the bone is in regarding
+        /// </summary>
         private enum Quadrant { q1, q2, q3, q4 };
         private float precision = 0.01f;
+        /// <summary>
+        /// Check the positional constraints of the bone, if the bone is inside the legal cone, returns true, otherwise false
+        /// Originally modeled from Andreas Aristidou and Joan Lasenby FABRIK: A fast, iterative solver for the Inverse Kinematics problem
+        /// </summary>
+        /// <param name="joint">The bone to be checked if its has a legal position</param>
+        /// <param name="parentsRots">The rotation if the parent</param>
+        /// <param name="target">The position of the joint</param>
+        /// <param name="res">The resulting position, the legal position of the bone if its legal, the same as target otherwise</param>
+        /// <param name="rot">The rotation that should be applied to the bone if it has a illegal rotation, Identity otherwise</param>
+        /// <returns></returns>
         public bool CheckRotationalConstraints(Bone joint, Quaternion parentsRots, Vector3 target, out Vector3 res, out Quaternion rot)
         {
             Quaternion referenceRotation = parentsRots * joint.ParentPointer;
@@ -165,7 +203,7 @@ namespace QTM2Unity
             }
             #endregion
 
-            radius.X = Mathf.Clamp(radius.X, precision, 90 - precision);  // clamp it so if <=0 -> 0.001, >=90 -> 89.999
+            radius.X = Mathf.Clamp(radius.X, precision, 90 - precision);  // clamp it so if <=0 -> 0.01, >=90 -> 89.99
             radius.Y = Mathf.Clamp(radius.Y, precision, 90 - precision);
 
             //3.7 Find the conic section which is associated with
@@ -208,6 +246,13 @@ namespace QTM2Unity
             }
             //3.14 end
         }
+        /// <summary>
+        /// The new line on which the cone should be modeled around
+        /// </summary>
+        /// <param name="rotation">The rotation of the cone</param>
+        /// <param name="q">The quadrant the bone is inside</param>
+        /// <param name="radius">The x,y radius of the cone</param>
+        /// <returns>The new Line on which the cone should be modeled</returns>
         private Vector3 GetNewL(Quaternion rotation, Quadrant q, Vector2 radius)
         {
             Quaternion inverRot = Quaternion.Invert(rotation);

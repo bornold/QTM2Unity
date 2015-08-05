@@ -1,4 +1,15 @@
-﻿using System;
+﻿/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Jonas Bornold
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -7,49 +18,13 @@ namespace QTM2Unity
 {
     static class UnityDebug
     {
-        public static void sanity(BipedSkeleton test, string message = "")
-        {
-            UnityDebug.sanity(test.Root, message);
-        }
-        public static void sanity(TreeNode<Bone> test, string message = "")
-        {
-            foreach (TreeNode<Bone> b in test)
-            {
-                if (b.IsRoot || b.Parent.IsRoot || b.Data.ParentPointer != OpenTK.Quaternion.Identity) continue;
-                if (b.Data.Pos == b.Parent.Data.Pos)
-                {
-                    UnityEngine.Debug.LogWarning(b.Parent.Data + " and " + b.Data + " is the same");
-                    continue;
-                }
-                OpenTK.Vector3 ray1 = b.Parent.Data.GetYAxis();
-                OpenTK.Vector3 ray2 = (b.Data.Pos - b.Parent.Data.Pos);
-                bool para = Vector3Helper.Parallel(ray1, ray2, 10.02f);
-                if (!para)
-                {
-
-                    //UnityEngine.Debug.LogError(b.Parent.Data + " and " + b.Data);
-                    //UnityEngine.Debug.LogError(ray1 + " and " + ray2);
-                    ray1.NormalizeFast();
-                    ray2.NormalizeFast();
-                    UnityDebug.DrawVector(b.Parent.Data.Pos, ray1, UnityEngine.Color.black);
-                    UnityDebug.DrawVector(b.Parent.Data.Pos, ray2, UnityEngine.Color.blue);
-
-                }
-            }
-        }
-        public static void sanity(Bone[] test, string message = "")
-        {
-            for (int i = 1; i < test.Length; i++)
-            {
-                OpenTK.Vector3 ray1 = test[i - 1].GetYAxis();
-                OpenTK.Vector3 ray2 = (test[i].Pos - test[i - 1].Pos);
-                if (!Vector3Helper.Parallel(ray1, ray2, 0.02f))
-                {
-                    UnityEngine.Debug.LogError(message + '\n' + test[i - 1]);
-                }
-            }
-        }
-
+        /// <summary>
+        /// Draws the twist constraints accoriding in Unity using Giszmos
+        /// </summary>
+        /// <param name="b">The bone with its constraints</param>
+        /// <param name="refBone">The to be twisted against</param>
+        /// <param name="poss">The position of where it should be drawn</param>
+        /// <param name="scale">The scale of the constraints</param>
         public static void DrawTwistConstraints(Bone b, Bone refBone, OpenTK.Vector3 poss, float scale)
         {
             if (b.Orientation.Xyz.IsNaN() || refBone.Orientation.Xyz.IsNaN())
@@ -84,6 +59,12 @@ namespace QTM2Unity
         {
             DrawTwistConstraints(b, refBone, poss, 0.1f);
         }
+        /// <summary>
+        /// Using Unity Debug, draws the x,y,z axis of a Quaternion as x red, y green and z blue
+        /// </summary>
+        /// <param name="rot">The OpenTK Quaterion</param>
+        /// <param name="pos">The UnityEngine Vector3 position to be drawn</param>
+        /// <param name="scale">The float length of the axis in meter</param>
         public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos, float scale)
         {
             OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot);
@@ -93,63 +74,137 @@ namespace QTM2Unity
             Debug.DrawRay(pos, right.Convert() * scale, Color.red);
             Debug.DrawRay(pos, forward.Convert() * scale, Color.blue);
         }
+        /// <summary>
+        /// Using Unity Debug, draws the x,y,z axis of a Quaternion as x red, y green and z blue
+        /// </summary>
+        /// <param name="rot">The OpenTK Quaterion</param>
+        /// <param name="pos">The OpenTK Vector3 position to be drawn</param>
+        /// <param name="scale">The float length of the axis in meters</param>
         public static void DrawRays(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale)
         {
             DrawRays(rot, pos.Convert(), scale);
         }
+        /// <summary>
+        /// Using Unity Debug, draws the x,y,z axis of a Quaternion at 7 cm scale as x red, y green and z blue
+        /// </summary>
+        /// <param name="rot">The OpenTK Quaterion</param>
+        /// <param name="pos">The UnityEngine Vector3 position to be drawn</param>
         public static void DrawRays(OpenTK.Quaternion rot, Vector3 pos)
         {
             DrawRays(rot, pos, 0.07f);
         }
+        /// <summary>
+        /// Using Unity Debug, draws the x,y,z axis of a Quaternion at 7 cm scale as x red, y green and z blue
+        /// </summary>
+        /// <param name="rot">The OpenTK Quaterion</param>
+        /// <param name="pos">The OpenTK Vector3 position to be drawn</param>
         public static void DrawRays(OpenTK.Quaternion rot, OpenTK.Vector3 pos)
         {
             DrawRays(rot, pos.Convert());
         }
-        
+        /// <summary>
+        /// Using Unity Debug, draws the x,y,z axis of a Quaternion as x magenta, y yellow and z cyan
+        /// </summary>
+        /// <param name="rot">The OpenTK Quaterion</param>
+        /// <param name="pos">The UnityEngine Vector3 position to be drawn</param>
+        /// <param name="scale">The float length of the axis in meter</param>
         public static void DrawRays2(Quaternion rot, Vector3 pos, float scale)
         {
             OpenTK.Vector3 right = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitX, rot.Convert());
             OpenTK.Vector3 up = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot.Convert());
             OpenTK.Vector3 forward = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitZ, rot.Convert());
-            Debug.DrawRay(pos, up.Convert() * scale, Color.yellow);
             Debug.DrawRay(pos, right.Convert() * scale, Color.magenta);
+            Debug.DrawRay(pos, up.Convert() * scale, Color.yellow);
             Debug.DrawRay(pos, forward.Convert() * scale, Color.cyan);
         }
+        /// <summary>
+        /// Using Unity Debug, draws the x,y,z axis of a Quaternion as x magenta, y yellow and z cyan
+        /// </summary>
+        /// <param name="rot">The OpenTK Quaterion</param>
+        /// <param name="pos">The OpenTK Vector3 position to be drawn</param>
+        /// <param name="scale">The float length of the axis in meter</param>
         public static void DrawRays2(OpenTK.Quaternion rot, OpenTK.Vector3 pos, float scale)
         {
             DrawRays2(rot.Convert(), pos.Convert(), scale);
         }
+        /// <summary>
+        /// Using Unity Debug, draws the x,y,z axis of a Quaternion as x magenta, y yellow and z cyan
+        /// </summary>
+        /// <param name="rot">The OpenTK Quaterion</param>
+        /// <param name="pos">The OpenTK Vector3 position to be drawn</param>
         public static void DrawRays2(OpenTK.Quaternion rot, OpenTK.Vector3 pos)
         {
             DrawRays2(rot.Convert(), pos.Convert(), 0.07f);
         }
-        
+        /// <summary>
+        /// Draws an array in unity using Unity.Debug
+        /// </summary>
+        /// <param name="pos">The staring position of the OpenTK Vector3</param>
+        /// <param name="dir">The direction of the vector of the OpenTK Vector3</param>
+        /// <param name="c">The color the of the Vector as a UnityEngine Color</param>
         public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir, Color c)
         {
             Debug.DrawRay(pos.Convert(), dir.Convert(), c);
         }
-        public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir, float size)
+        
+        /// <summary>
+        /// Draws an array in unity using Unity.Debug in black
+        /// </summary>
+        /// <param name="pos">The staring position of the OpenTK Vector3</param>
+        /// <param name="dir">The direction of the vector of the OpenTK Vector3</param>
+        /// <param name="length">The length of the vector</param>
+        public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir, float length)
         {
-            Debug.DrawRay(pos.Convert(), Vector3.Normalize(dir.Convert()) * size, Color.black);
+            Debug.DrawRay(pos.Convert(), Vector3.Normalize(dir.Convert()) * length, Color.black);
         }
+        /// <summary>
+        /// Draws an array in unity using Unity.Debug
+        /// </summary>
+        /// <param name="pos">The staring position of the OpenTK Vector3</param>
+        /// <param name="dir">The direction of the vector of the OpenTK Vector3</param>
+        /// <param name="length">The length of the vector</param>
+        /// <param name="c">The color of the vector as a UnityEngine Color</param>
         public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir, float size, Color c)
         {
             Debug.DrawRay(pos.Convert(), Vector3.Normalize(dir.Convert()) * size, c);
         }
+        /// <summary>
+        /// Draws an array in unity using Unity.Debug
+        /// </summary>
+        /// <param name="pos">The staring position of the OpenTK Vector3</param>
+        /// <param name="dir">The direction of the vector of the OpenTK Vector3</param>
         public static void DrawVector(OpenTK.Vector3 pos, OpenTK.Vector3 dir)
         {
             DrawVector(pos, dir, Color.black);
         }
-
+        /// <summary>
+        /// Draws a line from two 3d points in Unity
+        /// </summary>
+        /// <param name="start">The starting point as a OpenTK Vector3</param>
+        /// <param name="end">The end point as a OpenTK Vector3</param>
         public static void DrawLine(OpenTK.Vector3 start, OpenTK.Vector3 end)
         {
             Debug.DrawLine(start.Convert(), end.Convert());
         }
+        /// <summary>
+        /// Draws a line from two 3d points in Unity in a specific color
+        /// </summary>
+        /// <param name="start">The starting point as a OpenTK Vector3</param>
+        /// <param name="end">The end point as a OpenTK Vector3</param>
+        /// <param name="c">The color of the line as a UnityEngine Color</param>
         public static void DrawLine(OpenTK.Vector3 start, OpenTK.Vector3 end, Color c)
         {
             Debug.DrawLine(start.Convert(), end.Convert(), c);
         }
-
+        /// <summary>
+        /// Draws an ellipse in Unity from two radii floating points, a Vector3 position, and a Quaternion rotation
+        /// </summary>
+        /// <param name="x">Radia x of the Ellipse</param>
+        /// <param name="y">Radia Y of the Ellipse</param>
+        /// <param name="pos">The position of the Ellipse</param>
+        /// <param name="rot">The orientation of the ellipse</param>
+        /// <param name="resolution">The amount of lines the ellipse should be drawn of</param>
+        /// <param name="c">The color of the ellipse</param>
         public static void CreateEllipse(float x, float y, Vector3 pos, Quaternion rot, int resolution, Color c)
         {
 
@@ -167,10 +222,17 @@ namespace QTM2Unity
             Debug.DrawLine(positions[0], positions[positions.Length-1], c);
 
         }
-
-        public static OpenTK.Vector3[] CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 L1, OpenTK.Quaternion rot, int resolution, float scale)
+        /// <summary>
+        /// Draws an irregeular cone
+        /// </summary>
+        /// <param name="strains">The x,y,z,w radii</param>
+        /// <param name="top">The position of the top of the cone</param>
+        /// <param name="L1">The direction of the cone</param>
+        /// <param name="rot">The rotation of the cone</param>
+        /// <param name="resolution">The amount of lines the cone shoud be drawn from</param>
+        /// <param name="scale">The height of the cone</param>
+        public static void CreateIrregularCone(OpenTK.Vector4 strains, OpenTK.Vector3 top, OpenTK.Vector3 L1, OpenTK.Quaternion rot, int resolution, float scale)
         {
-            //L1 = OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, rot);
             L1.Normalize();
             List<OpenTK.Vector3> positions = new List<OpenTK.Vector3>();
             positions.AddRange(GetQuarter(strains.X, strains.Y, top, L1, rot, resolution, 1, scale));
@@ -209,9 +271,8 @@ namespace QTM2Unity
             c = Color.blue;
             DrawLine(prev, positions.First(), c);
             DrawLine(top, positions.First(), c);
-            return positions.ToArray();
+            //return positions.ToArray();
         }
-
         private static List<OpenTK.Vector3> GetQuarter(
             float a, float b, OpenTK.Vector3 top, 
             OpenTK.Vector3 L1,       OpenTK.Quaternion rot, 
