@@ -96,10 +96,7 @@ namespace QTM2Unity
             skeletonBuffer = temp;
             joints.GetJointLocation(markers, ref skeleton);
 
-            if (ikApplier == null)
-            {
-                ikApplier = new IKApplier();
-            }
+            if (ikApplier == null) ikApplier = new IKApplier();
 
             ikApplier.test = debug.bodyRig.Extrapolate;
             ikApplier.ApplyIK(ref skeleton);

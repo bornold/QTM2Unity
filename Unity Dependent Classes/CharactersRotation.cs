@@ -130,14 +130,14 @@ namespace QTM2Unity
             legLowerRight = new Vector3(0f, 270f, 0f);
             footRight = new Vector3(0f, 270f, 90f);
 
-            clavicleLeft = new Vector3(0f, 0f, 0f);
+            clavicleLeft = new Vector3(0f, 90f, 0f);
             armUpperLeft = new Vector3(0f, 90f, 0f);
             armLowerLeft = new Vector3(0f, 90f, 0f);
             handLeft = new Vector3(0f, 180f, 0f);
-            thumbLeft = new Vector3(0f, 0f, 0f);
-            fingersLeft = new Vector3(0f, 0f, 0f);
+            thumbLeft = new Vector3(0f, 180f, 0f);
+            fingersLeft = new Vector3(0f, 180f, 0f);
 
-            clavicleRight = new Vector3(0f, 0f, 0f);
+            clavicleRight = new Vector3(0f, 90f, 0f);
             armUpperRight = new Vector3(0f, 90f, 0f);
             armLowerRight = new Vector3(0f, 90f, 0f);
             handRight = new Vector3(0f, 0f, 0f);
