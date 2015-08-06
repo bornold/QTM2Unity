@@ -80,7 +80,7 @@ namespace QTM2Unity
         private Vector4 constraints = Vector4.Zero;
         public Vector4 Constraints
         {
-            get { return new Vector4(constraints); } //TODO Checka all values > 0
+            get { return new Vector4(constraints); }
             set { constraints = new Vector4(value); }
         }
         public bool HasConstraints
@@ -128,6 +128,11 @@ namespace QTM2Unity
 
         // Directions 
         #region Direction getters
+        public Vector3 GetXAxis()
+        {
+            return Vector3.NormalizeFast(Vector3.Transform(Vector3.UnitX, orientation));
+        }
+
         public Vector3 GetYAxis()
         {
             return Vector3.NormalizeFast(Vector3.Transform(Vector3.UnitY, orientation));
@@ -138,10 +143,6 @@ namespace QTM2Unity
             return Vector3.NormalizeFast(Vector3.Transform(Vector3.UnitZ, orientation));
         }
 
-        public Vector3 GetXAxis()
-        {
-            return Vector3.NormalizeFast(Vector3.Transform(Vector3.UnitX, orientation));
-        }
         #endregion
         #region rotation methods
         public void Rotate(float angle, Vector3 axis)
