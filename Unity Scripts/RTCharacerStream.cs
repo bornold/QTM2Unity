@@ -26,6 +26,7 @@ namespace QTM2Unity
                 this.transform,
                 debug.jointsRot.UseFingers
                 );
+            charactersJoints.PrintAll();
             pelvisHeight = 0;
             var trans = charactersJoints.pelvis;
             while (trans.parent)
@@ -33,6 +34,7 @@ namespace QTM2Unity
                 pelvisHeight += trans.localPosition.y;
                 trans = trans.parent;
             }
+            pelvisHeight -= skeleton.Root.Data.Pos.Y;
         }
 
         public override void UpdateNext()
@@ -77,7 +79,7 @@ namespace QTM2Unity
                             Vector3 p = b.Data.Pos.Convert();
                             charactersJoints.pelvis.position = 
                                 charactersJoints.root.position 
-                                + new Vector3(p.x, pelvisHeight, p.z);
+                                + new Vector3(p.x, p.y + pelvisHeight, p.z);
                         }
                         break;
                     case Joint.SPINE0:
