@@ -18,7 +18,7 @@ namespace QTM2Unity
     class RTCharacerStream : RTSkeleton
     {
         private CharacterGameObjects charactersJoints = new CharacterGameObjects();
-        private CharactersFixs cf = CharactersFixs.Model1;
+        private CharactersModel cf = CharactersModel.Model1;
         private float pelvisHeight;
         public override void StartNext()
         {
@@ -37,29 +37,29 @@ namespace QTM2Unity
 
         public override void UpdateNext()
         {
-            if (cf != debug.jointsRot.charactersFixs)
+            if (cf != debug.jointsRot.model)
             {
-                switch (debug.jointsRot.charactersFixs)
+                switch (debug.jointsRot.model)
                 {
-                    case CharactersFixs.Model1:
+                    case CharactersModel.Model1:
                         debug.jointsRot.rots = new Model1();
                         break;
-                    case CharactersFixs.Model2:
+                    case CharactersModel.Model2:
                         debug.jointsRot.rots = new Model2();
                         break;
-                    case CharactersFixs.Model3:
+                    case CharactersModel.Model3:
                         debug.jointsRot.rots = new Model3();
                         break;
-                    case CharactersFixs.Model4:
+                    case CharactersModel.Model4:
                         debug.jointsRot.rots = new Model4();
                         break;
-                    case CharactersFixs.Model5:
+                    case CharactersModel.Model5:
                         debug.jointsRot.rots = new Model5();
                         break;
                     default:
                         break;
                 }
-                cf = debug.jointsRot.charactersFixs;
+                cf = debug.jointsRot.model;
             }
             SetAll();
         }

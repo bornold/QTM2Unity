@@ -65,8 +65,8 @@ namespace QTM2Unity {
     public class JointFix
     {
         public bool UseFingers = false;
-        public CharactersFixs charactersFixs = CharactersFixs.Model1;
-        public TheRots rots = new Model1();
+        public CharactersModel model = CharactersModel.Model1;
+        public RotationFixes rots = new Model1();
     }
 
 }

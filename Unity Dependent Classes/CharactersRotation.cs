@@ -7,12 +7,12 @@ using UnityEngine;
 namespace QTM2Unity
 {
     [System.Serializable]
-    public enum CharactersFixs
+    public enum CharactersModel
     {
         Model1, Model2, Model3, Model4, Model5
     }
     [System.Serializable]
-    public class TheRots
+    public class RotationFixes
     {
         public Vector3
             root,
@@ -44,7 +44,7 @@ namespace QTM2Unity
             fingersRight;
     }
     [System.Serializable]
-    public class Model1 : TheRots
+    public class Model1 : RotationFixes
     {
         public Model1()
         {
@@ -78,7 +78,7 @@ namespace QTM2Unity
         }
     }
     [System.Serializable]
-    public class Model2 : TheRots
+    public class Model2 : RotationFixes
     {
         public Model2()
         {
@@ -112,7 +112,7 @@ namespace QTM2Unity
         }
     }
     [System.Serializable]
-    public class Model3 : TheRots
+    public class Model3 : RotationFixes
     {
         public Model3()
         {
@@ -146,7 +146,7 @@ namespace QTM2Unity
         }
     }
     [System.Serializable]
-    public class Model4 : TheRots
+    public class Model4 : RotationFixes
     {
         public Model4()
         {
@@ -180,7 +180,7 @@ namespace QTM2Unity
         }
     }
     [System.Serializable]
-    public class Model5 : TheRots
+    public class Model5 : RotationFixes
     {
         public Model5()
         {
