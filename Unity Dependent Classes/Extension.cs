@@ -93,7 +93,6 @@ namespace QTM2Unity
                 (transform.parent && transform.parent == ancestor) ||
                 IsAncestorOf(transform.parent, ancestor);
         }
-
         /// <summary>
         /// Returns the first common ancestor of the two transforms
         /// </summary>
@@ -103,9 +102,22 @@ namespace QTM2Unity
         public static Transform CommonAncestorOf(this Transform t1, Transform t2)
         {
             if (!t1 || !t2) return null;
+            else if (t1 == t2 && t1.parent) return t1.parent;
+            else if (t1.parent && t2.parent && t1.parent == t2.parent) return t1.parent;
+            else return t1.CommonAncestorsOfSearch(t2);
+        }
+        /// <summary>
+        /// Returns the first common ancestor of the two transforms
+        /// </summary>
+        /// <param name="t1">The first transform</param>
+        /// <param name="t2">The secound transform</param>
+        /// <returns>The transform that is the first common ancestor, null otherwise</returns>
+        public static Transform CommonAncestorsOfSearch(this Transform t1, Transform t2)
+        {
+            if (!t1 || !t2) return null;
             else if (t1.IsAncestorOf(t2)) return t1;
             else if (!t2.parent) return null;
-            else return t2.parent.CommonAncestorOf(t1);
+            else return t2.parent.CommonAncestorsOfSearch(t1);
         }
     }
 }

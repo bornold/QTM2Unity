@@ -106,28 +106,29 @@ namespace QTM2Unity {
                 if (!thumbLeft) thumbLeft = animator.GetBoneTransform(HumanBodyBones.LeftThumbProximal);
 
                 if (fingersLeft == null) fingersLeft = new Transform[4];
-                if (!fingersLeft[0]) fingersLeft[0] = animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal);
-                if (!fingersLeft[1]) fingersLeft[1] = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
-                if (!fingersLeft[2]) fingersLeft[2] = animator.GetBoneTransform(HumanBodyBones.LeftRingProximal);
-                if (!fingersLeft[3]) fingersLeft[3] = animator.GetBoneTransform(HumanBodyBones.LeftLittleProximal);
+                fingersLeft[0] = animator.GetBoneTransform(HumanBodyBones.LeftIndexProximal);
+                fingersLeft[1] = animator.GetBoneTransform(HumanBodyBones.LeftMiddleProximal);
+                fingersLeft[2] = animator.GetBoneTransform(HumanBodyBones.LeftRingProximal);
+                fingersLeft[3] = animator.GetBoneTransform(HumanBodyBones.LeftLittleProximal);
 
                 if (fingersRight == null) fingersRight = new Transform[4];
-                if (!fingersRight[0]) fingersRight[0] = animator.GetBoneTransform(HumanBodyBones.RightIndexProximal);
-                if (!fingersRight[1]) fingersRight[1] = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
-                if (!fingersRight[2]) fingersRight[2] = animator.GetBoneTransform(HumanBodyBones.RightRingProximal);
-                if (!fingersRight[3]) fingersRight[3] = animator.GetBoneTransform(HumanBodyBones.RightLittleProximal);
+                fingersRight[0] = animator.GetBoneTransform(HumanBodyBones.RightIndexProximal);
+                fingersRight[1] = animator.GetBoneTransform(HumanBodyBones.RightMiddleProximal);
+                fingersRight[2] = animator.GetBoneTransform(HumanBodyBones.RightRingProximal);
+                fingersRight[3] = animator.GetBoneTransform(HumanBodyBones.RightLittleProximal);
             }
         }
         /// <summary>
-        /// Detects the references based on naming and hierarchy.
+        /// Detects joints based on names and the hierarchy.
         /// </summary>
+        /// <param name="root">The root of the biped humanoid</param>
+        /// <param name="useFingers">bool wheter to include fingers or not</param>
         public void FindJointsByNaming(Transform root, bool useFingers)
         {
             Transform[] transforms = root.GetComponentsInChildren<Transform>();
 
             // Find limbs
             // Get left arm
-            Transform[] results = JointNamings.GetTypeAndSide(JointNamings.JointObject.Arm, JointNamings.BodySide.Left, transforms);
             AddLeftArm(transforms);
             //// Get Right arm
             AddRightArm(transforms);
@@ -138,7 +139,8 @@ namespace QTM2Unity {
             // Find fingers
             if (useFingers && !IsAllFingersSet())
             {
-                if (!AddFingers())
+                AddFingers();
+                if (!IsAllFingersSet())
                 {
                     fingersLeft = null;
                     fingersRight = null;
@@ -150,6 +152,7 @@ namespace QTM2Unity {
             if (!neck) neck = JointNamings.GetBone(transforms, JointNamings.JointObject.Neck);
             // Find Pelvis
             if (!pelvis) pelvis = JointNamings.GetMatch(transforms, JointNamings.pelvisAlias);
+            if (!pelvis) pelvis = rightThigh.CommonAncestorOf(leftThigh);
 
             // Find spine
             Transform left, right;
@@ -163,9 +166,10 @@ namespace QTM2Unity {
                 right = rightUpperArm;
             }
 
+
             if (left && right && pelvis)
             {
-                Transform lastSpine = CommonAncestorOf(left, right);
+                Transform lastSpine = left.CommonAncestorOf(right);
                 if (lastSpine)
                 {
                     spine = GetAncestors(lastSpine, pelvis);
@@ -218,9 +222,9 @@ namespace QTM2Unity {
         /// Adds fingers to the references
         /// </summary>
         /// <returns>True if fingers were found</returns>
-        public bool AddFingers() 
+        public void AddFingers() 
         {
-            if (leftHand.childCount <= 0 || rightHand.childCount <= 0) return false;
+            if (leftHand.childCount <= 0 || rightHand.childCount <= 0) return;
             var children = leftHand.GetDirectChildren();
             thumbLeft = JointNamings.GetBone(children, JointNamings.JointObject.Thumb, JointNamings.BodySide.Left);
             Transform[] results = JointNamings.GetTypeAndSide(JointNamings.JointObject.Fingers, JointNamings.BodySide.Left, children);
@@ -234,7 +238,6 @@ namespace QTM2Unity {
             }
             else if (results.Length == 1) 
             {
-                foreach (var v in results) UnityEngine.Debug.Log(v);
                 fingersLeft = new Transform[1];
                 fingersLeft[0] = results[0];
             }
@@ -273,7 +276,6 @@ namespace QTM2Unity {
                 fingersRight[2] = rightHand.GetChild(3);
                 fingersRight[3] = rightHand.GetChild(4);
             }
-            return IsAllFingersSet();
         }
         /// <summary>
         /// Finding and adding left arm
@@ -367,19 +369,7 @@ namespace QTM2Unity {
             between.Reverse();
             return between.ToArray();
         }
-        /// <summary>
-        /// Returns the first common ancestor of the two transforms
-        /// </summary>
-        /// <param name="t1">The first transform</param>
-        /// <param name="t2">The secound transform</param>
-        /// <returns>The transform that is the first common ancestor, null otherwise</returns>
-        private Transform CommonAncestorOf(Transform t1, Transform t2)
-        {
-            if (!t1 || !t2) return null;
-            else if (t1 == t2 && t1.parent) return t1.parent;
-            else if (t1.parent && t2.parent && t1.parent == t2.parent) return t1.parent;
-            else return t1.CommonAncestorOf(t2);
-        }
+
         /// <summary>
         /// Checks for null among the joints, if any joints could not be identified
         ///

@@ -134,19 +134,19 @@ namespace QTM2Unity {
         /// <returns>The enum of the joint name</returns>
 		public static JointObject GetType(string boneName) {
             // Type Neck
-            if (IsOfType(boneName, neckAlias, neckExclude)) return JointObject.Neck;
+            if (IsType(boneName, neckAlias, neckExclude)) return JointObject.Neck;
             // Type Spine
-            if (IsOfType(boneName, spineAlias, spineExclude)) return JointObject.Spine;
+            if (IsType(boneName, spineAlias, spineExclude)) return JointObject.Spine;
             // Type Head
-            if (IsOfType(boneName, headAlias, headExclude)) return JointObject.Head;
+            if (IsType(boneName, headAlias, headExclude)) return JointObject.Head;
             // Type Arm
-            if (IsOfType(boneName, armAlias, armExclude)) return JointObject.Arm;
+            if (IsType(boneName, armAlias, armExclude)) return JointObject.Arm;
             // Type Leg
-            if (IsOfType(boneName, legAlias, legExclude)) return JointObject.Leg;
+            if (IsType(boneName, legAlias, legExclude)) return JointObject.Leg;
             // Type Finger
-            if (IsOfType(boneName, fingerAlias, fingerExclude)) return JointObject.Fingers;
+            if (IsType(boneName, fingerAlias, fingerExclude)) return JointObject.Fingers;
             // Type Thumb
-            if (IsOfType(boneName, thumbAlias, thumbExclude)) return JointObject.Thumb;
+            if (IsType(boneName, thumbAlias, thumbExclude)) return JointObject.Thumb;
 			return JointObject.Unassigned;
 		}
 
@@ -179,7 +179,7 @@ namespace QTM2Unity {
         /// <param name="aliases">The names to be matched</param>
         /// <param name="exclusions">The name the joint cannot contain</param>
         /// <returns>True if match, false otherwise</returns>
-        private static bool IsOfType(string jointName, string[] aliases, string[] exclusions)
+        private static bool IsType(string jointName, string[] aliases, string[] exclusions)
         {
             return Matches(jointName, aliases) && !Exclude(jointName, exclusions);
         }
