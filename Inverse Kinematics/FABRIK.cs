@@ -109,7 +109,7 @@ namespace QTM2Unity
 
                 newPos = (1 - l) * bones[i].Pos + l * bones[i + 1].Pos;
 
-                //Bone prevBone = (i > 0) ? bones[i - 1] : parent;
+                Bone prevBone = (i > 0) ? bones[i - 1] : parent;
                 //if (bones[i].HasConstraints)
                 //{
                 //    Vector3 res;
@@ -121,15 +121,15 @@ namespace QTM2Unity
                 bones[i + 1].Pos = newPos;
                 // Orientation
                 bones[i].RotateTowards(bones[i + 1].Pos - bones[i].Pos,bones[i].Stiffness);
-                //if (bones[i].HasConstraints)
-                //{
-                //    Quaternion rot;
-                //    if (CheckOrientationalConstraint(bones[i], prevBone, out rot))
-                //    {
-                //        bones[i].Rotate(rot);
-                //    }
+                if (bones[i].HasConstraints)
+                {
+                    Quaternion rot;
+                    if (constraints.CheckOrientationalConstraint(bones[i], prevBone, out rot))
+                    {
+                        bones[i].Rotate(rot);
+                    }
 
-                //}
+                }
             }
         }
         /// <summary>
