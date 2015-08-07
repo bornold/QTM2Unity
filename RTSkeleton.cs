@@ -2,7 +2,7 @@
 /*
     The MIT License (MIT)
 
-    Copyright (c) 2015 Jonas Bornold
+    Copyright (c) 2015 Qualisys AB
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -29,8 +29,6 @@ namespace QualisysRealTime.Unity.Skeleton
         public string MarkerPrefix = "";
         public bool LockPosition = false;
         public bool ResetSkeleton = false;
-        public bool UseFingers = false;
-        public bool Extrapolate = false;
 
         protected RTClient rtClient;
         protected Vector3 pos;
@@ -44,7 +42,6 @@ namespace QualisysRealTime.Unity.Skeleton
         private MarkersPreprocessor mp;
         private JointLocalization joints;
         private IKApplier ikApplier;
-        private string prefix;
         void Start()
         {
             rtClient = RTClient.GetInstance();
@@ -67,58 +64,47 @@ namespace QualisysRealTime.Unity.Skeleton
                 UnityEngine.Debug.LogWarning("Stream does not contain any markers");
                 return;
             }
-            pos = this.transform.position + debug.Offset;
-            
-            if ((debug != null && ResetSkeleton) 
-                || skeleton == null 
-                || skeletonBuffer == null 
-                || MarkerPrefix != prefix)
-            {
-                UnityEngine.Debug.LogWarning("Reseting");
-                skeleton = new BipedSkeleton();
-                skeletonBuffer = new BipedSkeleton();
-                mp = null;
-                joints = null;
-                ResetSkeleton = false;
-                prefix = MarkerPrefix;
-                return;
-            }
             if (LockPosition)
             {
                 UpdateNext();
                 return;
             }
-            if (mp == null || joints == null)
+            if (ResetSkeleton
+                || skeleton == null
+                || skeletonBuffer == null
+                || mp == null
+                || joints == null
+                || ikApplier == null)
             {
+                UnityEngine.Debug.LogWarning("Reseting");
+                skeleton = new BipedSkeleton();
+                skeletonBuffer = new BipedSkeleton();
                 MarkersNames markersMap;
-                mp = new MarkersPreprocessor(markerData, out markersMap, bodyPrefix: MarkerPrefix);
+                mp = new MarkersPreprocessor(markerData, out markersMap, bodyPrefix: MarkerPrefix);;
                 joints = new JointLocalization(markersMap);
+                ikApplier = new IKApplier();
+                ResetSkeleton = false;
             }
             Dictionary<string, OpenTK.Vector3> markers;
-
             mp.ProcessMarkers(markerData, out markers, MarkerPrefix);
-
             var temp = skeleton;
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
             joints.GetJointLocation(markers, ref skeleton);
-
-            if (ikApplier == null) ikApplier = new IKApplier();
-
-            ikApplier.test = Extrapolate;
             ikApplier.ApplyIK(ref skeleton);
             UpdateNext();
         }
         void OnDrawGizmos()
         {
-            if (Application.isPlaying && (streaming && markerData != null && markerData.Count > 0) || (debug != null && LockPosition))
+            if (Application.isPlaying && (streaming && markerData != null && markerData.Count > 0) || LockPosition)
             {
                 Draw();
             }
         }
-        public void Draw()
+        private void Draw()
         {
             if (debug == null) return;
+            pos = this.transform.position + debug.Offset;
             if (debug.markers.ShowMarkers)
             {
                 foreach (var lb in markerData)
@@ -135,55 +121,49 @@ namespace QualisysRealTime.Unity.Skeleton
                     var from = markerData.Find(md => md.Label == lb.From).Position + pos;
                     var to = markerData.Find(md => md.Label == lb.To).Position + pos;
                     Debug.DrawLine(from, to, debug.markers.boneColor);
+                }
             }
-            } if (debug.bodyRig != null && skeleton != null &&
-                (debug.bodyRig.showSkeleton || debug.bodyRig.showRotationTrace || debug.bodyRig.showJoints))
+            if (skeleton == null) return;
+            if (debug.showSkeleton || debug.showRotationTrace || debug.showJoints || debug.showConstraints || debug.showTwistConstraints)
             {
-                Gizmos.color = debug.bodyRig.jointColor;
+                Gizmos.color = debug.jointColor;
 
                 foreach (TreeNode<Bone> b in skeleton.Root)
                 {
-                    if (debug.bodyRig.showSkeleton)
+                    if (debug.showSkeleton)
                     {
                         foreach (TreeNode<Bone> child in b.Children)
                         {
-                            UnityEngine.Debug.DrawLine(b.Data.Pos.Convert() + pos, child.Data.Pos.Convert() + pos, debug.bodyRig.skelettColor);
+                            UnityEngine.Debug.DrawLine(b.Data.Pos.Convert() + pos, child.Data.Pos.Convert() + pos, debug.skelettColor);
                         }
                     }
-                    if (debug.bodyRig.showRotationTrace && (!b.IsLeaf))
+                    if (debug.showRotationTrace && (!b.IsLeaf))
                     {
-                        UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos.Convert() + pos, debug.bodyRig.traceLength);
+                        UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos.Convert() + pos, debug.traceLength);
                     }
-                    if (debug.bodyRig.showJoints)
+                    if (debug.showJoints)
                     {
-                        Gizmos.DrawSphere(b.Data.Pos.Convert() + pos, debug.bodyRig.jointScale);
+                        Gizmos.DrawSphere(b.Data.Pos.Convert() + pos, debug.jointSize);
                     }
-                }
-            }
-            if (debug.bodyRig.jointsConstrains != null &&
-                (debug.bodyRig.jointsConstrains.showConstraints ||
-                debug.bodyRig.jointsConstrains.showTwistConstraints))
-            {
-                foreach (TreeNode<Bone> b in skeleton.Root)
-                {
-                    if (b.Data.HasConstraints)
+                    if ((debug.showConstraints || debug.showTwistConstraints) && b.Data.HasConstraints)
                     {
                         OpenTK.Quaternion parentRotation =
                             b.Parent.Data.Orientation * b.Data.ParentPointer;
                         OpenTK.Vector3 poss = b.Data.Pos + pos.Convert();
-                        if (debug.bodyRig.jointsConstrains.showConstraints)
+                        if (debug.showConstraints)
                         {
                             UnityDebug.CreateIrregularCone(
                                 b.Data.Constraints, poss,
                                 OpenTK.Vector3.NormalizeFast(
                                     OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, parentRotation)),
                                 parentRotation,
-                                debug.bodyRig.jointsConstrains.coneResolution,
-                                debug.bodyRig.jointsConstrains.coneSize);
+                                50,//debug.jointsConstrains.coneResolution,
+                                debug.traceLength//debug.jointsConstrains.coneSize
+                                );
                         }
-                        if (debug.bodyRig.jointsConstrains.showTwistConstraints)
+                        if (debug.showTwistConstraints)
                         {
-                            UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, debug.bodyRig.traceLength);
+                            UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, debug.traceLength);
                         }
                     }
                 }
