@@ -2,7 +2,7 @@
 /*
     The MIT License (MIT)
 
-    Copyright (c) 2015 Jonas Bornold
+    Copyright (c) 2015 Qualisys AB
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -32,9 +32,11 @@ namespace QualisysRealTime.Unity.Skeleton
         /// <summary>
         /// The ma
         /// </summary>
-        private Vector3 lastSACRUMknown = Vector3Helper.MidPoint(new Vector3(0.0774f, 1.0190f, -0.1151f), new Vector3(-0.0716f, 1.0190f, -0.1138f));
-        private Vector3 lastRIASknown = new Vector3(0.0925f, 0.9983f, 0.1052f);
-        private Vector3 lastLIASknown = new Vector3(-0.0887f, 1.0021f, 0.1112f);
+        private Vector3
+            lastSACRUMknown = Vector3Helper.MidPoint(new Vector3(0.0774f, 1.0190f, -0.1151f), new Vector3(-0.0716f, 1.0190f, -0.1138f)),
+            lastRIASknown = new Vector3(0.0925f, 0.9983f, 0.1052f),
+            lastLIASknown = new Vector3(-0.0887f, 1.0021f, 0.1112f);
+
         private MarkersNames m;
         /// <summary>
         /// Constructor sets the markers name in the MarkesName class used for joint localization
@@ -105,19 +107,17 @@ namespace QualisysRealTime.Unity.Skeleton
                 || markers[m.bodyBase].IsNaN())
             {
                 MissingEssientialMarkers(markers);
-                //UnityDebug.DrawLine(markers[m.bodyBase], markers[m.rightHip]);
-                //UnityDebug.DrawLine(markers[m.bodyBase], markers[m.leftHip]);
-                //UnityDebug.DrawLine(markers[m.leftHip], markers[m.rightHip]);
             }
-            //else
+            else
             {
                 lastSACRUMknown = markers[m.bodyBase];
                 lastRIASknown = markers[m.rightHip];
                 lastLIASknown = markers[m.leftHip];
             }
+            //UnityDebug.DrawLine(markers[m.bodyBase], markers[m.rightHip]);
+            //UnityDebug.DrawLine(markers[m.bodyBase], markers[m.leftHip]);
+            //UnityDebug.DrawLine(markers[m.leftHip], markers[m.rightHip]);
             newMarkers = markers;
-            //MoveLegMarkers(ref markers, true);
-            //MoveLegMarkers(ref markers, false);
         }
         /// <summary>
         /// If any of the hip markers are missing, we predict them using the last position
@@ -151,7 +151,7 @@ namespace QualisysRealTime.Unity.Skeleton
                     Vector3 transVec2 = Vector3.Transform(dirVec2, (between));
                     possiblePos1 = Sacrum + transVec1; // add vector from sacrum too lias last frame to this frames' sacrum
                     possiblePos2 = RIAS + transVec2;
-                    markers[m.leftHip] =  Vector3Helper.MidPoint(possiblePos1,possiblePos2); // get mid point of possible positions
+                    markers[m.leftHip] = DontMovedToMuch(markersLastFrame[m.leftHip], Vector3Helper.MidPoint(possiblePos1, possiblePos2)); // get mid point of possible positions
 
                 }
                 else if (l) // sacrum  and lias exists, rias missing
@@ -166,12 +166,12 @@ namespace QualisysRealTime.Unity.Skeleton
                     Vector3 transVec2 = Vector3.Transform(dirVec2, (between));
                     possiblePos1 = Sacrum + transVec1;
                     possiblePos2 = LIAS + transVec2;
-                    markers[m.rightHip] = Vector3Helper.MidPoint(possiblePos1,possiblePos2);
+                    markers[m.rightHip] = DontMovedToMuch(markersLastFrame[m.rightHip], Vector3Helper.MidPoint(possiblePos1, possiblePos2));
                 }
                 else // only sacrum exists, lias and rias missing
                 {
-                    markers[m.rightHip] = Sacrum + riasLastFrame - sacrumLastFrame;
-                    markers[m.leftHip] = Sacrum + liasLastFrame - sacrumLastFrame;
+                    markers[m.rightHip] = DontMovedToMuch(markersLastFrame[m.rightHip] , Sacrum + riasLastFrame - sacrumLastFrame);
+                    markers[m.leftHip] = DontMovedToMuch(markersLastFrame[m.leftHip], Sacrum + liasLastFrame - sacrumLastFrame);
                 }
             }
             else if (r) // rias exists, sacrum missing
@@ -189,18 +189,18 @@ namespace QualisysRealTime.Unity.Skeleton
                     Vector3 transVec2 = Vector3.Transform(dirVec2, (between));
                     possiblePos1 = RIAS + transVec1;
                     possiblePos2 = LIAS + transVec2;
-                    markers[m.bodyBase] =Vector3Helper.MidPoint(possiblePos1,possiblePos2);
+                    markers[m.bodyBase] = DontMovedToMuch(markersLastFrame[m.bodyBase] ,Vector3Helper.MidPoint(possiblePos1,possiblePos2));
                 }
                 else // only rias exists, lias and sacrum missing
                 {
-                    markers[m.bodyBase] = RIAS + sacrumLastFrame - riasLastFrame;
-                    markers[m.leftHip] = RIAS + liasLastFrame - riasLastFrame;
+                    markers[m.bodyBase] = DontMovedToMuch(markersLastFrame[m.bodyBase], RIAS + sacrumLastFrame - riasLastFrame);
+                    markers[m.leftHip] = DontMovedToMuch(markersLastFrame[m.leftHip], RIAS + liasLastFrame - riasLastFrame);
                 }
             }
             else if (l) // only lias exists, rias and sacrum missing
             {
-                markers[m.bodyBase] = LIAS + sacrumLastFrame - liasLastFrame;
-                markers[m.rightHip] = LIAS + riasLastFrame - liasLastFrame;
+                markers[m.bodyBase] = DontMovedToMuch(markersLastFrame[m.bodyBase], LIAS + sacrumLastFrame - liasLastFrame);
+                markers[m.rightHip] = DontMovedToMuch(markersLastFrame[m.rightHip], LIAS + riasLastFrame - liasLastFrame);
             }
             else // all markers missing
             {
@@ -217,67 +217,19 @@ namespace QualisysRealTime.Unity.Skeleton
                 {
                     Vector3 offset = markers[first] - markersLastFrame[first];
 
-                    markers[m.rightHip] = riasLastFrame + offset;
-                    markers[m.leftHip] = liasLastFrame + offset;
-                    markers[m.bodyBase] = sacrumLastFrame + offset;
+                    markers[m.rightHip] = DontMovedToMuch(markersLastFrame[m.rightHip], riasLastFrame + offset);
+                    markers[m.leftHip] = DontMovedToMuch(markersLastFrame[m.leftHip], liasLastFrame + offset);
+                    markers[m.bodyBase] = DontMovedToMuch(markersLastFrame[m.bodyBase], sacrumLastFrame + offset);
                 }
                 else
                 {
-                    markers[m.rightHip] = riasLastFrame;
-                    markers[m.leftHip] = liasLastFrame;
-                    markers[m.bodyBase] = sacrumLastFrame;
+                    markers[m.rightHip] = markersLastFrame[m.rightHip];
+                    markers[m.leftHip] = markersLastFrame[m.leftHip];
+                    markers[m.bodyBase] = markersLastFrame[m.bodyBase];
                 }
             }
         }
-        /// <summary>
-        /// Moving the legmarkets towards the skin, can be usefull
-        /// </summary>
-        /// <param name="markers">The markers</param>
-        /// <param name="isRightKnee">Bool of right knee or not</param>
-        private void MoveLegMarkers(ref Dictionary<string,Vector3> markers, bool isRightKnee)
-        {
-            Vector3 x, z, M1, M2, M3, negateY = new Vector3(1f, -1f, 1f);
-            Matrix4 R;
-            if (isRightKnee)
-            {
-                M1 = markers[m.rightOuterKnee];//FLE
-                M3 = markers[m.rightLowerKnee];//TTC
-                M2 = markers[m.rightOuterAnkle];//FAL
-            }
-            else
-            {
-                M1 = markers[m.leftOuterKnee];//FLE
-                M3 = markers[m.leftLowerKnee];//TTC
-                M2 = markers[m.leftOuterAnkle];//FAL
-            }
-            if (M1.IsNaN() || M2.IsNaN() || M3.IsNaN()) return;
-            x = Vector3Helper.MidPoint(M1, M2) - M3;
-            z = M1 - M2;
-            R = Matrix4Helper.GetOrientationMatrix(x, z);
-            Vector3 trans = (isRightKnee) ? 
-                new Vector3(-BodyData.MarkerCentreToSkinSurface * 0.7071f, -BodyData.MarkerCentreToSkinSurface * 0.7071f, 0f) :
-                new Vector3(-BodyData.MarkerCentreToSkinSurface * 0.7071f, BodyData.MarkerCentreToSkinSurface * 0.7071f, 0f);
-            Vector3 newM1 = Vector3.TransformVector(
-                (isRightKnee) ?
-                new Vector3(-BodyData.MarkerCentreToSkinSurface * 0.7071f, -BodyData.MarkerCentreToSkinSurface * 0.7071f, 0f) :
-                new Vector3(-BodyData.MarkerCentreToSkinSurface * 0.7071f, BodyData.MarkerCentreToSkinSurface * 0.7071f, 0f), 
-                R) + M1;
 
-            x = Vector3Helper.MidPoint(M1, M2) - M3;
-            z = M2 - M1;
-            R = Matrix4Helper.GetOrientationMatrix(x, z);
-
-            if (isRightKnee)
-            {
-                markers[m.rightOuterKnee] = newM1;//FLE
-                markers[m.rightOuterAnkle] = Vector3.TransformVector(Vector3.Multiply(trans, negateY), R) + M2;//FAL
-            }
-            else
-            {
-                markers[m.leftOuterKnee] = newM1;//FLE
-                markers[m.leftOuterAnkle] = Vector3.TransformVector(trans, R) + M2;//FAL
-            }
-        }
         /// <summary>
         /// Finds aliases of different markers and replaces the names
         /// </summary>
@@ -456,6 +408,17 @@ namespace QualisysRealTime.Unity.Skeleton
         {
             var quary = alias.FirstOrDefault(n => markerNames.Contains(prefix + n));
             name = ((quary == null) ? name : prefix + quary);
+        }
+        private Vector3 DontMovedToMuch(Vector3 from, Vector3 to)
+        {
+            Vector3 move = (to - from);
+            if (move.Length > 0.02f)
+            {
+                move.NormalizeFast();
+                move *= 0.02f;
+                return from + move;
+            }
+            return to;
         }
     }
 }
