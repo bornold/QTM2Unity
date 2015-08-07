@@ -12,7 +12,7 @@ namespace QTM2Unity
         Model1, Model2, Model3, Model4, Model5, Model6
     }
     [System.Serializable]
-    public class RotationFixes
+    public class BoneRotations
     {
         public Vector3
             root,
@@ -44,7 +44,7 @@ namespace QTM2Unity
             fingersRight;
     }
     [System.Serializable]
-    public class Model1 : RotationFixes
+    public class Model1 : BoneRotations
     {
         public Model1()
         {
@@ -78,7 +78,7 @@ namespace QTM2Unity
         }
     }
     [System.Serializable]
-    public class Model2 : RotationFixes
+    public class Model2 : BoneRotations
     {
         public Model2()
         {
@@ -112,7 +112,7 @@ namespace QTM2Unity
         }
     }
     [System.Serializable]
-    public class Model3 : RotationFixes
+    public class Model3 : BoneRotations
     {
         public Model3()
         {
@@ -146,7 +146,7 @@ namespace QTM2Unity
         }
     }
     [System.Serializable]
-    public class Model4 : RotationFixes
+    public class Model4 : BoneRotations
     {
         public Model4()
         {
@@ -180,7 +180,7 @@ namespace QTM2Unity
         }
     }
     [System.Serializable]
-    public class Model5 : RotationFixes
+    public class Model5 : BoneRotations
     {
         public Model5()
         {
@@ -213,7 +213,7 @@ namespace QTM2Unity
             fingersRight = new Vector3(0f, 0f, 0f);
         }
     }
-    public class Model6 : RotationFixes
+    public class Model6 : BoneRotations
     {
         public Model6()
         {

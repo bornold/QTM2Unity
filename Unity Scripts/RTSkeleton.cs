@@ -25,6 +25,12 @@ namespace QTM2Unity
     class RTSkeleton : MonoBehaviour
     {
         public Debugging debug;
+        public string MarkerPrefix = "";
+        public bool LockPosition = false;
+        public bool ResetSkeleton = false;
+        public bool UseFingers = false;
+        public bool Extrapolate = false;
+
         protected RTClient rtClient;
         protected Vector3 pos;
         protected bool streaming = false;
@@ -53,30 +59,30 @@ namespace QTM2Unity
         {
             if (rtClient == null) rtClient = RTClient.GetInstance();
             streaming = rtClient.GetStreamingStatus();
-            if (!streaming && !debug.debugFlag) return;
+            if (!streaming && !LockPosition) return;
             markerData = rtClient.Markers;
-            if ((markerData == null || markerData.Count == 0) && !debug.debugFlag) 
+            if ((markerData == null || markerData.Count == 0) && !LockPosition) 
             {
                 UnityEngine.Debug.LogWarning("Stream does not contain any markers");
                 return;
             }
-            pos = this.transform.position + debug.offset;
+            pos = this.transform.position + debug.Offset;
             
-            if ((debug != null && debug.resetSkeleton) 
+            if ((debug != null && ResetSkeleton) 
                 || skeleton == null 
                 || skeletonBuffer == null 
-                || debug.bodyPrefix != prefix)
+                || MarkerPrefix != prefix)
             {
                 UnityEngine.Debug.LogWarning("Reseting");
                 skeleton = new BipedSkeleton();
                 skeletonBuffer = new BipedSkeleton();
                 mp = null;
                 joints = null;
-                debug.resetSkeleton = false;
-                prefix = debug.bodyPrefix;
+                ResetSkeleton = false;
+                prefix = MarkerPrefix;
                 return;
             }
-            if (debug.debugFlag)
+            if (LockPosition)
             {
                 UpdateNext();
                 return;
@@ -84,12 +90,12 @@ namespace QTM2Unity
             if (mp == null || joints == null)
             {
                 MarkersNames markersMap;
-                mp = new MarkersPreprocessor(markerData, out markersMap, bodyPrefix: debug.bodyPrefix);
+                mp = new MarkersPreprocessor(markerData, out markersMap, bodyPrefix: MarkerPrefix);
                 joints = new JointLocalization(markersMap);
             }
             Dictionary<string, OpenTK.Vector3> markers;
 
-            mp.ProcessMarkers(markerData, out markers, debug.bodyPrefix);
+            mp.ProcessMarkers(markerData, out markers, MarkerPrefix);
 
             var temp = skeleton;
             skeleton = skeletonBuffer;
@@ -98,13 +104,13 @@ namespace QTM2Unity
 
             if (ikApplier == null) ikApplier = new IKApplier();
 
-            ikApplier.test = debug.bodyRig.Extrapolate;
+            ikApplier.test = Extrapolate;
             ikApplier.ApplyIK(ref skeleton);
             UpdateNext();
         }
         void OnDrawGizmos()
         {
-            if (Application.isPlaying && (streaming && markerData != null && markerData.Count > 0) || (debug != null && debug.debugFlag))
+            if (Application.isPlaying && (streaming && markerData != null && markerData.Count > 0) || (debug != null && LockPosition))
             {
                 Draw();
             }
@@ -112,16 +118,16 @@ namespace QTM2Unity
         public void Draw()
         {
             if (debug == null) return;
-            if (debug.markers.markers)
+            if (debug.markers.ShowMarkers)
             {
                 foreach (var lb in markerData)
                 {
                     Gizmos.color = new Color(lb.Color.r, lb.Color.g, lb.Color.b);
-                    Gizmos.DrawSphere(lb.Position + pos, debug.markers.scale);
+                    Gizmos.DrawSphere(lb.Position + pos, debug.markers.MarkerScale);
                 }
             }
 
-            if (debug.markers.bones && rtClient.Bones != null)
+            if (debug.markers.MarkerBones && rtClient.Bones != null)
             {
                 foreach (var lb in rtClient.Bones)
                 {

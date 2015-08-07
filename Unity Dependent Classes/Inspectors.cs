@@ -19,27 +19,23 @@ namespace QTM2Unity {
    [System.Serializable]
     public class Debugging
     {
-        public string bodyPrefix = "";
-        public bool debugFlag = false;
-        public bool resetSkeleton = false;
-        public JointFix jointsRot;
-        public Vector3 offset = new Vector3(0, 0, 0);
         public Markers markers;
         public BodyRig bodyRig;
+        public Vector3 Offset = new Vector3(0, 0, 0);
+
     }
    [System.Serializable]
    public class Markers
    {
-       public bool markers = false;
+       public bool ShowMarkers = false;
        [Range(0.001f, 0.05f)]
-       public float scale = 0.01f;
-       public bool bones = false;
+       public float MarkerScale = 0.01f;
+       public bool MarkerBones = false;
        public Color boneColor = Color.blue;
    }
     [System.Serializable]
     public class BodyRig
     {
-        public bool Extrapolate = false;
         public bool showSkeleton = false;
         public Color skelettColor = Color.black;
         public bool showJoints = false;
@@ -62,11 +58,11 @@ namespace QTM2Unity {
         }
     }
     [System.Serializable]
-    public class JointFix
+    public class CharacterModel
     {
-        public bool UseFingers = false;
+        
         public CharactersModel model = CharactersModel.Model1;
-        public RotationFixes rots = new Model1();
+        public BoneRotations boneRotatation = new Model1();
     }
 
 }

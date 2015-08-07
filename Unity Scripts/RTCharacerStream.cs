@@ -14,9 +14,9 @@
 using UnityEngine;
 namespace QTM2Unity
 {
-
     class RTCharacerStream : RTSkeleton
     {
+        public CharacterModel CharacterModel;
         private CharacterGameObjects charactersJoints = new CharacterGameObjects();
         private CharactersModel cf = CharactersModel.Model1;
         private float scale;
@@ -24,49 +24,50 @@ namespace QTM2Unity
         {
             charactersJoints.SetLimbs(
                 this.transform,
-                debug.jointsRot.UseFingers
+                UseFingers
                 );
-            charactersJoints.PrintAll();
+            //charactersJoints.PrintAll();
             float pelvisHeight = 0;
             var trans = charactersJoints.pelvis;
-            while (trans.parent)
+            while (trans.parent && trans.parent != this)
             {
                 pelvisHeight += trans.localPosition.y;
                 trans = trans.parent;
             }
             scale = pelvisHeight / skeleton.Root.Data.Pos.Y;
+
             scale /= transform.localScale.magnitude;
-            UnityEngine.Debug.Log(this.name + " " + scale);
+            UnityEngine.Debug.LogFormat("name: {0} Scale: {1} Magnutude: {2}", this.name, scale, transform.localScale.magnitude);
         }
 
         public override void UpdateNext()
         {
-            if (cf != debug.jointsRot.model)
+            if (cf != CharacterModel.model)
             {
-                switch (debug.jointsRot.model)
+                switch (CharacterModel.model)
                 {
                     case CharactersModel.Model1:
-                        debug.jointsRot.rots = new Model1();
+                        CharacterModel.boneRotatation = new Model1();
                         break;
                     case CharactersModel.Model2:
-                        debug.jointsRot.rots = new Model2();
+                        CharacterModel.boneRotatation = new Model2();
                         break;
                     case CharactersModel.Model3:
-                        debug.jointsRot.rots = new Model3();
+                        CharacterModel.boneRotatation = new Model3();
                         break;
                     case CharactersModel.Model4:
-                        debug.jointsRot.rots = new Model4();
+                        CharacterModel.boneRotatation = new Model4();
                         break;
                     case CharactersModel.Model5:
-                        debug.jointsRot.rots = new Model5();
+                        CharacterModel.boneRotatation = new Model5();
                         break;
                     case CharactersModel.Model6:
-                        debug.jointsRot.rots = new Model6();
+                        CharacterModel.boneRotatation = new Model6();
                         break;
                     default:
                         break;
                 }
-                cf = debug.jointsRot.model;
+                cf = CharacterModel.model;
             }
             SetAll();
         }
@@ -78,10 +79,10 @@ namespace QTM2Unity
                 switch (b.Data.Name)
                 {
                     case Joint.PELVIS:
-                        SetJointRotation(charactersJoints.pelvis, b.Data, debug.jointsRot.rots.hip);
+                        SetJointRotation(charactersJoints.pelvis, b.Data, CharacterModel.boneRotatation.hip);
                         if (!b.Data.Pos.IsNaN())
                         {
-                            OpenTK.Vector3 p = b.Data.Pos * (scale*transform.localScale.magnitude);
+                            OpenTK.Vector3 p = b.Data.Pos * scale * transform.localScale.magnitude;
                             charactersJoints.pelvis.position =
                                 transform.position
                                 + p.Convert()
@@ -90,81 +91,81 @@ namespace QTM2Unity
                         break;
                     case Joint.SPINE0:
                         if (charactersJoints.spine.Length > 0)
-                            SetJointRotation(charactersJoints.spine[0], b.Data, debug.jointsRot.rots.spine);
+                            SetJointRotation(charactersJoints.spine[0], b.Data, CharacterModel.boneRotatation.spine);
                         break;
                     case Joint.SPINE1:
                         if (charactersJoints.spine.Length > 1)
-                            SetJointRotation(charactersJoints.spine[1], b.Data, debug.jointsRot.rots.spine);
+                            SetJointRotation(charactersJoints.spine[1], b.Data, CharacterModel.boneRotatation.spine);
                         break;
                     case Joint.SPINE3:
                         if (charactersJoints.spine.Length > 2)
-                            SetJointRotation(charactersJoints.spine[2], b.Data, debug.jointsRot.rots.spine);
+                            SetJointRotation(charactersJoints.spine[2], b.Data, CharacterModel.boneRotatation.spine);
                         break;
                     case Joint.NECK:
-                        SetJointRotation(charactersJoints.neck, b.Data, debug.jointsRot.rots.neck);
+                        SetJointRotation(charactersJoints.neck, b.Data, CharacterModel.boneRotatation.neck);
                         break;
                     case Joint.HEAD:
-                        SetJointRotation(charactersJoints.head, b.Data, debug.jointsRot.rots.head);
+                        SetJointRotation(charactersJoints.head, b.Data, CharacterModel.boneRotatation.head);
                         break;
                     case Joint.HIP_L:
-                        SetJointRotation(charactersJoints.leftThigh, b.Data, debug.jointsRot.rots.legUpperLeft);
+                        SetJointRotation(charactersJoints.leftThigh, b.Data, CharacterModel.boneRotatation.legUpperLeft);
                         break;
                     case Joint.HIP_R:
-                        SetJointRotation(charactersJoints.rightThigh, b.Data, debug.jointsRot.rots.legUpperRight);
+                        SetJointRotation(charactersJoints.rightThigh, b.Data, CharacterModel.boneRotatation.legUpperRight);
                         break;
                     case Joint.KNEE_L:
-                        SetJointRotation(charactersJoints.leftCalf, b.Data, debug.jointsRot.rots.legLowerLeft);
+                        SetJointRotation(charactersJoints.leftCalf, b.Data, CharacterModel.boneRotatation.legLowerLeft);
                         break;
                     case Joint.KNEE_R:
-                        SetJointRotation(charactersJoints.rightCalf, b.Data, debug.jointsRot.rots.legLowerRight);
+                        SetJointRotation(charactersJoints.rightCalf, b.Data, CharacterModel.boneRotatation.legLowerRight);
                         break;
                     case Joint.FOOTBASE_L:
-                        SetJointRotation(charactersJoints.leftFoot, b.Data, debug.jointsRot.rots.footLeft);
+                        SetJointRotation(charactersJoints.leftFoot, b.Data, CharacterModel.boneRotatation.footLeft);
                         break;
                     case Joint.FOOTBASE_R:
-                        SetJointRotation(charactersJoints.rightFoot, b.Data, debug.jointsRot.rots.footRight);
+                        SetJointRotation(charactersJoints.rightFoot, b.Data, CharacterModel.boneRotatation.footRight);
                         break;
                     case Joint.CLAVICLE_L:
-                        SetJointRotation(charactersJoints.leftClavicle, b.Data, debug.jointsRot.rots.clavicleLeft);
+                        SetJointRotation(charactersJoints.leftClavicle, b.Data, CharacterModel.boneRotatation.clavicleLeft);
                         break;
                     case Joint.CLAVICLE_R:
-                        SetJointRotation(charactersJoints.rightClavicle, b.Data, debug.jointsRot.rots.clavicleRight);
+                        SetJointRotation(charactersJoints.rightClavicle, b.Data, CharacterModel.boneRotatation.clavicleRight);
                         break;
                     case Joint.SHOULDER_L:
-                        SetJointRotation(charactersJoints.leftUpperArm, b.Data, debug.jointsRot.rots.armUpperLeft);
+                        SetJointRotation(charactersJoints.leftUpperArm, b.Data, CharacterModel.boneRotatation.armUpperLeft);
                         break;
                     case Joint.SHOULDER_R:
-                        SetJointRotation(charactersJoints.rightUpperArm, b.Data, debug.jointsRot.rots.armUpperRight);
+                        SetJointRotation(charactersJoints.rightUpperArm, b.Data, CharacterModel.boneRotatation.armUpperRight);
                         break;
                     case Joint.ELBOW_L:
-                        SetJointRotation(charactersJoints.leftForearm, b.Data, debug.jointsRot.rots.armLowerLeft);
+                        SetJointRotation(charactersJoints.leftForearm, b.Data, CharacterModel.boneRotatation.armLowerLeft);
                         break;
                     case Joint.ELBOW_R:
-                        SetJointRotation(charactersJoints.rightForearm, b.Data, debug.jointsRot.rots.armLowerRight);
+                        SetJointRotation(charactersJoints.rightForearm, b.Data, CharacterModel.boneRotatation.armLowerRight);
                         break;
                     case Joint.WRIST_L:
-                        SetJointRotation(charactersJoints.leftHand, b.Data, debug.jointsRot.rots.handLeft);
+                        SetJointRotation(charactersJoints.leftHand, b.Data, CharacterModel.boneRotatation.handLeft);
                         break;
                     case Joint.WRIST_R:
-                        SetJointRotation(charactersJoints.rightHand, b.Data, debug.jointsRot.rots.handRight);
+                        SetJointRotation(charactersJoints.rightHand, b.Data, CharacterModel.boneRotatation.handRight);
                         break;
                     case Joint.HAND_L:
-                        if (debug.jointsRot.UseFingers && charactersJoints.fingersLeft != null) 
+                        if (UseFingers && charactersJoints.fingersLeft != null) 
                             foreach (var fing in charactersJoints.fingersLeft) 
-                                SetJointRotation(fing, b.Data, debug.jointsRot.rots.fingersLeft);
+                                SetJointRotation(fing, b.Data, CharacterModel.boneRotatation.fingersLeft);
                         break;
                     case Joint.HAND_R:
-                        if (debug.jointsRot.UseFingers && charactersJoints.fingersRight != null) 
+                        if (UseFingers && charactersJoints.fingersRight != null) 
                             foreach (var fing in charactersJoints.fingersRight) 
-                                SetJointRotation(fing, b.Data, debug.jointsRot.rots.fingersRight);
+                                SetJointRotation(fing, b.Data, CharacterModel.boneRotatation.fingersRight);
                         break;
                     case Joint.TRAP_L:
-                        if (debug.jointsRot.UseFingers) 
-                            SetJointRotation(charactersJoints.thumbLeft, b.Data, debug.jointsRot.rots.thumbLeft);
+                        if (UseFingers) 
+                            SetJointRotation(charactersJoints.thumbLeft, b.Data, CharacterModel.boneRotatation.thumbLeft);
                         break;
                     case Joint.TRAP_R:
-                        if (debug.jointsRot.UseFingers) 
-                            SetJointRotation(charactersJoints.thumbRight, b.Data, debug.jointsRot.rots.thumbRight);
+                        if (UseFingers) 
+                            SetJointRotation(charactersJoints.thumbRight, b.Data, CharacterModel.boneRotatation.thumbRight);
                         break;
                     case Joint.ANKLE_L:
                     case Joint.ANKLE_R:
@@ -187,7 +188,7 @@ namespace QTM2Unity
                     transform.rotation
                     * b.Orientation.Convert()
                     * Quaternion.Euler(euler)
-                    * Quaternion.Euler(debug.jointsRot.rots.root)
+                    * Quaternion.Euler(CharacterModel.boneRotatation.root)
                     ;
 
             }
