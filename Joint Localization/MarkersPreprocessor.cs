@@ -236,7 +236,6 @@ namespace QTM2Unity
         /// <param name="isRightKnee">Bool of right knee or not</param>
         private void MoveLegMarkers(ref Dictionary<string,Vector3> markers, bool isRightKnee)
         {
-            // Stolen from Visual3D
             Vector3 x, z, M1, M2, M3, negateY = new Vector3(1f, -1f, 1f);
             Matrix4 R;
             if (isRightKnee)

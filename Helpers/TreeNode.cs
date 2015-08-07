@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 /*
- * NOTICE File changed from orignial work
+ * NOTICE: File changed from orignial work
  * 2015 Jonas Bornold 
 */
 

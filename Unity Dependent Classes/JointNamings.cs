@@ -68,7 +68,7 @@ namespace QTM2Unity {
             thumbAlias = { "Thumb", "thumb", "Finger0", "finger0" },
 
             exludeName = { "Nub", "Dummy", "dummy", "Tip", "IK", "Mesh", "mesh", "Goal", "goal", "Pole", "pole", "slot" },
-            spineExclude = { "Head", "head" },
+            spineExclude = { "Head", "head", "Pelvis", "pelvis", "Hip", "hip", "Root", "root" },
             headExclude = { "Top", "End" },
             armExclude = { "Finger", "finger", "Index", "index", "Point", "point", "Mid", "mid", "Pinky", "pinky", "Pink", "pink", "Ring", "Thumb", "thumb", "Adjust", "adjust", "Twist", "twist" },
             fingerExclude = { "Thumb", "thumb", "Adjust", "adjust", "Twist", "twist", "Medial", "medial", "Distal", "distal", "Finger0",
