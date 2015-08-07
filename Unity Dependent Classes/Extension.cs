@@ -88,10 +88,11 @@ namespace QTM2Unity
         public static bool IsAncestorOf(this Transform ancestor, Transform transform)
         {
             return
-                !transform ||
-                !ancestor ||
-                (transform.parent && transform.parent == ancestor) ||
-                IsAncestorOf(transform.parent, ancestor);
+                (transform &&
+                ancestor &&
+                transform.parent &&
+                transform.parent == ancestor) ||
+                ( transform.parent && ancestor.IsAncestorOf(transform.parent));
         }
         /// <summary>
         /// Returns the first common ancestor of the two transforms

@@ -63,6 +63,33 @@ namespace QTM2Unity {
 
         public Transform[] fingersRight;
         #endregion
+
+
+        /// <summary>
+        /// Sets the references to the joints of a character. Returns true if a valid biped has been found.
+        /// </summary>
+        /// <param name="root">The root of the character</param>
+        /// <param name="useFingers">bool wheter to use fingers or not</param>
+        /// <returns></returns>
+        public bool SetLimbs(Transform root, bool useFingers = false)
+        {
+            this.root = root;
+
+            // Find with the help of the animator
+            AnimatorFindJoints(root.GetComponent<Animator>(), useFingers);
+            if (IsAllJointsSet(useFingers))
+            {
+                return true;
+            }
+            else
+            {
+                // Try to find by names
+                FindJointsByNaming(root, useFingers);
+                return IsAllJointsSet(useFingers);
+            }
+        }
+
+
         /// <summary>
         /// Add gameobjects using the Animator.
         /// </summary>
@@ -75,7 +102,12 @@ namespace QTM2Unity {
 
             if (!neck) neck = animator.GetBoneTransform(HumanBodyBones.Neck);
 
-            if (neck && neck.parent) spine = GetAncestors(neck.parent, pelvis);
+            if (spine == null)
+            { 
+                spine = new Transform[2];
+                spine[0] = animator.GetBoneTransform(HumanBodyBones.Spine);
+                spine[1] = animator.GetBoneTransform(HumanBodyBones.Chest);
+            }
 
             if (!leftClavicle) leftClavicle = animator.GetBoneTransform(HumanBodyBones.LeftShoulder);
             if (!rightClavicle) rightClavicle = animator.GetBoneTransform(HumanBodyBones.RightShoulder);
@@ -172,7 +204,11 @@ namespace QTM2Unity {
                 Transform lastSpine = left.CommonAncestorOf(right);
                 if (lastSpine)
                 {
-                    spine = GetAncestors(lastSpine, pelvis);
+                    if (!pelvis.IsAncestorOf(lastSpine))
+                    {
+                        pelvis = pelvis.CommonAncestorOf(lastSpine);
+                    }
+                    spine = GetAncestorsBetween(lastSpine, pelvis);
                     // Head is not set
                     if (!head)
                     {
@@ -215,7 +251,10 @@ namespace QTM2Unity {
                         }
                     }
                 }
-                if (lastSpine == neck) Array.Resize(ref spine, spine.Length - 1); // Can't have neck among the spines, can we?
+                if (neck && spine > 0 && spine[spine.Length] == neck)
+                {
+                    Array.Resize(ref spine, spine.Length - 1); // Can't have neck among the spines
+                }
             }
         }
         /// <summary>
@@ -335,18 +374,6 @@ namespace QTM2Unity {
                 if (rightFoot == null) rightFoot = results[2];
             }
         }
-        // Determines whether a bone is valid for being added into the spine
-        private bool AddBoneToSpine(Transform bone)
-        {
-            if (bone == root) return false;
-            if (pelvis != null)
-            {
-                if (bone == pelvis) return false;
-                if (bone.IsAncestorOf(pelvis)) return false;
-            }
-
-            return true;
-        }
 
         /// <summary>
         /// Returns a array of all ancestors of Transform 1 until given Transform 2 or no more parents. Including Transform 1
@@ -354,13 +381,17 @@ namespace QTM2Unity {
         /// <param name="from">The starting transform, array is inclusive this</param>
         /// <param name="until">The transform to stop at, the array is exclusive this.</param>
         /// <returns>An array with the transform between From and Until</returns>
-        public Transform[] GetAncestors(Transform from, Transform until)
+        public Transform[] GetAncestorsBetween(Transform from, Transform until)
         {
-            List<Transform> between = new List<Transform> ();
+            List<Transform> between = new List<Transform>();
             var temp = from;
-            while (temp && temp != until)
+            while (    temp
+                    && temp != until 
+                    && temp != root
+                    && until.IsAncestorOf(from))
             {
-                if (temp.position != until.position && temp.parent.position != temp.position)
+                if (temp.position != until.position 
+                    && (!temp.parent ||  temp.parent.position != temp.position))
                 {
                     between.Add(temp);
                 }
@@ -417,30 +448,6 @@ namespace QTM2Unity {
                 fingersRight.All(f => f) &&
                 thumbLeft &&
                 thumbRight;
-        }
-
-        /// <summary>
-        /// Sets the references to the joints of a character. Returns true if a valid biped has been found.
-        /// </summary>
-        /// <param name="root">The root of the character</param>
-        /// <param name="useFingers">bool wheter to use fingers or not</param>
-        /// <returns></returns>
-        public bool SetLimbs(Transform root, bool useFingers = false)
-        {
-            this.root = root;
-
-            // Find with the help of the animator
-            AnimatorFindJoints(root.GetComponent<Animator>(), useFingers);
-            if (IsAllJointsSet(useFingers))
-            {
-                return true;
-            }
-            else
-            {
-                // Try to find by names
-                FindJointsByNaming(root, useFingers);
-                return IsAllJointsSet(useFingers);
-            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
