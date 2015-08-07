@@ -2,7 +2,7 @@
 /*
     The MIT License (MIT)
 
-    Copyright (c) 2015 Jonas Bornold
+    Copyright (c) 2015 Qualisys AB
 
     Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
@@ -219,35 +219,16 @@ namespace QualisysRealTime.Unity.Skeleton
                 if (bone.IsRoot || bone.Data.HasNaN) continue;
                 Bone lastFrameBone = lastSkel.Root.FindTreeNode(tn => tn.Data.Name == bone.Data.Name).Data;
                 #region Poss
-
-                //Vector3 posFinal = currBone.Pos;
                 Vector3 posInitial = lastFrameBone.Pos;
                 Vector3 diffInitToFinalVec = (bone.Data.Pos - posInitial);
                 if (diffInitToFinalVec.Length > 0.025f)
                 {
                     diffInitToFinalVec.NormalizeFast();
                     diffInitToFinalVec *= 0.025f;
-                    //Vector3 newFinalPos = (posInitial + diffInitToFinalVec);
-                    //Vector3 parentPos = bone.Parent.Data.Pos;
                     Quaternion rotToNewPos = 
                         QuaternionHelper2.RotationBetween(
                                 bone.Parent.Data.GetYAxis(),
                                 ((posInitial + diffInitToFinalVec) - bone.Parent.Data.Pos));
-                    /////////////////////////////
-                    //var tnb = lastSkel.First(g => g.Data.Name == bone.Data.Name);
-                    //Vector3 offset = bone.Parent.Data.Pos - tnb.Parent.Data.Pos;
-                    //UnityEngine.Debug.LogError(bone.Data.Name + " diffed with " + diffInitToFinalVec.Length + "\nDiffvec:" + diffInitToFinalVec + " length " + diffInitToFinalVec.Length);
-                    //UnityEngine.Color c = UnityEngine.Color.magenta;
-                    //foreach (TreeNode<Bone> t in tnb)
-                    //{
-                    //    UnityDebug.DrawLine(t.Parent.Data.Pos + offset, t.Data.Pos + offset, UnityEngine.Color.blue);
-                    //    c = UnityEngine.Color.blue;
-                    //}
-                    //foreach (TreeNode<Bone> t in bone)
-                    //{
-                    //    UnityDebug.DrawLine(t.Parent.Data.Pos, t.Data.Pos, UnityEngine.Color.green);
-                    //}
-                    /////////////////////////////
                     FK(bone.Parent, rotToNewPos);
                     hasChanges = true;
                 }
@@ -260,18 +241,6 @@ namespace QualisysRealTime.Unity.Skeleton
                     float quatDiff = QuaternionHelper2.DiffrenceBetween(oriFinal, oriInitial);
                     if (quatDiff > 0.03f)
                     {
-                        //UnityEngine.Debug.Log(currBone.Name + " jerked with " + quatDiff + " amount\n" + "Twisting back " + calc * 100 + "%");
-                        //Vector3 prepos = new Vector3(currBone.Pos);
-                        //Vector3 offset = currBone.Pos - lastFrameBone.Pos;
-                        //foreach (TreeNode<Bone> t in lastSkel.First(g => g.Data.Name == currBone.Name))
-                        //{
-                        //    UnityDebug.DrawLine(t.Parent.Data.Pos + offset, t.Data.Pos + offset, UnityEngine.Color.blue);
-                        //}
-                        //foreach (TreeNode<Bone> t in bone)
-                        //{
-                        //    UnityDebug.DrawLine(t.Parent.Data.Pos, t.Data.Pos, UnityEngine.Color.green);
-                        //}
-
                         float slerp = (1 - quatDiff) - (Mathf.Cos((MathHelper.Pi * quatDiff) / 2) - (1 - quatDiff * 0.8f));
                         Quaternion qTrans = Quaternion.Invert(
                             Quaternion.Slerp(oriInitial, oriFinal, slerp) 

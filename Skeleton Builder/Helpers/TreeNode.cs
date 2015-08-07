@@ -15,7 +15,7 @@ limitations under the License.
 */
 /*
  * NOTICE: File changed from orignial work
- * 2015 Jonas Bornold 
+ * 2015 Qualisys AB
 */
 
 using System;

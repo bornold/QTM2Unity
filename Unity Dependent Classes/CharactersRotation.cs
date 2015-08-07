@@ -1,4 +1,17 @@
-﻿using System;
+﻿#region --- LINCENSE ---
+/*
+    The MIT License (MIT)
+
+    Copyright (c) 2015 Qualisys AB
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+#endregion
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -213,6 +226,7 @@ namespace QualisysRealTime.Unity.Skeleton
             fingersRight = new Vector3(0f, 0f, 0f);
         }
     }
+    [System.Serializable]
     public class Model6 : BoneRotations
     {
         public Model6()
@@ -225,11 +239,11 @@ namespace QualisysRealTime.Unity.Skeleton
 
             legUpperLeft = new Vector3(0f, 90f, 270f);
             legLowerLeft = new Vector3(0f, 90f, 270f);
-            footLeft     = new Vector3(0f, 270f, 270f);
+            footLeft     = new Vector3(0f, 270f, 310f);
 
             legUpperRight = new Vector3(0f, 270f, 90f);
             legLowerRight = new Vector3(0f, 270f, 90f);
-            footRight     = new Vector3(0f, 270f, 90f);
+            footRight     = new Vector3(0f, 270f, 130f);
 
             clavicleLeft = new Vector3(180f, 180f, 90f);
             armUpperLeft = new Vector3(180f, 180f, 90f);
