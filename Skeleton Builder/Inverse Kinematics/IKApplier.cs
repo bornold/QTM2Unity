@@ -16,7 +16,7 @@ using OpenTK;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     /// <summary>
     /// Class for predicting missing joints position from a skeleton

@@ -15,7 +15,7 @@
 using System;
 using OpenTK;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     [System.Serializable]
     public class Bone : IEquatable<Bone>

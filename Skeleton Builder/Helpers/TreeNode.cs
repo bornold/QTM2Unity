@@ -23,7 +23,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     public class TreeNode<T> : IEnumerable<TreeNode<T>>
     {

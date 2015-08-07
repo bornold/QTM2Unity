@@ -17,7 +17,7 @@ using QualisysRealTime.Unity;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     class MarkersPreprocessor
     {

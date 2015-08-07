@@ -13,7 +13,7 @@
 #endregion
 using OpenTK;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     /// <summary>
     /// Joint identifiers

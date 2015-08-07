@@ -14,7 +14,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     class MarkersNames : IEnumerable<string>
     {

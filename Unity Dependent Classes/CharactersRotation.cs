@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     [System.Serializable]
     public enum CharactersModel

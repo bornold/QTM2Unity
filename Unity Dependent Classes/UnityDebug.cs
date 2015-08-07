@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     static class UnityDebug
     {

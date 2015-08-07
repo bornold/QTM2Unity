@@ -18,7 +18,7 @@ using System.Linq;
 using System.Text;
 using OpenTK;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     public static class Mathf
     {

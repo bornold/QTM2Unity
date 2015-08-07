@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OpenTK;
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {        
     /// <summary>
     /// Class for standrad ISO/IEC FCD 19774 specification of joints

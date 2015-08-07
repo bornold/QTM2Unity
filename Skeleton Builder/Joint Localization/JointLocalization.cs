@@ -16,7 +16,7 @@ using OpenTK;
 using System;
 using System.Collections.Generic;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     /// <summary>
     /// The class transforming the markers to a skeleton using the 

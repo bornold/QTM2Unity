@@ -14,7 +14,7 @@
 using System.Linq;
 using UnityEngine;
 
-namespace QTM2Unity {
+namespace QualisysRealTime.Unity.Skeleton {
 	/// <summary>
 	/// Class for identifying biped bones based on most common naming conventions.
 	/// </summary>

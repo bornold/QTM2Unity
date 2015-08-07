@@ -16,7 +16,7 @@ using OpenTK;
 using System;
 using System.Linq;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     /// <summary>
     /// From Aristidou, Andreas, and Joan Lasenby. "FABRIK: a fast, iterative solver for the inverse kinematics problem." Graphical Models 73, no. 5 (2011): 243-260.

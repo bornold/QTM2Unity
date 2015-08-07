@@ -14,7 +14,7 @@
 
 using OpenTK;
 using System;
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     /// <summary>
     /// An abstract class containing the functions for a Inverse kinematic solver

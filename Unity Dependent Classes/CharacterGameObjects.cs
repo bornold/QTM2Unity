@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace QTM2Unity {
+namespace QualisysRealTime.Unity.Skeleton {
 
 	/// <summary>
 	/// References to transform joints of the character.

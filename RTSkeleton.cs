@@ -17,7 +17,7 @@ using QualisysRealTime.Unity;
 using UnityEngine;
 #pragma warning disable 0649
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
  /// <summary>
  /// Calculates a skeleton and contains debug for viewing the skeleton

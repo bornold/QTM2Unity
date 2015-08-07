@@ -14,7 +14,7 @@
 using OpenTK;
 using System.Collections.Generic;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     /// <summary>
     /// This class keeps the data collected from the markers such as subject length, chest depth and width, and an approximation of the weight.

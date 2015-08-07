@@ -13,7 +13,7 @@
 #endregion
 using UnityEngine;
 #pragma warning disable 0649
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     class RTCharacerStream : RTSkeleton
     {

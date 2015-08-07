@@ -14,7 +14,7 @@
 using OpenTK;
 using QualisysRealTime.Unity;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     public static class QuaternionHelper2
     {

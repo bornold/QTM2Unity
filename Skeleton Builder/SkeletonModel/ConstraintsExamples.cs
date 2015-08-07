@@ -12,7 +12,7 @@
 */
 #endregion
 using OpenTK;
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     class ConstraintsExamples
     {

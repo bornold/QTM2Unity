@@ -15,7 +15,7 @@
 using System;
 using OpenTK;
 
-namespace QTM2Unity
+namespace QualisysRealTime.Unity.Skeleton
 {
     /// <summary>
     /// This class contains the functions for ensuring constraints of a bone
