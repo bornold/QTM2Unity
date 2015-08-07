@@ -19,7 +19,7 @@ namespace QTM2Unity
     {
         private CharacterGameObjects charactersJoints = new CharacterGameObjects();
         private CharactersModel cf = CharactersModel.Model1;
-        private float pelvisHeight;
+        private float scale;
         public override void StartNext()
         {
             charactersJoints.SetLimbs(
@@ -27,14 +27,16 @@ namespace QTM2Unity
                 debug.jointsRot.UseFingers
                 );
             charactersJoints.PrintAll();
-            pelvisHeight = 0;
+            float pelvisHeight = 0;
             var trans = charactersJoints.pelvis;
             while (trans.parent)
             {
                 pelvisHeight += trans.localPosition.y;
                 trans = trans.parent;
             }
-            pelvisHeight -= skeleton.Root.Data.Pos.Y;
+            scale = pelvisHeight / skeleton.Root.Data.Pos.Y;
+            scale /= transform.localScale.magnitude;
+            UnityEngine.Debug.Log(this.name + " " + scale);
         }
 
         public override void UpdateNext()
@@ -58,6 +60,9 @@ namespace QTM2Unity
                     case CharactersModel.Model5:
                         debug.jointsRot.rots = new Model5();
                         break;
+                    case CharactersModel.Model6:
+                        debug.jointsRot.rots = new Model6();
+                        break;
                     default:
                         break;
                 }
@@ -76,10 +81,11 @@ namespace QTM2Unity
                         SetJointRotation(charactersJoints.pelvis, b.Data, debug.jointsRot.rots.hip);
                         if (!b.Data.Pos.IsNaN())
                         {
-                            Vector3 p = b.Data.Pos.Convert();
-                            charactersJoints.pelvis.position = 
-                                charactersJoints.root.position 
-                                + new Vector3(p.x, p.y + pelvisHeight, p.z);
+                            OpenTK.Vector3 p = b.Data.Pos * (scale*transform.localScale.magnitude);
+                            charactersJoints.pelvis.position =
+                                transform.position
+                                + p.Convert()
+                                ;
                         }
                         break;
                     case Joint.SPINE0:
