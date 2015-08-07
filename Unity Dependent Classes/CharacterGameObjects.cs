@@ -251,7 +251,7 @@ namespace QTM2Unity {
                         }
                     }
                 }
-                if (neck && spine.Length > 0 && spine[spine.Length] == neck)
+                if (neck && spine.Length > 0 && spine[spine.Length-1] == neck)
                 {
                     Array.Resize(ref spine, spine.Length - 1); // Can't have neck among the spines
                 }
