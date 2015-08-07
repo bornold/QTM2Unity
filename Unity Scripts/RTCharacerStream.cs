@@ -12,6 +12,7 @@
 */
 #endregion
 using UnityEngine;
+#pragma warning disable 0649
 namespace QTM2Unity
 {
     class RTCharacerStream : RTSkeleton

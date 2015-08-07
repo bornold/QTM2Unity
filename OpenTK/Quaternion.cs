@@ -27,6 +27,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
 using System.Xml.Serialization;
+#pragma warning disable 3021
 
 namespace OpenTK
 {

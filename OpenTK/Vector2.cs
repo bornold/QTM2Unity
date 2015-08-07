@@ -24,8 +24,10 @@ SOFTWARE.
 
 using System;
 using System.Runtime.InteropServices;
+#pragma warning disable 3021
 namespace OpenTK
 {
+
     /// <summary>Represents a 2D vector using two single-precision floating-point numbers.</summary>
     /// <remarks>
     /// The Vector2 structure is suitable for interoperation with unmanaged code requiring two consecutive floats.

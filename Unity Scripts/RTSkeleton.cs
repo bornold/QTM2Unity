@@ -15,13 +15,14 @@
 using System.Collections.Generic;
 using QualisysRealTime.Unity;
 using UnityEngine;
+#pragma warning disable 0649
 
 namespace QTM2Unity
 {
  /// <summary>
  /// Calculates a skeleton and contains debug for viewing the skeleton
  /// NOTICE: This does not include mapping to a Unity Character
- /// </summary>
+/// </summary>
     class RTSkeleton : MonoBehaviour
     {
         public Debugging debug;
