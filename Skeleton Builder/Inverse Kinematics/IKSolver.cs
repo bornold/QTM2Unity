@@ -24,7 +24,7 @@ namespace QualisysRealTime.Unity.Skeleton
         abstract public bool SolveBoneChain(Bone[] bones, Bone target, Bone parent);
         protected float threshold = 0.01f;
         public ConstraintsFunctions constraints = new ConstraintsFunctions();
-        public int MaxIterations = 100;
+        public int MaxIterations = 130;
         /// <summary>
         /// Checks wheter the target is reacheble for the bone chain or not
         /// </summary>

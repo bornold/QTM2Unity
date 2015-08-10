@@ -26,7 +26,7 @@ namespace QualisysRealTime.Unity.Skeleton
         private BipedSkeleton lastSkel;
        
         public IKSolver IKSolver { private get; set; }
-        public IKSolver FABRIK { private get; set; } 
+        public IKSolver FABRIK { private get; set; }
 
         public bool test = false;
         public IKApplier()
@@ -122,6 +122,7 @@ namespace QualisysRealTime.Unity.Skeleton
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
             }
+            // If target not found on chain, rotate the body according to its grandparents knowed diffrence
             if (!iksolved)
             {
                 var q2 = missingJoint.Parent.Parent.Data.Orientation;
@@ -225,7 +226,7 @@ namespace QualisysRealTime.Unity.Skeleton
                 {
                     diffInitToFinalVec.NormalizeFast();
                     diffInitToFinalVec *= 0.025f;
-                    Quaternion rotToNewPos = 
+                    Quaternion rotToNewPos =
                         QuaternionHelper2.RotationBetween(
                                 bone.Parent.Data.GetYAxis(),
                                 ((posInitial + diffInitToFinalVec) - bone.Parent.Data.Pos));

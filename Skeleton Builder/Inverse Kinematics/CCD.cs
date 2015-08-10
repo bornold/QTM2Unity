@@ -16,7 +16,7 @@ namespace QualisysRealTime.Unity.Skeleton
 {
     class CCD : IKSolver
     {
-        private int degreeStep = 10;
+        private int degreeStep = 7;
         /// <summary>
         /// Given a array of bones, and a target bone, solves the chain so that the last bone in the chain is at at the same position as the target
         /// </summary>
