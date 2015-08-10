@@ -11,39 +11,68 @@
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #endregion
+using System.Collections.Generic;
 using UnityEngine;
 #pragma warning disable 0649
 namespace QualisysRealTime.Unity.Skeleton
 {
-    class RTCharacerStream : RTSkeleton
+    class RTCharacerStream : MonoBehaviour
     {
+        public string MarkerPrefix = "";
         public bool UseFingers = false;
+        private bool fingerUse;
+        public bool LockPosition = false;
+        public bool ResetSkeleton = false;
         public CharactersModel model = CharactersModel.Model1;
         public BoneRotations boneRotatation = new Model1();
+        public Debugging debug;
+
+        private RTClient rtClient;
+        private Vector3 pos;
+        private bool streaming = false;
+        private List<LabeledMarker> markerData;
+        private SkeletonBuilder skeletonBuilder;
+        private BipedSkeleton skeleton;
         private CharacterGameObjects charactersJoints = new CharacterGameObjects();
         private CharactersModel cf = CharactersModel.Model1;
-        private float scale;
+        private float scale = 0;
         /// <summary>
         /// Locating the joints of the character and find the scale by which the position should be applied to
         /// </summary>
-        public override void StartNext()
+        public void Start()
         {
-            charactersJoints.SetLimbs(
-                this.transform,
-                UseFingers
-                );
-            //charactersJoints.PrintAll();
-            var animator = this.GetComponent<Animator>();
-            if (animator)
-            {
-                animator.StopPlayback();
-                animator.runtimeAnimatorController = null;
-            }
-            scale = FindScale(charactersJoints.pelvis);
+            rtClient = RTClient.GetInstance();
+            fingerUse = UseFingers;
+            charactersJoints.SetLimbs(this.transform, fingerUse);
+            var animation = this.GetComponent<Animation>();
+            if (animation) animation.enabled = false;
         }
 
-        public override void UpdateNext()
+        public void Update()
         {
+            if (rtClient == null) rtClient = RTClient.GetInstance();
+            streaming = rtClient.GetStreamingStatus();
+            if (!streaming && !LockPosition) return;
+            markerData = rtClient.Markers;
+            if ((markerData == null || markerData.Count == 0) && !LockPosition)
+            {
+                UnityEngine.Debug.LogWarning("Stream does not contain any markers");
+                return;
+            }
+            if (ResetSkeleton || skeletonBuilder == null)
+            {
+                fingerUse = UseFingers;
+                charactersJoints = new CharacterGameObjects();
+                charactersJoints.SetLimbs(this.transform, fingerUse);
+                skeletonBuilder = new SkeletonBuilder(rtClient, MarkerPrefix);
+                if (LockPosition) skeleton = new BipedSkeleton();
+                ResetSkeleton = false;
+            }
+            if (!LockPosition)
+            {
+                skeleton = skeletonBuilder.SolveSkeleton(markerData);
+            }
+            if (scale == 0) scale = FindScale(charactersJoints.pelvis);
             SetModelRotation();
             SetAll();
         }
@@ -126,21 +155,21 @@ namespace QualisysRealTime.Unity.Skeleton
                         SetJointRotation(charactersJoints.rightHand, b.Data, boneRotatation.handRight);
                         break;
                     case Joint.HAND_L:
-                        if (UseFingers && charactersJoints.fingersLeft != null) 
+                        if (fingerUse && charactersJoints.fingersLeft != null) 
                             foreach (var fing in charactersJoints.fingersLeft) 
                                 SetJointRotation(fing, b.Data, boneRotatation.fingersLeft);
                         break;
                     case Joint.HAND_R:
-                        if (UseFingers && charactersJoints.fingersRight != null) 
+                        if (fingerUse && charactersJoints.fingersRight != null) 
                             foreach (var fing in charactersJoints.fingersRight) 
                                 SetJointRotation(fing, b.Data, boneRotatation.fingersRight);
                         break;
                     case Joint.TRAP_L:
-                        if (UseFingers) 
+                        if (fingerUse) 
                             SetJointRotation(charactersJoints.thumbLeft, b.Data, boneRotatation.thumbLeft);
                         break;
                     case Joint.TRAP_R:
-                        if (UseFingers) 
+                        if (fingerUse) 
                             SetJointRotation(charactersJoints.thumbRight, b.Data, boneRotatation.thumbRight);
                         break;
                     case Joint.ANKLE_L:
@@ -159,14 +188,14 @@ namespace QualisysRealTime.Unity.Skeleton
         {
             float pelvisHeight = 0;
             var trans = pelvis;
-            while (trans.parent && trans.parent != this)
+            do
             {
                 pelvisHeight += trans.localPosition.y;
                 trans = trans.parent;
-            }
-            float scale = pelvisHeight / skeleton.Root.Data.Pos.Y;
-            scale /= transform.localScale.magnitude;
-            return scale;
+            } while (trans.parent && trans.parent != this);
+            float s = pelvisHeight / skeleton.Root.Data.Pos.Y;
+            s /= transform.localScale.magnitude;
+            return s;
         }
         /// <summary>
         /// Sets the rotation of the Transform from Bone object to 
@@ -219,7 +248,78 @@ namespace QualisysRealTime.Unity.Skeleton
                 cf = model;
             }
         }
+        void OnDrawGizmos()
+        {
+            if (Application.isPlaying && ((debug != null) && streaming && markerData != null && markerData.Count > 0) || LockPosition)
+            {
+                pos = this.transform.position + debug.Offset;
+                if (debug.markers.ShowMarkers)
+                {
+                    foreach (var lb in markerData)
+                    {
+                        Gizmos.color = new Color(lb.Color.r, lb.Color.g, lb.Color.b);
+                        Gizmos.DrawSphere(lb.Position + pos, debug.markers.MarkerScale);
+                    }
+                }
+
+                if (debug.markers.MarkerBones && rtClient.Bones != null)
+                {
+                    foreach (var lb in rtClient.Bones)
+                    {
+                        var from = markerData.Find(md => md.Label == lb.From).Position + pos;
+                        var to = markerData.Find(md => md.Label == lb.To).Position + pos;
+                        Debug.DrawLine(from, to, debug.markers.boneColor);
+                    }
+                }
+                if (skeleton == null) return;
+                if (debug.showSkeleton || debug.showRotationTrace || debug.showJoints || debug.showConstraints || debug.showTwistConstraints)
+                {
+                    Gizmos.color = debug.jointColor;
+
+                    foreach (TreeNode<Bone> b in skeleton.Root)
+                    {
+                        if (debug.showSkeleton)
+                        {
+                            foreach (TreeNode<Bone> child in b.Children)
+                            {
+                                UnityEngine.Debug.DrawLine(b.Data.Pos.Convert() + pos, child.Data.Pos.Convert() + pos, debug.skelettColor);
+                            }
+                        }
+                        if (debug.showRotationTrace && (!b.IsLeaf))
+                        {
+                            UnityDebug.DrawRays(b.Data.Orientation, b.Data.Pos.Convert() + pos, debug.traceLength);
+                        }
+                        if (debug.showJoints)
+                        {
+                            Gizmos.DrawSphere(b.Data.Pos.Convert() + pos, debug.jointSize);
+                        }
+                        if ((debug.showConstraints || debug.showTwistConstraints) && b.Data.HasConstraints)
+                        {
+                            OpenTK.Quaternion parentRotation =
+                                b.Parent.Data.Orientation * b.Data.ParentPointer;
+                            OpenTK.Vector3 poss = b.Data.Pos + pos.Convert();
+                            if (debug.showConstraints)
+                            {
+                                UnityDebug.CreateIrregularCone(
+                                    b.Data.Constraints, poss,
+                                    OpenTK.Vector3.NormalizeFast(
+                                        OpenTK.Vector3.Transform(OpenTK.Vector3.UnitY, parentRotation)),
+                                    parentRotation,
+                                    50,//debug.jointsConstrains.coneResolution,
+                                    debug.traceLength//debug.jointsConstrains.coneSize
+                                    );
+                            }
+                            if (debug.showTwistConstraints)
+                            {
+                                UnityDebug.DrawTwistConstraints(b.Data, b.Parent.Data, poss, debug.traceLength);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
+
 
 
