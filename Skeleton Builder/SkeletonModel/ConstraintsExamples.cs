@@ -23,8 +23,8 @@ namespace QualisysRealTime.Unity.Skeleton
         
             Femur = new Vector4(15, 150, 40, 55),
             Knee = new Vector4(15, 0, 15, 160),
-            Ankle = new Vector4(5, 10, 30, 30),
-            FootBase = new Vector4(30, 10, 30, 10),
+            Ankle = new Vector4(10, 10, 30, 30),
+            FootBase = new Vector4(30, 30, 30, 30),
         
             Clavicula = new Vector4(15, 40, 30, 15),
             Shoulder = new Vector4(80, 95, 120, 120),
@@ -32,13 +32,14 @@ namespace QualisysRealTime.Unity.Skeleton
             Wrist = new Vector4(75, 45, 85, 45);
 
         private Vector2 
+            FullTwist = new Vector2(1,359),
             NoTwist = new Vector2(359, 1),
             SpineTwist = new Vector2(340, 20),
             NeckTwist = new Vector2(270, 90),
 
             FemurTwist = new Vector2(300, 50),
             KneeTwist = new Vector2(333, 30),
-            AnkleTwist = new Vector2(345, 15),
+            AnkleTwist = new Vector2(320, 60),
             FootBaseTwist = new Vector2(350, 10),
 
             ClaviculaTwist = new Vector2(350, 10),
@@ -52,7 +53,6 @@ namespace QualisysRealTime.Unity.Skeleton
         
         public void SetConstraints(BipedSkeleton skeleton)
         {
-            skeleton[Joint.SPINE3].TwistLimit = (NoTwist);
             #region Cone constraints
             #region Spine too head
             skeleton[Joint.SPINE0].Constraints = (Spine);
@@ -98,6 +98,7 @@ namespace QualisysRealTime.Unity.Skeleton
             #region Spine
             skeleton[Joint.SPINE0].TwistLimit = (SpineTwist);
             skeleton[Joint.SPINE1].TwistLimit = (SpineTwist);
+            skeleton[Joint.SPINE3].TwistLimit = (NoTwist);
             skeleton[Joint.NECK].TwistLimit = (NeckTwist);
             #endregion
             #region Legs
