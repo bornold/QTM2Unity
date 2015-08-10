@@ -64,11 +64,6 @@ namespace QualisysRealTime.Unity.Skeleton
                 UnityEngine.Debug.LogWarning("Stream does not contain any markers");
                 return;
             }
-            if (LockPosition)
-            {
-                UpdateNext();
-                return;
-            }
             if (ResetSkeleton
                 || skeleton == null
                 || skeletonBuffer == null
@@ -84,6 +79,11 @@ namespace QualisysRealTime.Unity.Skeleton
                 joints = new JointLocalization(markersMap);
                 ikApplier = new IKApplier();
                 ResetSkeleton = false;
+            }
+            if (LockPosition)
+            {
+                UpdateNext();
+                return;
             }
             Dictionary<string, OpenTK.Vector3> markers;
             mp.ProcessMarkers(markerData, out markers, MarkerPrefix);
