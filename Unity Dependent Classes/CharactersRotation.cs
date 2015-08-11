@@ -173,14 +173,14 @@ namespace QualisysRealTime.Unity.Skeleton
             legLowerRight = new Vector3(30f, 0f, 0f);
             footRight = new Vector3(270f, 0f, 0f);
 
-            clavicleLeft = new Vector3(0f, 180f, 180f);
+            clavicleLeft = new Vector3(0f, 180f, 215f);
             armUpperLeft = new Vector3(0f, 180f, 270f);
             armLowerLeft = new Vector3(0f, 180f, 270f);
             handLeft = new Vector3(90f, 270f, 0f);
             thumbLeft = new Vector3(90f, 270f, 0f);
             fingersLeft = new Vector3(90f, 270f, 0f);
 
-            clavicleRight = new Vector3(0f, 180f, 180f);
+            clavicleRight = new Vector3(0f, 180f, 145f);
             armUpperRight = new Vector3(0f, 180f, 90f);
             armLowerRight = new Vector3(0f, 180f, 90f);
             handRight = new Vector3(90f, 90f, 0f);
