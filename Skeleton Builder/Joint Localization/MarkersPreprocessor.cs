@@ -204,24 +204,17 @@ namespace QualisysRealTime.Unity.Skeleton
             }
             else // all markers missing
             {
-                string first = null;
-                foreach (var mName in m)
-                {
-                    if (!markers[mName].IsNaN() && !markersLastFrame[mName].IsNaN())
-                    {
-                        first = mName;
-                        break;
-                    }
-                }
-                if (first != null)
-                {
-                    Vector3 offset = markers[first] - markersLastFrame[first];
-
-                    markers[m.rightHip] = DontMovedToMuch(markersLastFrame[m.rightHip], riasLastFrame + offset);
-                    markers[m.leftHip] = DontMovedToMuch(markersLastFrame[m.leftHip], liasLastFrame + offset);
-                    markers[m.bodyBase] = DontMovedToMuch(markersLastFrame[m.bodyBase], sacrumLastFrame + offset);
-                }
-                else
+                //string first = m.FirstOrDefault(mName => (!markers[mName].IsNaN() && !markersLastFrame[mName].IsNaN()));
+                //if (first != null)
+                //{
+                //    UnityEngine.Debug.Log(first);
+                //    Vector3 offset = markers[first] - markersLastFrame[first];
+                //    UnityDebug.DrawVector(markersLastFrame[m.bodyBase], offset);
+                //    markers[m.rightHip] =  markersLastFrame[m.rightHip] + offset;
+                //    markers[m.leftHip] = markersLastFrame[m.leftHip] + offset;
+                //    markers[m.bodyBase] = markersLastFrame[m.bodyBase] + offset;
+                //}
+                //else
                 {
                     markers[m.rightHip] = markersLastFrame[m.rightHip];
                     markers[m.leftHip] = markersLastFrame[m.leftHip];
