@@ -470,19 +470,17 @@ namespace QualisysRealTime.Unity.Skeleton
                     Vector3 neckPos;
                     Vector3 neck2ChestVector = bd.NeckToChestVector;
                     Vector3 transformedNeckToChestVector = Vector3.Transform(neck2ChestVector, ChestOrientation) / 2;
-                    if (!back.IsNaN() && neck2ChestVector != ZeroVector3)
-                    {
-                        neckPos = back + transformedNeckToChestVector;
-
-                    }
-                    else if (!front.IsNaN() && neck2ChestVector != ZeroVector3)
+                    if (!front.IsNaN() && neck2ChestVector != ZeroVector3)
                     {
                         neckPos = front - transformedNeckToChestVector;
+                    }
+                    else if (!back.IsNaN() && neck2ChestVector != ZeroVector3)
+                    {
+                        neckPos = back + transformedNeckToChestVector;
                     }
                     else if (!back.IsNaN())
                     {
                         neckPos =
-                            //Vector3Helper.MidPoint(markers[m.leftShoulder], markers[m.rightShoulder]);
                          Vector3.NormalizeFast(back) * BodyData.MarkerToSpineDist;
                     }
                     else
@@ -500,23 +498,25 @@ namespace QualisysRealTime.Unity.Skeleton
             get {
                 if (o.spine1 == ZeroVector3)
                 {
-                    Vector3 pos;
-                    Vector3 target;
-                    if (markers[m.neck].IsNaN())
-                    {
-                        pos = markers[m.bodyBase];
-                        target = markers[m.spine];
-                    }
-                    else
-                    {
-                        pos = markers[m.spine];
-                        target = markers[m.neck];
-                    }
-                Vector3 front = Vector3.Transform(UnitZ, QuaternionHelper2.LookAtUp(pos, target, ChestForward));
-                front.Normalize();
-                pos = markers[m.spine];
-                pos += front * BodyData.MarkerToSpineDist;
-                o.spine1 = pos;
+                    //Vector3 pos;
+                    //Vector3 target;
+                    //if (markers[m.neck].IsNaN())
+                    //{
+                    //    pos = markers[m.bodyBase];
+                    //    target = markers[m.spine];
+                    //}
+                    //else
+                    //{
+                    //    pos = markers[m.spine];
+                    //    target = markers[m.neck];
+                    //}
+                    //Vector3 front = Vector3.Transform(UnitZ, QuaternionHelper2.LookAtUp(pos, target, ChestForward));
+                    //front.Normalize();
+                    //pos = markers[m.spine];
+                    //front = HipForward;
+                    //pos += front * BodyData.MarkerToSpineDist;
+                    //o.spine1 = pos;markers[m.spine]
+                    o.spine1 = markers[m.spine] + HipForward * BodyData.MarkerToSpineDist;
                 }
                 return o.spine1;
             }
