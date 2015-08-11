@@ -29,7 +29,7 @@ namespace QualisysRealTime.Unity.Skeleton
             Clavicula = new Vector4(15, 40, 30, 15),
             Shoulder = new Vector4(80, 95, 120, 120),
             Elbow = new Vector4(10, 175, 10, 5),
-            Wrist = new Vector4(75, 45, 85, 45);
+            Wrist = new Vector4(60, 30, 60, 45);
 
         private Vector2 
             FullTwist = new Vector2(1,359),
