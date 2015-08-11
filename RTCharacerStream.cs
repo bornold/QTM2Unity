@@ -54,7 +54,9 @@ namespace QualisysRealTime.Unity.Skeleton
             var animation = this.GetComponent<Animation>();
             if (animation) animation.enabled = false;
         }
-
+        /// <summary>
+        /// Updates the rotation and position of the Character
+        /// </summary>
         public void Update()
         {
             if (rtClient == null) rtClient = RTClient.GetInstance();
