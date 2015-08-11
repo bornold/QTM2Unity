@@ -110,7 +110,6 @@ namespace QualisysRealTime.Unity.Skeleton
                     CopyFromLast(curr.Data, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
-                    UnityDebug.DrawLine(missingJoint.Data.Pos, target.Pos);
                     if (!IKSolver.SolveBoneChain(missingChain.ToArray(), target, missingJoint.Parent.Parent.Data))// solve with IK
                     {
                         FABRIK.SolveBoneChain(missingChain.ToArray(), target, missingJoint.Parent.Parent.Data);
@@ -136,6 +135,7 @@ namespace QualisysRealTime.Unity.Skeleton
             {
                 //UnityEngine.Debug.Log("jerking test");
                 JerkingTest(missingJoint.Parent, false, true);
+                //ConstraintsBeforeReturn(missingJoint.Parent);
             }
         }
         /// <summary>
@@ -228,7 +228,7 @@ namespace QualisysRealTime.Unity.Skeleton
                 Bone lastFrameBone = lastSkel.Root.FindTreeNode(tn => tn.Data.Name == bone.Data.Name).Data;
 
                 #region Poss
-                if (pos)
+                if (pos && bone != bones)
                 { 
                     Vector3 posInitial = lastFrameBone.Pos;
                     Vector3 diffInitToFinalVec = (bone.Data.Pos - posInitial);
