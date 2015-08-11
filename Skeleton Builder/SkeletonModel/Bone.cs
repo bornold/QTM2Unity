@@ -169,5 +169,27 @@ namespace QualisysRealTime.Unity.Skeleton
         {
             return string.Format("{0} at position: {1} with orientation: {2}", name, pos, orientation);
         }
+        public bool IsArm()
+        {
+            return
+                //name == Joint.CLAVICLE_L ||
+                //name == Joint.CLAVICLE_R ||
+                name == Joint.SHOULDER_L ||
+                name == Joint.SHOULDER_R ||
+                name == Joint.ELBOW_L ||
+                name == Joint.ELBOW_R ||
+                name == Joint.HAND_L ||
+                name == Joint.HAND_R;
+        }
+        public bool IsLeg()
+        {
+            return
+                name == Joint.KNEE_L ||
+                name == Joint.KNEE_R ||
+                name == Joint.ANKLE_L ||
+                name == Joint.ANKLE_R ||
+                name == Joint.HIP_L ||
+                name == Joint.HIP_R;
+        }
     }
 }
