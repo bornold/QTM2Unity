@@ -832,12 +832,12 @@ namespace QualisysRealTime.Unity.Skeleton
         private void UpperLegLeft(Bone b)
         {
             b.Pos = HipJointLeft;
-            b.Orientation = QuaternionHelper2.LookAtRight(HipJointLeft, KneeLeft, KneeForwardLeft);
+            b.Orientation = QuaternionHelper2.LookAtRight(HipJointLeft, KneeLeft, HipJointRight-HipJointLeft );
         }
         private void UpperLegRight(Bone b)
         {
             b.Pos = HipJointRight;
-            b.Orientation = QuaternionHelper2.LookAtRight(HipJointRight, KneeRight, KneeForwardRight);
+            b.Orientation = QuaternionHelper2.LookAtRight(HipJointRight, KneeRight, HipJointRight - HipJointLeft);
         }
         private void LowerLegLeft(Bone b)
         {
