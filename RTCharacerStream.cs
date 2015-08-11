@@ -20,6 +20,8 @@ namespace QualisysRealTime.Unity.Skeleton
     {
         public string MarkerPrefix = "";
         public bool UseFingers = false;
+        public bool UseIK = true;
+        public bool IKInterpolation = false;
         private bool fingerUse;
         public bool LockPosition = false;
         public bool ResetSkeleton = false;
@@ -44,6 +46,11 @@ namespace QualisysRealTime.Unity.Skeleton
             rtClient = RTClient.GetInstance();
             fingerUse = UseFingers;
             charactersJoints.SetLimbs(this.transform, fingerUse);
+            if (!charactersJoints.IsAllJointsSet(fingerUse))
+            {
+                UnityEngine.Debug.LogError("Could not find all necessary joints");
+                LockPosition = true;
+            }
             var animation = this.GetComponent<Animation>();
             if (animation) animation.enabled = false;
         }
@@ -61,15 +68,19 @@ namespace QualisysRealTime.Unity.Skeleton
             }
             if (ResetSkeleton || skeletonBuilder == null)
             {
-                fingerUse = UseFingers;
-                charactersJoints = new CharacterGameObjects();
-                charactersJoints.SetLimbs(this.transform, fingerUse);
+                if (fingerUse != UseFingers)
+                {
+                    charactersJoints.SetLimbs(this.transform, fingerUse);
+                    charactersJoints.PrintAll();
+                }
                 skeletonBuilder = new SkeletonBuilder(rtClient, MarkerPrefix);
                 if (LockPosition) skeleton = new BipedSkeleton();
                 ResetSkeleton = false;
             }
             if (!LockPosition)
             {
+                skeletonBuilder.Interpolation = IKInterpolation;
+                skeletonBuilder.SolveWithIK = UseIK;
                 skeleton = skeletonBuilder.SolveSkeleton(markerData);
             }
             if (scale == 0) scale = FindScale(charactersJoints.pelvis);
