@@ -38,6 +38,7 @@ namespace QualisysRealTime.Unity.Skeleton
         private CharacterGameObjects charactersJoints = new CharacterGameObjects();
         private CharactersModel cf = CharactersModel.Model1;
         private float scale = 0;
+        private bool jointsFound = false;
         /// <summary>
         /// Locating the joints of the character and find the scale by which the position should be applied to
         /// </summary>
@@ -48,8 +49,11 @@ namespace QualisysRealTime.Unity.Skeleton
             charactersJoints.SetLimbs(this.transform, fingerUse);
             if (!charactersJoints.IsAllJointsSet(fingerUse))
             {
+                charactersJoints.PrintAll();
                 UnityEngine.Debug.LogError("Could not find all necessary joints");
-                LockPosition = true;
+            } else
+            {
+                jointsFound = true;
             }
             var animation = this.GetComponent<Animation>();
             if (animation) animation.enabled = false;
@@ -59,6 +63,7 @@ namespace QualisysRealTime.Unity.Skeleton
         /// </summary>
         public void Update()
         {
+            if (!jointsFound) return;
             if (rtClient == null) rtClient = RTClient.GetInstance();
             streaming = rtClient.GetStreamingStatus();
             if (!streaming && !LockPosition) return;
@@ -254,6 +259,9 @@ namespace QualisysRealTime.Unity.Skeleton
                         break;
                     case CharactersModel.Model6:
                         boneRotatation = new Model6();
+                        break;
+                    case CharactersModel.Model7:
+                        boneRotatation = new Model7();
                         break;
                     default:
                         break;
