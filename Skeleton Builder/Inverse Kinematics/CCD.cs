@@ -16,7 +16,7 @@ namespace QualisysRealTime.Unity.Skeleton
 {
     class CCD : IKSolver
     {
-        private int degreeStep = 7;
+        private int degreeStep = 10;
         /// <summary>
         /// Given a array of bones, and a target bone, solves the chain so that the last bone in the chain is at at the same position as the target
         /// </summary>
@@ -42,12 +42,11 @@ namespace QualisysRealTime.Unity.Skeleton
             int maxdegrees = 120;
             float lastDistanceToTarget = float.MaxValue;
             float distanceToTarget = (bones[bones.Length - 1].Pos - target.Pos).Length;
-
             // main loop
-            while (threshold < distanceToTarget && MaxIterations < ++iter)
+            while (distanceToTarget > threshold && MaxIterations > ++iter)
             {
                 // if CCD is stuck becouse of constraints, we twist the chain
-                if ((distanceToTarget >= lastDistanceToTarget))
+                if (distanceToTarget >= lastDistanceToTarget)
                 {
                     if (!doneOneLapAroundYAxis && degrees > maxdegrees)
                     {

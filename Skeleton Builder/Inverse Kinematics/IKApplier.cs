@@ -28,13 +28,13 @@ namespace QualisysRealTime.Unity.Skeleton
         public IKSolver IKSolver { private get; set; }
         public IKSolver FABRIK { private get; set; }
 
-        public bool test = false;
+        public bool Interpolation = false;
         public IKApplier()
         {
                 lastSkel = new BipedSkeleton();
                 IKSolver = new CCD();
                 FABRIK = new FABRIK();
-                FABRIK.MaxIterations = 20;
+                FABRIK.MaxIterations = 100;
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace QualisysRealTime.Unity.Skeleton
         /// <param name="skelEnum">The enumurator to the missing bone position</param>
         /// <param name="lastSkelEnum">The enumurator to the missing bone position from the last skeleton</param>
         private void MissingJoint(TreeNode<Bone> missingJoint)
-        { 
+        {
             // missings joints parent from last frame is root in solution
             //root of chain 
             TreeNode<Bone> lastSkelBone = lastSkel.Root.FindTreeNode(node => node.Data.Name.Equals(missingJoint.Data.Name));
@@ -110,6 +110,7 @@ namespace QualisysRealTime.Unity.Skeleton
                     CopyFromLast(curr.Data, last);
                     curr.Data.Pos += offset;
                     missingChain.Add(curr.Data);
+                    UnityDebug.DrawLine(missingJoint.Data.Pos, target.Pos);
                     if (!IKSolver.SolveBoneChain(missingChain.ToArray(), target, missingJoint.Parent.Parent.Data))// solve with IK
                     {
                         FABRIK.SolveBoneChain(missingChain.ToArray(), target, missingJoint.Parent.Parent.Data);
@@ -121,6 +122,7 @@ namespace QualisysRealTime.Unity.Skeleton
                 CopyFromLast(curr.Data, last);
                 curr.Data.Pos += offset;
                 missingChain.Add(curr.Data);
+                if (curr.IsLeaf) break;
             }
             // If target not found on chain, rotate the body according to its grandparents knowed diffrence
             if (!iksolved)
@@ -128,10 +130,12 @@ namespace QualisysRealTime.Unity.Skeleton
                 var q2 = missingJoint.Parent.Parent.Data.Orientation;
                 var q1 = lastSkelBone.Parent.Parent.Data.Orientation;
                 FK(missingJoint.Parent, (q2 * Quaternion.Invert(q1)));
-            } else if (test)
+            }
+            ConstraintsBeforeReturn(missingJoint.Parent, false);
+            if (iksolved && Interpolation && (missingJoint.Data.IsArm() || missingJoint.Data.IsLeg()))
             {
-                JerkingTest(missingJoint.Parent);
-                ConstraintsBeforeReturn(missingJoint.Parent);
+                //UnityEngine.Debug.Log("jerking test");
+                JerkingTest(missingJoint.Parent, false, true);
             }
         }
         /// <summary>
@@ -174,7 +178,7 @@ namespace QualisysRealTime.Unity.Skeleton
         /// </summary>
         /// <param name="bone">The skeleton, a tree of bones</param>
         /// <returns>true if any changes has been applied to the skeleton</returns>
-        private bool ConstraintsBeforeReturn(TreeNode<Bone> bone)
+        private bool ConstraintsBeforeReturn(TreeNode<Bone> bone, bool rotational = true)
         {
             bool anychange = false;
             foreach (var tnb in bone)
@@ -188,15 +192,18 @@ namespace QualisysRealTime.Unity.Skeleton
                         tnb.Data.Rotate(rot);
                         anychange = true;
                     }
-                    Vector3 res;
-                    Vector3 child = tnb.Children.First().Data.Pos;
-                    if (!child.IsNaN() &&
-                        IKSolver.constraints.CheckRotationalConstraints(
-                                        tnb.Data, tnb.Parent.Data.Orientation,
-                                        child, out res, out rot))
+                    if (rotational)
                     {
-                        FK(tnb, rot);
-                        anychange = true;
+                        Vector3 res;
+                        Vector3 child = tnb.Children.First().Data.Pos;
+                        if (!child.IsNaN() &&
+                            IKSolver.constraints.CheckRotationalConstraints(
+                                            tnb.Data, tnb.Parent.Data.Orientation,
+                                            child, out res, out rot))
+                        {
+                            FK(tnb, rot);
+                            anychange = true;
+                        }
                     }
                     if (IKSolver.constraints.CheckOrientationalConstraint(tnb.Data, tnb.Parent.Data, out rot))
                     {
@@ -212,42 +219,49 @@ namespace QualisysRealTime.Unity.Skeleton
         /// </summary>
         /// <param name="bones">The skeleton, a tree of bones</param>
         /// <returns>True if any changes has been applied to the skeleton</returns>
-        private bool JerkingTest(TreeNode<Bone> bones)
+        private bool JerkingTest(TreeNode<Bone> bones, bool pos = true, bool rot = true)
         {
             bool hasChanges = false;
             foreach (TreeNode<Bone> bone in bones)
             {
                 if (bone.IsRoot || bone.Data.HasNaN) continue;
                 Bone lastFrameBone = lastSkel.Root.FindTreeNode(tn => tn.Data.Name == bone.Data.Name).Data;
+
                 #region Poss
-                Vector3 posInitial = lastFrameBone.Pos;
-                Vector3 diffInitToFinalVec = (bone.Data.Pos - posInitial);
-                if (diffInitToFinalVec.Length > 0.025f)
-                {
-                    diffInitToFinalVec.NormalizeFast();
-                    diffInitToFinalVec *= 0.025f;
-                    Quaternion rotToNewPos =
-                        QuaternionHelper2.RotationBetween(
-                                bone.Parent.Data.GetYAxis(),
-                                ((posInitial + diffInitToFinalVec) - bone.Parent.Data.Pos));
-                    FK(bone.Parent, rotToNewPos);
-                    hasChanges = true;
+                if (pos)
+                { 
+                    Vector3 posInitial = lastFrameBone.Pos;
+                    Vector3 diffInitToFinalVec = (bone.Data.Pos - posInitial);
+                    if (diffInitToFinalVec.Length > 0.025f)
+                    {
+                        diffInitToFinalVec.NormalizeFast();
+                        diffInitToFinalVec *= 0.025f;
+                        Quaternion rotToNewPos =
+                            QuaternionHelper2.RotationBetween(
+                                    bone.Parent.Data.GetYAxis(),
+                                    ((posInitial + diffInitToFinalVec) - bone.Parent.Data.Pos));
+                        FK(bone.Parent, rotToNewPos);
+                        hasChanges = true;
+                    }
                 }
                 #endregion
                 #region Rots
-                Quaternion oriFinal = bone.Data.Orientation;
-                Quaternion oriInitial = lastFrameBone.Orientation;
-                if (!bone.IsLeaf)
+                if (rot)
                 {
-                    float quatDiff = QuaternionHelper2.DiffrenceBetween(oriFinal, oriInitial);
-                    if (quatDiff > 0.03f)
+                    Quaternion oriFinal = bone.Data.Orientation;
+                    Quaternion oriInitial = lastFrameBone.Orientation;
+                    if (!bone.IsLeaf)
                     {
-                        float slerp = (1 - quatDiff) - (Mathf.Cos((MathHelper.Pi * quatDiff) / 2) - (1 - quatDiff * 0.8f));
-                        Quaternion qTrans = Quaternion.Invert(
-                            Quaternion.Slerp(oriInitial, oriFinal, slerp) 
-                            * Quaternion.Invert(oriInitial));
-                        FK(bone, qTrans);
-                        hasChanges = true;
+                        float quatDiff = QuaternionHelper2.DiffrenceBetween(oriFinal, oriInitial);
+                        if (quatDiff > 0.03f)
+                        {
+                            float slerp = (1 - quatDiff) - (Mathf.Cos((MathHelper.Pi * quatDiff) / 2) - (1 - quatDiff * 0.8f));
+                            Quaternion qTrans = Quaternion.Invert(
+                                Quaternion.Slerp(oriInitial, oriFinal, slerp) 
+                                * Quaternion.Invert(oriInitial));
+                            FK(bone, qTrans);
+                            hasChanges = true;
+                        }
                     }
                 }
                 #endregion
