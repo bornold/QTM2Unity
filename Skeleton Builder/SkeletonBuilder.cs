@@ -11,6 +11,8 @@ namespace QualisysRealTime.Unity.Skeleton
         private JointLocalization joints;
         private IKApplier ikApplier;
         private string MarkerPrefix;
+        public bool SolveWithIK = true;
+        public bool Interpolation = false;
         public SkeletonBuilder(RTClient rtClient, string markerPrefix)
         {
             this.rtClient = rtClient;
@@ -37,7 +39,8 @@ namespace QualisysRealTime.Unity.Skeleton
             skeleton = skeletonBuffer;
             skeletonBuffer = temp;
             joints.GetJointLocation(markers, ref skeleton);
-            ikApplier.ApplyIK(ref skeleton);
+            ikApplier.Interpolation = Interpolation;
+            if (SolveWithIK) ikApplier.ApplyIK(ref skeleton);
             return skeleton;
         }
     }
