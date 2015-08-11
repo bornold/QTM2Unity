@@ -235,15 +235,15 @@ namespace QualisysRealTime.Unity.Skeleton
         #endregion
         #region hand
         #region lefthand
-            leftWristAKA = new List<string>() { "L_USP", "L_ULNA", "LEFT_WRIST_INNER", "L_WRIST_MED", "Lt Wrist Ulna", "LT Ulna", "LWRB" },
-            leftWristRadiusAKA = new List<string>() { "L_RSP", "L_RADUIS", "LEFT_WRIST_OUTER", "L_WRIST_LAT", "Lt Wrist Radius", "Lt Radius", "LWRA" },
+            leftWristAKA = new List<string>() { "L_USP", "L_ULNA", "LEFT_WRIST_INNER", "L_WRIST_MED", "Lt Wrist Ulna", "LT Ulna", "LWRB", "L_HAND_M" },
+            leftWristRadiusAKA = new List<string>() { "L_RSP", "L_RADUIS", "LEFT_WRIST_OUTER", "L_WRIST_LAT", "Lt Wrist Radius", "Lt Radius", "LWRA", "L_HAND_L" },
             leftHandAKA = new List<string>() { "L_HM2", "Lt 3rd Digita", "LFIN", "LHAND" },
             leftIndexAKA = new List<string>() { "L_Index", "L_INDEX1" },
             leftThumbAKA = new List<string>() { "L_Thumb","L_THUMB" },
         #endregion
         #region right hand
-            rightWristAKA = new List<string>() { "R_USP", "R_ULNA", "RIGHT_WRIST_INNER", "R_WRIST_MED", "Rt Wrist Ulna", "RT Ulna", "RWRB" },
-            rightWristRadiusAKA = new List<string>() {"R_RSP", "R_RADUIS", "RIGHT_WRIST_OUTER", "R_WRIST_LAT", "Rt Wrist Radius" ,"RT Radius", "RWRA" },
+            rightWristAKA = new List<string>() { "R_USP", "R_ULNA", "RIGHT_WRIST_INNER", "R_WRIST_MED", "Rt Wrist Ulna", "RT Ulna", "RWRB", "R_HAND_M" },
+            rightWristRadiusAKA = new List<string>() {"R_RSP", "R_RADUIS", "RIGHT_WRIST_OUTER", "R_WRIST_LAT", "Rt Wrist Radius" ,"RT Radius", "RWRA", "R_HAND_L" },
             rightHandAKA = new List<string>() { "R_HM2", "Rt 3rd Digita", "RFIN", "RHAND" },
             rightIndexAKA = new List<string>() { "R_Index", "R_INDEX1" },
             rightThumbAKA = new List<string>() { "R_Thumb", "R_THUMB" },
