@@ -13,7 +13,7 @@
 #endregion
 
 using OpenTK;
-using System;
+
 namespace QualisysRealTime.Unity.Skeleton
 {
     /// <summary>

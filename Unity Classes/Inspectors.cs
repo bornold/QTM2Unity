@@ -12,7 +12,6 @@
 */
 #endregion
 
-using System;
 using UnityEngine;
 
 namespace QualisysRealTime.Unity.Skeleton {
