@@ -127,52 +127,6 @@ namespace QualisysRealTime.Unity.Skeleton
     [System.Serializable]
     static class MarkerNames
     {
-    /*
-        public static readonly List<string>
-         BodyBaseAKA = new List<string>() { "SACR", "SACRUM", "LOWER_LUMBAR", "LV5_S1", "S1" },
-         HipAKA = new List<string>() { "IAS", "ASIS", "ASIS", "HIP", "ICT", "Hip Front", "FWT" },
-         SpineAKA = new List<string>() 
-                {   "TV12", "TH12", "D12", "T12",
-                    "TV11", "TH11", "D11", "T11", 
-                    "TV13", "TH13", "D13", "T13", 
-                    "TV10", "TH10", "D10", "T10", 
-                    "TV14", "TV14", "D14", "T14",
-                    "L1",   "LV3"       },
-
-     NeckAKA = new List<string>() { "TV2", "TV1", "C7", "C7_TOP_SPINE" },
-     ChestAKA = new List<string>() { "SME", "SJN", "CLAV" },
-     ShoulderAKA = new List<string>() { "SAE", "ACR", "SHOULDER", "ACROMION", "SHO" },
-     
-     FrontHeadAKA = new List<string>() { "SGL", "Front of Head", "F_HEAD" },
-     SideHeadAKA = new List<string>() { "HEAD", "HEADFRONT", "Head", "HEAD", "BHD" },
-
-     ElbowAKA = new List<string>() { "UOA", "ELB", "ELBOW" },
-     InnerElbowAKA = new List<string>() { "HME", "ELBOW_MED" },
-     OuterElbowAKA = new List<string>() { "HLE", "ELBOW", "Elbow", "ELB" },
-     
-     WristAKA = new List<string>() { "USP", "ULNA", "WRIST_INNER", "WRIST_MED", "Wrist Ulna", "Ulna", "WRB" },
-     WristRadiusAKA = new List<string>() { "RSP", "RADUIS", "WRIST_OUTER", "WRIST_LAT", "Wrist Radius", "Radius", "WRA" },
-     
-     HandAKA = new List<string>() { "HM2", "3rd Digita", "FIN" },
-     IndexAKA = new List<string>() { "Index", "INDEX1" },
-     ThumbAKA = new List<string>() { "Thumb", "THUMB" },
-     
-     UpperKneeAKA = new List<string>() { "PAS", "SUPPAT" },
-     OuterKneeAKA = new List<string>() { "FLE", "LKNEE", "KNEE", "knjntln", "Knee", "KNEE_LAT", "KNE" },
-     InnerKneeAKA = new List<string>() { "FME", "MKNEE", "MEDIAL_KNEE", "Medial Knee", "KNEE_MED" },
-     LowerKneeAKA = new List<string>() { "TTC", "tubtib", "Tibia", "TIB_1" },
-     
-     OuterAnkleAKA = new List<string>() { "FAL", "LMAL", "ANKLE_OUTER", "ankle", "Ankle", "ANKLE_LAT", "ANK" },
-     InnerAnkleAKA = new List<string>() { "TAM", "MMAL", "MEDIAL_ANKLE", "Medial Ankle", "ANKLE_MED" },
-     
-     HeelAKA = new List<string>() { "FCC", "HEEL_CALC", "HEEL", "heel", "FCC1", "FCC2", "Heel", "HEE" },
-
-     Toe1AKA = new List<string>() { "FM1", "TOE_1_MET", "MT_1", "TOE" },
-     Toe2AKA = new List<string>() { "FM2", "toe", "2nd Toe" },
-     Toe5AKA = new List<string>() { "FM5", "TOE_5_MET", "5th Toe", "MT_5", "MT5" }
-     ;
-        */
-
     public static readonly List<string[]>
         bodyBasebetween = new List<string[]>()
             {
@@ -217,7 +171,7 @@ namespace QualisysRealTime.Unity.Skeleton
             rightShoulderAKA = new List<string>() { "R_SAE", "R_ACR", "RIGHT_SHOULDER", "R_SHOULDER", "R_ACROMION", "RIGHTSHOULDER", "RIGHT SHOULDER", "RSHO", "RSHOULDER", "RSHOULD" } ,
         #endregion
                 #region head
-                headAKA = new List<string>() {"SGL", "Front of Head", "F_HEAD" },
+                headAKA = new List<string>() {"SGL", "Front of Head", "F_HEAD", "FOREHEAD" },
             leftHeadAKA = new List<string>() { "L_HEAD", "HEAD_LEFT_FRONT", "Left Head", "L_HEAD", "LBHD", "HEAD2", "LTEMP" },
             rightHeadAKA = new List<string>() { "R_HEAD", "HEAD_RIGHT_FRONT", "Right Head", "R_HEAD", "RBHD", "HEAD1", "RTEMP" },
         #endregion
@@ -238,14 +192,14 @@ namespace QualisysRealTime.Unity.Skeleton
             leftWristAKA = new List<string>() { "L_USP", "L_ULNA", "LEFT_WRIST_INNER", "L_WRIST_MED", "Lt Wrist Ulna", "LT Ulna", "LWRB", "L_HAND_M", "LMWRIST" },
             leftWristRadiusAKA = new List<string>() { "L_RSP", "L_RADUIS", "LEFT_WRIST_OUTER", "L_WRIST_LAT", "Lt Wrist Radius", "Lt Radius", "LWRA", "L_HAND_L", "LLWRIST" },
             leftHandAKA = new List<string>() { "L_HM2", "Lt 3rd Digita", "LFIN", "LHAND" },
-            leftIndexAKA = new List<string>() { "L_Index", "L_INDEX1" },
+            leftIndexAKA = new List<string>() { "L_Index", "L_INDEX1", "L_MC1" },
             leftThumbAKA = new List<string>() { "L_Thumb","L_THUMB" },
         #endregion
         #region right hand
             rightWristAKA = new List<string>() { "R_USP", "R_ULNA", "RIGHT_WRIST_INNER", "R_WRIST_MED", "Rt Wrist Ulna", "RT Ulna", "RWRB", "R_HAND_M","RMWRIST" },
             rightWristRadiusAKA = new List<string>() {"R_RSP", "R_RADUIS", "RIGHT_WRIST_OUTER", "R_WRIST_LAT", "Rt Wrist Radius" ,"RT Radius", "RWRA", "R_HAND_L", "RLWRIST" },
             rightHandAKA = new List<string>() { "R_HM2", "Rt 3rd Digita", "RFIN", "RHAND" },
-            rightIndexAKA = new List<string>() { "R_Index", "R_INDEX1" },
+            rightIndexAKA = new List<string>() { "R_Index", "R_INDEX1", "R_MC1" },
             rightThumbAKA = new List<string>() { "R_Thumb", "R_THUMB" },
         #endregion
         #endregion
@@ -269,12 +223,12 @@ namespace QualisysRealTime.Unity.Skeleton
             #region left foot
             leftOuterAnkleAKA = new List<string>() { "L_FAL", "L_LMAL", "LEFT_ANKLE_OUTER", "l_ankle", "Lt Ankle", "L_ANKLE_LAT", "LANK", "LLANK" },
             leftInnerAnkleAKA = new List<string>() { "L_TAM", "L_MMAL", "LEFT_MEDIAL_ANKLE", "Lt Medial Ankle", "L_ANKLE_MED", "LMANK" },
-            leftHeelAKA = new List<string>() {"L_FCC", "L_HEEL_CALC", "LEFT_HEEL", "l_heel", "L_FCC1", "L_FCC2", "Lt Heel", "LHEE", "L_h", "LHEEL" },
+            leftHeelAKA = new List<string>() {"L_FCC", "L_HEEL_CALC", "LEFT_HEEL", "l_heel", "L_FCC1", "L_FCC2", "Lt Heel", "LHEE", "L_h", "LHEEL", "L_HEEL" },
             #endregion
         #region right foot
             rightOuterAnkleAKA = new List<string>() {"R_FAL", "R_LMAL", "RIGHT_ANKLE_OUTER", "l_ankle", "Rt Ankle", "R_ANKLE_LAT", "RANK","RLANK" },
             rightInnerAnkleAKA = new List<string>() { "R_TAM", "R_MMAL", "RIGHT_MEDIAL_ANKLE", "Rt Medial Ankle", "R_ANKLE_MED", "RMANK" },
-            rightHeelAKA = new List<string>() {"R_FCC", "R_HEEL_CALC", "RIGHT_HEEL", "r_heel", "R_FCC1", "R_FCC2", "Rt Heel", "RHEE", "R_h", "RHEEL" },
+            rightHeelAKA = new List<string>() {"R_FCC", "R_HEEL_CALC", "RIGHT_HEEL", "r_heel", "R_FCC1", "R_FCC2", "Rt Heel", "RHEE", "R_h", "RHEEL", "R_HEEL" },
         #endregion
             #region toes
             #region left toes
@@ -286,8 +240,53 @@ namespace QualisysRealTime.Unity.Skeleton
             rightToe1AKA = new List<string>() { "R_FM1", "R_TOE_1_MET", "R_MT_1", "RTOE", "R_D1MT", "RFRST" },
             rightToe2AKA = new List<string>() { "R_FM2", "r_toe","Rt 2nd Toe", "RFOOT" },
             rightToe5AKA = new List<string>() {"R_FM5", "R_TOE_5_MET","Rt 5th Toe", "R_MT_5", "RMT5", "R_D5MT", "RFIFTH" };
-            #endregion
         #endregion
         #endregion
+        #endregion
+        /*
+            public static readonly List<string>
+             BodyBaseAKA = new List<string>() { "SACR", "SACRUM", "LOWER_LUMBAR", "LV5_S1", "S1" },
+             HipAKA = new List<string>() { "IAS", "ASIS", "ASIS", "HIP", "ICT", "Hip Front", "FWT" },
+             SpineAKA = new List<string>() 
+                    {   "TV12", "TH12", "D12", "T12",
+                        "TV11", "TH11", "D11", "T11", 
+                        "TV13", "TH13", "D13", "T13", 
+                        "TV10", "TH10", "D10", "T10", 
+                        "TV14", "TV14", "D14", "T14",
+                        "L1",   "LV3"       },
+
+         NeckAKA = new List<string>() { "TV2", "TV1", "C7", "C7_TOP_SPINE" },
+         ChestAKA = new List<string>() { "SME", "SJN", "CLAV" },
+         ShoulderAKA = new List<string>() { "SAE", "ACR", "SHOULDER", "ACROMION", "SHO" },
+
+         FrontHeadAKA = new List<string>() { "SGL", "Front of Head", "F_HEAD" },
+         SideHeadAKA = new List<string>() { "HEAD", "HEADFRONT", "Head", "HEAD", "BHD" },
+
+         ElbowAKA = new List<string>() { "UOA", "ELB", "ELBOW" },
+         InnerElbowAKA = new List<string>() { "HME", "ELBOW_MED" },
+         OuterElbowAKA = new List<string>() { "HLE", "ELBOW", "Elbow", "ELB" },
+
+         WristAKA = new List<string>() { "USP", "ULNA", "WRIST_INNER", "WRIST_MED", "Wrist Ulna", "Ulna", "WRB" },
+         WristRadiusAKA = new List<string>() { "RSP", "RADUIS", "WRIST_OUTER", "WRIST_LAT", "Wrist Radius", "Radius", "WRA" },
+
+         HandAKA = new List<string>() { "HM2", "3rd Digita", "FIN" },
+         IndexAKA = new List<string>() { "Index", "INDEX1" },
+         ThumbAKA = new List<string>() { "Thumb", "THUMB" },
+
+         UpperKneeAKA = new List<string>() { "PAS", "SUPPAT" },
+         OuterKneeAKA = new List<string>() { "FLE", "LKNEE", "KNEE", "knjntln", "Knee", "KNEE_LAT", "KNE" },
+         InnerKneeAKA = new List<string>() { "FME", "MKNEE", "MEDIAL_KNEE", "Medial Knee", "KNEE_MED" },
+         LowerKneeAKA = new List<string>() { "TTC", "tubtib", "Tibia", "TIB_1" },
+
+         OuterAnkleAKA = new List<string>() { "FAL", "LMAL", "ANKLE_OUTER", "ankle", "Ankle", "ANKLE_LAT", "ANK" },
+         InnerAnkleAKA = new List<string>() { "TAM", "MMAL", "MEDIAL_ANKLE", "Medial Ankle", "ANKLE_MED" },
+
+         HeelAKA = new List<string>() { "FCC", "HEEL_CALC", "HEEL", "heel", "FCC1", "FCC2", "Heel", "HEE" },
+
+         Toe1AKA = new List<string>() { "FM1", "TOE_1_MET", "MT_1", "TOE" },
+         Toe2AKA = new List<string>() { "FM2", "toe", "2nd Toe" },
+         Toe5AKA = new List<string>() { "FM5", "TOE_5_MET", "5th Toe", "MT_5", "MT5" }
+         ;
+            */
     }
 }
