@@ -480,8 +480,7 @@ namespace QualisysRealTime.Unity.Skeleton
                     }
                     else if (!back.IsNaN())
                     {
-                        neckPos =
-                         Vector3.NormalizeFast(back) * BodyData.MarkerToSpineDist;
+                        neckPos = back + ChestForward * BodyData.MarkerToSpineDist;
                     }
                     else
                     {
