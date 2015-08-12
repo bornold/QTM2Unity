@@ -21,20 +21,14 @@ namespace QualisysRealTime.Unity.Skeleton
     /// </summary>
     class SkeletonBuilder
     {
-        private RTClient rtClient;
         private BipedSkeleton skeleton;
         private BipedSkeleton skeletonBuffer;
         private MarkersPreprocessor mp;
         private JointLocalization joints;
         private IKApplier ikApplier;
-        private string MarkerPrefix;
+        public string MarkerPrefix;
         public bool SolveWithIK = true;
         public bool Interpolation = false;
-        public SkeletonBuilder(RTClient rtClient, string markerPrefix)
-        {
-            this.rtClient = rtClient;
-            MarkerPrefix = markerPrefix;
-        }
         /// <summary>
         /// Build a skeleton according to the markers
         /// </summary>
