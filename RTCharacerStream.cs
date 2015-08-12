@@ -20,8 +20,6 @@ namespace QualisysRealTime.Unity.Skeleton
     {
         public string MarkerPrefix = "";
         public bool UseFingers = false;
-        public bool UseIK = true;
-        public bool IKInterpolation = false;
         private bool fingerUse;
         public bool LockPosition = false;
         public bool ResetSkeleton = false;
@@ -51,10 +49,9 @@ namespace QualisysRealTime.Unity.Skeleton
             {
                 charactersJoints.PrintAll();
                 UnityEngine.Debug.LogError("Could not find all necessary joints");
-            } else
-            {
-                jointsFound = true;
             }
+            else jointsFound = true;
+            
             var animation = this.GetComponent<Animation>();
             if (animation) animation.enabled = false;
         }
@@ -77,8 +74,8 @@ namespace QualisysRealTime.Unity.Skeleton
             {
                 if (fingerUse != UseFingers)
                 {
+                    fingerUse = UseFingers;
                     charactersJoints.SetLimbs(this.transform, fingerUse);
-                    charactersJoints.PrintAll();
                 }
                 skeletonBuilder = new SkeletonBuilder(rtClient, MarkerPrefix);
                 if (LockPosition) skeleton = new BipedSkeleton();
@@ -86,8 +83,8 @@ namespace QualisysRealTime.Unity.Skeleton
             }
             if (!LockPosition)
             {
-                skeletonBuilder.Interpolation = IKInterpolation;
-                skeletonBuilder.SolveWithIK = UseIK;
+                //skeletonBuilder.Interpolation = IKInterpolation;
+                if (debug!= null) skeletonBuilder.SolveWithIK = debug.UseIK;
                 skeleton = skeletonBuilder.SolveSkeleton(markerData);
             }
             if (scale == 0) scale = FindScale(charactersJoints.pelvis);
@@ -210,7 +207,7 @@ namespace QualisysRealTime.Unity.Skeleton
             {
                 pelvisHeight += trans.localPosition.y;
                 trans = trans.parent;
-            } while (trans.parent && trans.parent != this);
+            } while (trans && trans != this);
             float s = pelvisHeight / skeleton.Root.Data.Pos.Y;
             s /= transform.localScale.magnitude;
             return s;
@@ -229,8 +226,7 @@ namespace QualisysRealTime.Unity.Skeleton
                     transform.rotation
                     * b.Orientation.Convert()
                     * Quaternion.Euler(euler)
-                    * Quaternion.Euler(boneRotatation.root)
-                    ;
+                    * Quaternion.Euler(boneRotatation.root);
             }
         }
         /// <summary>
@@ -271,7 +267,9 @@ namespace QualisysRealTime.Unity.Skeleton
         }
         void OnDrawGizmos()
         {
-            if (Application.isPlaying && ((debug != null) && streaming && markerData != null && markerData.Count > 0) || LockPosition)
+            if ( Application.isPlaying && 
+                (streaming && debug != null && markerData != null) 
+                || LockPosition)
             {
                 pos = this.transform.position + debug.Offset;
                 if (debug.markers.ShowMarkers)
@@ -292,11 +290,10 @@ namespace QualisysRealTime.Unity.Skeleton
                         Debug.DrawLine(from, to, debug.markers.boneColor);
                     }
                 }
-                if (skeleton == null) return;
-                if (debug.showSkeleton || debug.showRotationTrace || debug.showJoints || debug.showConstraints || debug.showTwistConstraints)
+                if (skeleton == null && 
+                    (debug.showSkeleton || debug.showRotationTrace || debug.showJoints || debug.showConstraints || debug.showTwistConstraints))
                 {
                     Gizmos.color = debug.jointColor;
-
                     foreach (TreeNode<Bone> b in skeleton.Root)
                     {
                         if (debug.showSkeleton)
