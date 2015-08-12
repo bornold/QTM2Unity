@@ -57,40 +57,6 @@ namespace QualisysRealTime.Unity.Skeleton
     {
         public Model1()
         {
-            root = new Vector3(0f, 0f, 0f);
-            hip = new Vector3(0f, 0f, 0f);
-            spine = new Vector3(0f, 0f, 0f);
-            neck = new Vector3(0f, 0f, 0f);
-            head = new Vector3(0f, 0f, 0f);
-
-            legUpperLeft = new Vector3(0f, 0f, 180f);
-            legLowerLeft = new Vector3(0f, 0f, 180f);
-            footLeft = new Vector3(270f, 0f, 180f);
-
-            legUpperRight = new Vector3(0f, 0f, 180f);
-            legLowerRight = new Vector3(0f, 0f, 180f);
-            footRight = new Vector3(270f, 0f, 180f);
-
-            clavicleLeft = new Vector3(0f, 0f, 270f);
-            armUpperLeft = new Vector3(0f, 0f, 260f);
-            armLowerLeft = new Vector3(0f, 0f, 270f);
-            handLeft = new Vector3(345f, 0f, 270f);
-            thumbLeft = new Vector3(270f, 0f, 270f);
-            fingersLeft = new Vector3(10f, 0f, 270f);
-
-            clavicleRight = new Vector3(0f, 0f, 90f);
-            armUpperRight = new Vector3(0f, 0f, 100f);
-            armLowerRight = new Vector3(0f, 0f, 90f);
-            handRight = new Vector3(345f, 0f, 90f);
-            thumbRight = new Vector3(270f, 0f, 90f);
-            fingersRight = new Vector3(0f, 0f, 90f);
-        }
-    }
-    [System.Serializable]
-    public class Model2 : BoneRotations
-    {
-        public Model2()
-        {
             root = new Vector3(0f, 0f, 270f);
             hip = new Vector3(0f, 270f, 0f);
             spine = new Vector3(0f, 270f, 0f);
@@ -118,6 +84,40 @@ namespace QualisysRealTime.Unity.Skeleton
             handRight = new Vector3(0f, 0f, 0f);
             thumbRight = new Vector3(0f, 0f, 0f);
             fingersRight = new Vector3(0f, 0f, 0f);
+        }
+    }
+    [System.Serializable]
+    public class Model2 : BoneRotations
+    {
+        public Model2()
+        {
+            root = new Vector3(0f, 0f, 0f);
+            hip = new Vector3(0f, 0f, 0f);
+            spine = new Vector3(0f, 0f, 0f);
+            neck = new Vector3(0f, 0f, 0f);
+            head = new Vector3(0f, 0f, 0f);
+
+            legUpperLeft = new Vector3(0f, 0f, 180f);
+            legLowerLeft = new Vector3(0f, 0f, 180f);
+            footLeft = new Vector3(270f, 0f, 180f);
+
+            legUpperRight = new Vector3(0f, 0f, 180f);
+            legLowerRight = new Vector3(0f, 0f, 180f);
+            footRight = new Vector3(270f, 0f, 180f);
+
+            clavicleLeft = new Vector3(0f, 0f, 270f);
+            armUpperLeft = new Vector3(0f, 0f, 260f);
+            armLowerLeft = new Vector3(0f, 0f, 270f);
+            handLeft = new Vector3(345f, 0f, 270f);
+            thumbLeft = new Vector3(270f, 0f, 270f);
+            fingersLeft = new Vector3(10f, 0f, 270f);
+
+            clavicleRight = new Vector3(0f, 0f, 90f);
+            armUpperRight = new Vector3(0f, 0f, 100f);
+            armLowerRight = new Vector3(0f, 0f, 90f);
+            handRight = new Vector3(345f, 0f, 90f);
+            thumbRight = new Vector3(270f, 0f, 90f);
+            fingersRight = new Vector3(0f, 0f, 90f);
         }
     }
     [System.Serializable]
@@ -267,17 +267,17 @@ namespace QualisysRealTime.Unity.Skeleton
             neck = new Vector3(0f, 0f, 0f);
             head = new Vector3(0f, 0f, 0f);
 
-            legUpperLeft = new Vector3(0f, 180f, 0f);
-            legLowerLeft = new Vector3(0f, 0f, 0f);
-            footLeft = new Vector3(0f, 0f, 0f);
+            legUpperLeft = new Vector3(0f, 90f, 0f);
+            legLowerLeft = new Vector3(0f, 180f, 0f);
+            footLeft = new Vector3(30f, 180f, 0f);
 
-            legUpperRight = new Vector3(0f, 180f, 0f);
-            legLowerRight = new Vector3(0f, 0f, 0f);
-            footRight = new Vector3(0f, 0f, 0f);
+            legUpperRight = new Vector3(0f, 270f, 0f);
+            legLowerRight = new Vector3(0f, 180f, 0f);
+            footRight = new Vector3(30f, 180f, 0f);
 
-            clavicleLeft = new Vector3(0f, 0f, 0f);
-            armUpperLeft = new Vector3(0f, 0f, 0f);
-            armLowerLeft = new Vector3(0f, 0f, 0f);
+            clavicleLeft = new Vector3(0f, 90f, 0f);
+            armUpperLeft = new Vector3(0f, 180f, 0f);
+            armLowerLeft = new Vector3(0f, 180f, 0f);
 
             handLeft = new Vector3(0f, 90f, 330f);
             thumbLeft = new Vector3(0f, 0f, 0f);

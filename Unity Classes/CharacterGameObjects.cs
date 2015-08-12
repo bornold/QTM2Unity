@@ -198,7 +198,6 @@ namespace QualisysRealTime.Unity.Skeleton {
                 right = rightUpperArm;
             }
 
-
             if (left && right && pelvis)
             {
                 Transform lastSpine = left.CommonAncestorOf(right);

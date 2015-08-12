@@ -19,6 +19,7 @@ namespace QualisysRealTime.Unity.Skeleton {
    [System.Serializable]
     public class Debugging
     {
+        public bool UseIK = true;
         public Vector3 Offset = new Vector3(0, 0, 0);
         public bool showSkeleton = false;
         public Color skelettColor = Color.black;
