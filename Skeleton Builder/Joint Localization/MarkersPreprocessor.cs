@@ -13,7 +13,6 @@
 #endregion
 
 using OpenTK;
-using QualisysRealTime.Unity;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -48,18 +47,26 @@ namespace QualisysRealTime.Unity.Skeleton
         {
             this.prefix = bodyPrefix;
             markers = new Dictionary<string, Vector3>();
+            //Converting markers
             for (int i = 0; i < labelMarkers.Count; i++)
             {
                 markers.Add(labelMarkers[i].Label, labelMarkers[i].Position.Convert());
             }
+            //Finding the markers aliases
             markerNames  = NameSet(markers.Keys);
             //foreach (var n in markerNames) UnityEngine.Debug.Log(n);
             m = markerNames;
+            // adding non existing markers
             markersLastFrame = new Dictionary<string, Vector3>();
-            foreach (var mark in markerNames)
+            foreach (var mark in m)
             {
-                 markersLastFrame.Add(mark, Vector3Helper.NaN);
+                markersLastFrame.Add(mark, Vector3Helper.NaN);
+                if (!markers.ContainsKey(mark))
+                {
+                    markers.Add(mark, Vector3Helper.NaN);
+                }
             }
+            // setting arbitrary hip makres positions
             markersLastFrame[m.bodyBase] = lastSACRUMknown;
             markersLastFrame[m.leftHip] = lastLIASknown;
             markersLastFrame[m.rightHip] = lastRIASknown;
