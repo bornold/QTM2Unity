@@ -21,6 +21,7 @@ namespace QualisysRealTime.Unity.Skeleton
         public string MarkerPrefix = "";
         public bool UseFingers = false;
         private bool fingerUse;
+        public bool ScaleToModel = false;
         public bool LockPosition = false;
         public bool ResetSkeleton = false;
         public CharactersModel model = CharactersModel.Model1;
@@ -77,6 +78,7 @@ namespace QualisysRealTime.Unity.Skeleton
                     fingerUse = UseFingers;
                     charactersJoints.SetLimbs(this.transform, fingerUse);
                 }
+                scale = 0;
                 skeletonBuilder = new SkeletonBuilder(rtClient, MarkerPrefix);
                 if (LockPosition) skeleton = new BipedSkeleton();
                 ResetSkeleton = false;
@@ -87,7 +89,7 @@ namespace QualisysRealTime.Unity.Skeleton
                 if (debug!= null) skeletonBuilder.SolveWithIK = debug.UseIK;
                 skeleton = skeletonBuilder.SolveSkeleton(markerData);
             }
-            if (scale == 0) scale = FindScale(charactersJoints.pelvis);
+            if (scale == 0 && ScaleToModel) scale = FindScale(charactersJoints.pelvis);
             SetModelRotation();
             SetAll();
         }
@@ -105,7 +107,9 @@ namespace QualisysRealTime.Unity.Skeleton
                         SetJointRotation(charactersJoints.pelvis, b.Data, boneRotatation.hip);
                         if (charactersJoints.pelvis && !b.Data.Pos.IsNaN())
                         {
-                            Vector3 positionChange = (b.Data.Pos * scale * transform.localScale.magnitude).Convert();
+                            Vector3 positionChange = ScaleToModel ?
+                                (b.Data.Pos * scale * transform.localScale.magnitude).Convert()
+                                : b.Data.Pos.Convert();
                             charactersJoints.pelvis.position = transform.position + positionChange;
                         }
                         break;
@@ -203,11 +207,10 @@ namespace QualisysRealTime.Unity.Skeleton
         {
             float pelvisHeight = 0;
             var trans = pelvis;
-            do
-            {
+            while (trans && trans != this.transform) {
                 pelvisHeight += trans.localPosition.y;
                 trans = trans.parent;
-            } while (trans && trans != this);
+            } 
             float s = pelvisHeight / skeleton.Root.Data.Pos.Y;
             s /= transform.localScale.magnitude;
             return s;
@@ -290,7 +293,8 @@ namespace QualisysRealTime.Unity.Skeleton
                         Debug.DrawLine(from, to, debug.markers.boneColor);
                     }
                 }
-                if (skeleton == null && 
+                
+                if (skeleton != null && 
                     (debug.showSkeleton || debug.showRotationTrace || debug.showJoints || debug.showConstraints || debug.showTwistConstraints))
                 {
                     Gizmos.color = debug.jointColor;
