@@ -39,7 +39,7 @@ namespace QualisysRealTime.Unity.Skeleton
 
             FemurTwist = new Vector2(300, 50),
             KneeTwist = new Vector2(333, 30),
-            AnkleTwist = new Vector2(320, 60),
+            AnkleTwist = new Vector2(340, 40),
             FootBaseTwist = new Vector2(350, 10),
 
             ClaviculaTwist = new Vector2(350, 10),
@@ -142,6 +142,10 @@ namespace QualisysRealTime.Unity.Skeleton
         private Vector4 SwapXZ(Vector4 v)
         {
             return new Vector4(v.Z, v.Y, v.X, v.W);
+        }
+        private Vector2 SwapXY(Vector2 v)
+        {
+            return new Vector2(v.Y, v.X);
         }
     }
 }
