@@ -18,7 +18,7 @@ using UnityEngine;
 #pragma warning disable 0649
 namespace QualisysRealTime.Unity.Skeleton
 {
-    class RTCharacerStream : MonoBehaviour
+    class RTCharacterStream : MonoBehaviour
     {
         public string MarkerPrefix = "";
         public bool UseFingers = false;
