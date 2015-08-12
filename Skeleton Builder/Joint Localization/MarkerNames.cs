@@ -224,13 +224,13 @@ namespace QualisysRealTime.Unity.Skeleton
         #region elbow
         #region left elbow
             leftElbowAKA = new List<string>() {"L_UOA", "L_ELB", "LEFT_ELBOW" },
-            leftInnerElbowAKA = new List<string>() { "L_HME", "L_ELBOW_MED", "LLELBW" },
-            leftOuterElbowAKA = new List<string>() { "L_HLE", "L_ELBOW", "Lt Elbow", "LELB", "LMELBW" },
+            leftInnerElbowAKA = new List<string>() { "L_HME", "L_ELBOW_MED", "LMELBW" },
+            leftOuterElbowAKA = new List<string>() { "L_HLE", "L_ELBOW", "Lt Elbow", "LELB", "LLELBW" },
         #endregion
                 #region right elbow
                 rightElbowAKA = new List<string>() {"R_UOA", "R_ELB", "RIGHT_ELBOW" },
-            rightInnerElbowAKA = new List<string>() { "R_HME", "R_ELBOW_MED", "RLELBW" },
-            rightOuterElbowAKA = new List<string>() { "R_HLE", "R_ELBOW", "Rt Elbow", "RELB", "RMELBW" },
+            rightInnerElbowAKA = new List<string>() { "R_HME", "R_ELBOW_MED", "RMELBW" },
+            rightOuterElbowAKA = new List<string>() { "R_HLE", "R_ELBOW", "Rt Elbow", "RELB", "RLELBW" },
         #endregion
         #endregion
         #region hand
