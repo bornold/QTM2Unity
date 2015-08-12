@@ -11,8 +11,10 @@
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 #endregion
+
 using System.Collections.Generic;
 using UnityEngine;
+
 #pragma warning disable 0649
 namespace QualisysRealTime.Unity.Skeleton
 {
@@ -23,7 +25,7 @@ namespace QualisysRealTime.Unity.Skeleton
         private bool fingerUse;
         public bool ScaleToModel = false;
         public bool LockPosition = false;
-        public bool ResetSkeleton = false;
+        public bool Reset = false;
         public CharactersModel model = CharactersModel.Model1;
         public BoneRotations boneRotatation = new Model1();
         public Debugging debug;
@@ -68,10 +70,10 @@ namespace QualisysRealTime.Unity.Skeleton
             markerData = rtClient.Markers;
             if ((markerData == null || markerData.Count == 0) && !LockPosition)
             {
-                UnityEngine.Debug.LogWarning("Stream does not contain any markers");
+                UnityEngine.Debug.LogError("The stream does not contain any markers");
                 return;
             }
-            if (ResetSkeleton || skeletonBuilder == null)
+            if (Reset || skeletonBuilder == null)
             {
                 if (fingerUse != UseFingers)
                 {
@@ -79,13 +81,13 @@ namespace QualisysRealTime.Unity.Skeleton
                     charactersJoints.SetLimbs(this.transform, fingerUse);
                 }
                 scale = 0;
-                skeletonBuilder = new SkeletonBuilder(rtClient, MarkerPrefix);
-                if (LockPosition) skeleton = new BipedSkeleton();
-                ResetSkeleton = false;
+                skeletonBuilder = new SkeletonBuilder();
+                skeletonBuilder.MarkerPrefix = MarkerPrefix;
+                skeleton = new BipedSkeleton();
+                Reset = false;
             }
             if (!LockPosition)
             {
-                //skeletonBuilder.Interpolation = IKInterpolation;
                 if (debug!= null) skeletonBuilder.SolveWithIK = debug.UseIK;
                 skeleton = skeletonBuilder.SolveSkeleton(markerData);
             }
