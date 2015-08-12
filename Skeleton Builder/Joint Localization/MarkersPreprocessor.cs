@@ -286,6 +286,8 @@ namespace QualisysRealTime.Unity.Skeleton
             SetName(markersNames, MarkerNames.rightUpperKneeAKA, ref m.rightUpperKnee, prefix);
             SetName(markersNames, MarkerNames.leftOuterKneeAKA, ref m.leftOuterKnee, prefix);
             SetName(markersNames, MarkerNames.rightOuterKneeAKA, ref m.rightOuterKnee, prefix);
+            SetName(markersNames, MarkerNames.leftInnerKneeAKA, ref m.leftInnerKnee, prefix);
+            SetName(markersNames, MarkerNames.rightInnerKneeAKA, ref m.rightInnerKnee, prefix);
             SetName(markersNames, MarkerNames.leftLowerKneeAKA, ref m.leftLowerKnee, prefix);
             SetName(markersNames, MarkerNames.rightLowerKneeAKA, ref m.rightLowerKnee, prefix);
             #endregion
@@ -293,6 +295,9 @@ namespace QualisysRealTime.Unity.Skeleton
             #region foot
             SetName(markersNames, MarkerNames.leftOuterAnkleAKA, ref m.leftOuterAnkle, prefix);
             SetName(markersNames, MarkerNames.rightOuterAnkleAKA, ref m.rightOuterAnkle, prefix);
+            SetName(markersNames, MarkerNames.rightInnerAnkleAKA, ref m.rightInnerAnkle, prefix);
+            SetName(markersNames, MarkerNames.leftInnerAnkleAKA, ref m.leftInnerAnkle, prefix);
+
             SetName(markersNames, MarkerNames.leftHeelAKA, ref m.leftHeel, prefix);
             SetName(markersNames, MarkerNames.rightHeelAKA, ref m.rightHeel, prefix);
 
