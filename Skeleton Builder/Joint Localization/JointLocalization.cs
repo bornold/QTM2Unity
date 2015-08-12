@@ -850,15 +850,31 @@ namespace QualisysRealTime.Unity.Skeleton
         }
         private void GetAnkleLeft(Bone b)
         {
-            Vector3 up = KneeLeft - AnkleLeft;
             b.Pos = AnkleLeft;
-            b.Orientation = QuaternionHelper2.LookAtUp(AnkleLeft, FootBaseLeft, up);
+            if (markers[m.leftInnerAnkle].IsNaN())
+            {
+                Vector3 up = KneeLeft - AnkleLeft;
+                b.Orientation = QuaternionHelper2.LookAtUp(AnkleLeft, FootBaseLeft, up);
+            }
+            else
+            {
+                Vector3 right =  markers[m.leftInnerAnkle] - markers[m.leftOuterAnkle];
+                b.Orientation = QuaternionHelper2.LookAtRight(AnkleLeft, FootBaseLeft, right);
+            }
         }
         private void GetAnkleRight(Bone b)
         {
-            Vector3 up = KneeRight - AnkleRight;
             b.Pos = AnkleRight;
-            b.Orientation = QuaternionHelper2.LookAtUp(AnkleRight, FootBaseRight, up);
+            if (markers[m.rightInnerAnkle].IsNaN())
+            {
+                Vector3 up = KneeRight - AnkleRight;
+                b.Orientation = QuaternionHelper2.LookAtUp(AnkleRight, FootBaseRight, up);
+            }
+            else
+            {
+                Vector3 right = markers[m.rightOuterAnkle] - markers[m.rightInnerAnkle];
+                b.Orientation = QuaternionHelper2.LookAtRight(AnkleRight, FootBaseRight, right);
+            }
         }
         private void GetFootBaseLeft(Bone b)
         {
