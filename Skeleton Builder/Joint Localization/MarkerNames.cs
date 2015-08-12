@@ -211,13 +211,13 @@ namespace QualisysRealTime.Unity.Skeleton
                 "TV10", "TH10", "D10", "T10", 
                 "TV14", "TV14", "D14", "T14",
                 "L1",   "LV3"       },
-            neckAKA = new List<string>() { "TV2", "TV1", "C7", "C7_TOP_SPINE" },
+            neckAKA = new List<string>() { "TV2", "TV1", "C7", "C7_TOP_SPINE", "NECK" },
             chestAKA = new List<string>() { "SME", "SJN", "CLAV" },
-            leftShoulderAKA = new List<string>() {"L_SAE", "L_ACR", "LEFT_SHOULDER", "L_SHOULDER", "L_ACROMION", "LEFTSHOULDER", "LEFT SHOULDER", "LSHO" },
-            rightShoulderAKA = new List<string>() { "R_SAE", "R_ACR", "RIGHT_SHOULDER", "R_SHOULDER", "R_ACROMION", "RIGHTSHOULDER", "RIGHT SHOULDER", "RSHO"} ,
+            leftShoulderAKA = new List<string>() {"L_SAE", "L_ACR", "LEFT_SHOULDER", "L_SHOULDER", "L_ACROMION", "LEFTSHOULDER", "LEFT SHOULDER", "LSHO", "LSHOULDER" },
+            rightShoulderAKA = new List<string>() { "R_SAE", "R_ACR", "RIGHT_SHOULDER", "R_SHOULDER", "R_ACROMION", "RIGHTSHOULDER", "RIGHT SHOULDER", "RSHO", "RSHOULDER"} ,
         #endregion
-        #region head
-            headAKA = new List<string>() {"SGL", "Front of Head", "F_HEAD" },
+                #region head
+                headAKA = new List<string>() {"SGL", "Front of Head", "F_HEAD" },
             leftHeadAKA = new List<string>() { "L_HEAD", "HEAD_LEFT_FRONT", "Left Head", "L_HEAD", "LBHD", "HEAD2" },
             rightHeadAKA = new List<string>() { "R_HEAD", "HEAD_RIGHT_FRONT", "Right Head", "R_HEAD", "RBHD", "HEAD1" },
         #endregion
