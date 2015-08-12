@@ -34,7 +34,6 @@ namespace QualisysRealTime.Unity.Skeleton
             Wrist = new Vector4(60, 30, 60, 45);
 
         private Vector2 
-            FullTwist = new Vector2(1,359),
             NoTwist = new Vector2(359, 1),
             SpineTwist = new Vector2(340, 20),
             NeckTwist = new Vector2(270, 90),
